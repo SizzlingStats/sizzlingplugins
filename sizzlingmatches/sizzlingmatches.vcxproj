@@ -14,8 +14,9 @@
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{F43527EE-8AAC-423D-99C2-DFAA567904E1}</ProjectGuid>
-    <RootNamespace>SizzlingStats</RootNamespace>
+    <ProjectGuid>{638E1C71-17E6-4D84-AF90-94B84B7CF9BB}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sizzlingmatches</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -36,62 +37,62 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
-    <Import Project="..\propertysheets\common.props" />
-    <Import Project="..\propertysheets\sizzlinglib.props" />
     <Import Project="..\propertysheets\debugproperties.props" />
+    <Import Project="..\propertysheets\common.props" />
+    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
+    <Import Project="..\propertysheets\sizzlinglib.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
-    <Import Project="..\propertysheets\common.props" />
-    <Import Project="..\propertysheets\sizzlinglib.props" />
     <Import Project="..\propertysheets\releaseproperties.props" />
+    <Import Project="..\propertysheets\common.props" />
+    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
+    <Import Project="..\propertysheets\sizzlinglib.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SIZZLINGMATCHES_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
       <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>rename "$(TargetDir)$(TargetFileName)"  "sizzlingstats.dll"
-move /Y "$(TargetDir)\sizzlingstats.dll" "D:\Program Files\Valve\srcds\orangebox\tf\addons\sizzlingplugins\sizzlingstats\bin\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SIZZLINGMATCHES_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <IgnoreAllDefaultLibraries>
-      </IgnoreAllDefaultLibraries>
-      <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>rename "$(TargetDir)$(TargetFileName)"  "sizzlingstats.dll"
-move /Y "$(TargetDir)\sizzlingstats.dll" "D:\Program Files\Valve\srcds\orangebox\tf\addons\sizzlingplugins\sizzlingstats\bin\"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="serverplugin_empty.cpp" />
-    <ClCompile Include="SizzlingStats.cpp" />
+    <ClCompile Include="SizzlingMatches.cpp" />
+    <ClCompile Include="timedeventmgr.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PluginDefines.h" />
-    <ClInclude Include="SizzlingStats.h" />
-    <ClInclude Include="WebStatsHandler.h" />
+    <ClInclude Include="SizzlingMatches.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

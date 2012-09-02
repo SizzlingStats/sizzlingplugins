@@ -10,6 +10,9 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\SizzlingLib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link />
+    <Link>
+      <AdditionalDependencies>sizzlinglib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
