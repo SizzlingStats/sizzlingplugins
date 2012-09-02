@@ -1,0 +1,141 @@
+// ---------------------
+//
+//
+// ---------------------
+
+#ifndef SIZZ_FILE_SYSTEM_H
+#define SIZZ_FILE_SYSTEM_H
+
+#include <stdio.h>
+
+typedef void *FileHandle_t;
+
+class CSizzFileSystem
+{
+public:
+	CSizzFileSystem();
+	~CSizzFileSystem();
+
+	FileHandle_t	OpenFile( const char *pszPath, const char *pszOptions );
+	void			CloseFile( FileHandle_t file );
+
+	bool			FileExists( const char *pszPath );
+	bool			RemoveFile( const char *pszPath );
+	bool			RenameFile( const char *pszOldPath, const char *pszNewPath );
+
+	bool			IsOk( FileHandle_t file );
+
+	unsigned int	Write( const void *pInput, unsigned int numBytes, FileHandle_t file );
+};
+
+namespace sizzFile
+{
+
+	CSizzFileSystem	*GetSizzFileSystem();
+
+	class CBaseFile
+	{
+	public:
+		FileHandle_t m_FileHandle;
+
+		CBaseFile(void)
+		{
+			m_FileHandle = NULL;
+		}
+
+		~CBaseFile( void )
+		{
+			Close();
+		}
+
+		void Close( void )
+		{
+			if ( m_FileHandle != NULL )
+				GetSizzFileSystem()->CloseFile( m_FileHandle );
+			m_FileHandle = NULL;
+		}
+
+		void Open( char const *fname, char const *modes )
+		{
+			Close();
+			m_FileHandle = GetSizzFileSystem()->OpenFile( fname, modes );
+		}
+		/*
+		char *ReadLine( char *pOutput, int maxChars )
+		{
+			return g_pFullFileSystem->ReadLine( pOutput, maxChars, m_FileHandle );
+		}
+
+		int Read( void* pOutput, int size )
+		{
+			return g_pFullFileSystem->Read( pOutput, size, m_FileHandle );
+		}
+
+		void MustRead( void* pOutput, int size )
+		{
+			int ret=Read( pOutput, size );
+			if (ret != size )
+				Error("failed to read %d bytes\n");
+		}*/
+	
+		int Write( void const* pInput, int size )
+		{
+			return GetSizzFileSystem()->Write( pInput, size, m_FileHandle );
+		}
+
+		/*
+		// {Get|Put}{Int|Float} read and write ints and floats from a file in x86 order, swapping on
+		// input for big-endian systems.
+		void PutInt( int n )
+		{
+			int n1=LittleDWord( n );
+			Write(&n1, sizeof( n1 ) );
+		}
+
+		int GetInt( void )
+		{
+			int ret;
+			MustRead( &ret, sizeof( ret ));
+			return LittleDWord( ret );
+		}
+
+		float GetFloat( void )
+		{
+			float ret;
+			MustRead( &ret, sizeof( ret ));
+			LittleFloat( &ret, &ret );
+			return ret;
+		}
+		void PutFloat( float f )
+		{
+			LittleFloat( &f, &f );
+			Write( &f, sizeof( f ) );
+		}*/
+
+		bool IsOk( void )
+		{
+			return ( m_FileHandle != NULL) &&
+				( GetSizzFileSystem()->IsOk( m_FileHandle ) );
+		}
+	};
+
+	class COutputFile : public CBaseFile
+	{
+	public:
+		void Open( char const *pFname )
+		{
+			CBaseFile::Open( pFname, "wb" );
+		}
+
+		COutputFile( char const *pFname ) : CBaseFile()
+		{
+			Open( pFname );
+		}
+
+		COutputFile( void ) : CBaseFile()
+		{
+		}
+	};
+
+}
+#endif // SIZZ_FILE_SYSTEM_H

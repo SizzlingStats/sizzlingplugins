@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="autoupdate.cpp" />
+    <ClCompile Include="downloader.cpp" />
+    <ClCompile Include="FtpUploader.cpp" />
+    <ClCompile Include="HtmlGenerator.cpp" />
+    <ClCompile Include="MRecipientFilter.cpp" />
+    <ClCompile Include="playerdata.cpp" />
+    <ClCompile Include="PlayerMessage.cpp" />
+    <ClCompile Include="SC_helpers.cpp" />
+    <ClCompile Include="ServerPluginHandler.cpp" />
+    <ClCompile Include="SizzFileSystem.cpp" />
+    <ClCompile Include="SRecipientFilter.cpp" />
+    <ClCompile Include="ThreadCallQueue.cpp" />
+    <ClCompile Include="UserIdTracker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\autoupdate.h" />
+    <ClInclude Include="include\CommandCallback.h" />
+    <ClInclude Include="include\downloader.h" />
+    <ClInclude Include="include\EventQueue.h" />
+    <ClInclude Include="include\FtpUploader.h" />
+    <ClInclude Include="include\HtmlGenerator.h" />
+    <ClInclude Include="include\HttpPost.h" />
+    <ClInclude Include="include\MRecipientFilter.h" />
+    <ClInclude Include="include\playerdata.h" />
+    <ClInclude Include="include\PlayerDataManager.h" />
+    <ClInclude Include="include\PlayerMessage.h" />
+    <ClInclude Include="include\PlayerPostData.h" />
+    <ClInclude Include="include\SC_helpers.h" />
+    <ClInclude Include="include\ServerPluginHandler.h" />
+    <ClInclude Include="include\SizzFileSystem.h" />
+    <ClInclude Include="include\SRecipientFilter.h" />
+    <ClInclude Include="include\ThreadCallQueue.h" />
+    <ClInclude Include="include\UserIdTracker.h" />
+    <ClInclude Include="include\VFuncs.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{20CD0A53-492F-47F6-9B09-DC747D36DBD7}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SizzlingLib</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
+    <Import Project="..\propertysheets\common.props" />
+    <Import Project="..\propertysheets\libcurl.props" />
+    <Import Project="..\propertysheets\debugproperties.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
+    <Import Project="..\propertysheets\common.props" />
+    <Import Project="..\propertysheets\libcurl.props" />
+    <Import Project="..\propertysheets\releaseproperties.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib />
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
