@@ -43,6 +43,7 @@ ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONTRECORD 
 
 #endif
 
+#pragma warning( push )
 #pragma warning( disable : 4351 )
 SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_PlayerFlagsOffset(0), 
@@ -77,7 +78,7 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 	//m_SteamidToPlayerDataMap.SetLessFunc( SCHelpers::FUIntCmp );
 	//m_entIndexToExtraDataMap.SetLessFunc( SCHelpers::FIntCmp );
 }
-#pragma warning( default : 4351 )
+#pragma warning( pop )
 
 SizzlingStats::~SizzlingStats()
 {
