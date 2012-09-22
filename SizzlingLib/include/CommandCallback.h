@@ -54,6 +54,115 @@ public:
 	}
 };
 
+class CConCommandHook: public ICommandCallback
+{
+public:
+	CConCommandHook():
+		m_pOriginalCommand(NULL),
+		m_pNewCommand(NULL)
+	{
+	}
+
+	~CConCommandHook()
+	{
+		Unhook(NULL);
+	}
+
+	// call this once when you have a valid ICvar global to pass in
+	bool Hook( ICvar *pCvar, const char *pszCommandToHook )
+	{
+		if (pCvar && pszCommandToHook)
+		{
+			m_pOriginalCommand = pCvar->FindCommand( pszCommandToHook );
+			if (m_pOriginalCommand)
+			{
+				ConCommandBase *pCommandBase = static_cast<ConCommandBase*>(m_pOriginalCommand);
+				pCvar->UnregisterConCommand(pCommandBase);
+				// uses the other command's 'name' and 'helptext' memory for the strings
+				m_pNewCommand = new(&m_CommandMem) ConCommand(pCommandBase->GetName(), 
+												static_cast<ICommandCallback*>(this), 
+												pCommandBase->GetHelpText(), 
+												FCVAR_NONE);
+				/*m_pNewCommand = new ConCommand(pCommandBase->GetName(), 
+												static_cast<ICommandCallback*>(this), 
+												pCommandBase->GetHelpText(), 
+												FCVAR_NONE);*/
+			}
+		}
+	}
+
+	void Unhook( ICvar *pCvar )
+	{
+		if (pCvar && m_pNewCommand)
+		{
+			pCvar->UnregisterConCommand( static_cast<ConCommandBase*>(m_pNewCommand) );
+			pCvar->RegisterConCommand( static_cast<ConCommandBase*>(m_pOriginalCommand) );
+		}
+		m_pNewCommand->~ConCommand();
+		m_pNewCommand = NULL;
+	}
+
+	// define this
+	// return false to interrupt normal execution of ConCommand
+	virtual bool OnCommandPreExecute( const CCommand &args ) = 0;
+
+	virtual void OnCommandPostExecute( const CCommand &args, bool bWasCommandExecuted ) = 0;
+
+private:
+	// private so noone overrides this method in a derived class
+	virtual void CommandCallback( const CCommand &command )
+	{
+		if (m_pOriginalCommand)
+		{
+			bool bDispatch = OnCommandPreExecute(command);
+			if (bDispatch)
+			{
+				m_pOriginalCommand->Dispatch(command);
+			}
+			OnCommandPostExecute(command, bDispatch);
+		}
+	}
+
+private:
+	ConCommand *m_pOriginalCommand;
+	ConCommand *m_pNewCommand;
+	unsigned char m_CommandMem[sizeof(ConCommand)];
+};
+
+class SayHook: public CConCommandHook
+{
+public:
+	SayHook():
+		CConCommandHook(),
+		m_iClientCommandIndex(0)
+	{
+	}
+
+	void SetCommandClient( int index )
+	{
+		m_iClientCommandIndex = index;
+	}
+
+	virtual bool OnCommandPreExecute( const CCommand &args )
+	{
+		if ( enable.GetInt() == 1 )
+		{
+			if ( isExploit( args, m_iClientCommandIndex ) )
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	virtual void OnCommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
+	{
+	}
+
+private:
+	int m_iClientCommandIndex;
+};
+
 // Don't forget to make an instance
 static CSayHook		g_SayHook;
 CSayHook			*g_pSayHook = &g_SayHook;
