@@ -11,49 +11,6 @@ static ConVar mode( "sizz_protect_mode", "0", FCVAR_NOTIFY | FCVAR_ARCHIVE, "If 
 static bool isExploit( const CCommand &args, int ClientCommandIndex );
 static bool validString( const char **pChar );
 
-// Special hook for say commands
-class CSayHook : public ConCommand
-{
-	// This will hold the pointer original gamedll say command
-	ConCommand *m_pGameDLLSayCommand;
-	int	m_iClientCommandIndex;
-public:
-	CSayHook(): ConCommand("say", FnCommandCallback_t(0), "Display player message", FCVAR_GAMEDLL), m_pGameDLLSayCommand(NULL)
-	{
-	}
-
-	// Override Init
-	void Init()
-	{
-		// Find the gamedll say command
-		m_pGameDLLSayCommand = g_pCVar->FindCommand( "say" );
-
-		// Call base class' init function
-		ConCommand::Init();
-	}
-
-	void Dispatch( const CCommand &args )
-	{
-		// Do the normal stuff, return if you want to override the say
-
-		if ( enable.GetInt() == 1 )
-		{
-			if ( isExploit( args, m_iClientCommandIndex ) )
-			{
-				return;
-			}
-		}
-
-		// Forward to gamedll
-		m_pGameDLLSayCommand->Dispatch( args );
-	}
-
-	void SetCommandClient( int index )
-	{
-		m_iClientCommandIndex = index;
-	}
-};
-
 class CConCommandHook: public ICommandCallback
 {
 public:
@@ -78,17 +35,17 @@ public:
 			{
 				ConCommandBase *pCommandBase = static_cast<ConCommandBase*>(m_pOriginalCommand);
 				pCvar->UnregisterConCommand(pCommandBase);
-				// uses the other command's 'name' and 'helptext' memory for the strings
+				// Uses the other command's 'name' and 'helptext' memory for the strings.
+				// Should maybe copy it in, but since it's static data for globally defined 
+				// ConCommands, then it should be fine to use it as is. Unless we want cache 
+				// locality for the class and it's strings...
 				m_pNewCommand = new(&m_CommandMem) ConCommand(pCommandBase->GetName(), 
 												static_cast<ICommandCallback*>(this), 
 												pCommandBase->GetHelpText(), 
 												FCVAR_NONE);
-				/*m_pNewCommand = new ConCommand(pCommandBase->GetName(), 
-												static_cast<ICommandCallback*>(this), 
-												pCommandBase->GetHelpText(), 
-												FCVAR_NONE);*/
 			}
 		}
+		return true;
 	}
 
 	void Unhook( ICvar *pCvar )
@@ -129,10 +86,10 @@ private:
 	unsigned char m_CommandMem[sizeof(ConCommand)];
 };
 
-class SayHook: public CConCommandHook
+class CSayHook: public CConCommandHook
 {
 public:
-	SayHook():
+	CSayHook():
 		CConCommandHook(),
 		m_iClientCommandIndex(0)
 	{
@@ -145,6 +102,7 @@ public:
 
 	virtual bool OnCommandPreExecute( const CCommand &args )
 	{
+		Msg("the pre hook worked\n");
 		if ( enable.GetInt() == 1 )
 		{
 			if ( isExploit( args, m_iClientCommandIndex ) )
@@ -157,61 +115,48 @@ public:
 
 	virtual void OnCommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
 	{
+		Msg("the post hook worked\n");
 	}
 
 private:
 	int m_iClientCommandIndex;
 };
 
-// Don't forget to make an instance
-static CSayHook		g_SayHook;
-CSayHook			*g_pSayHook = &g_SayHook;
-
-class CSayTeamHook : public ConCommand
+class CSayTeamHook: public CConCommandHook
 {
-	// This will hold the pointer original gamedll say command
-	ConCommand *m_pGameDLLSayCommand;
-	int	m_iClientCommandIndex;
 public:
-	CSayTeamHook(): ConCommand("say_team", FnCommandCallback_t(0), "Display player message to team", FCVAR_GAMEDLL), m_pGameDLLSayCommand(NULL)
+	CSayTeamHook():
+		CConCommandHook(),
+		m_iClientCommandIndex(0)
 	{
-	}
-
-	// Override Init
-	void Init()
-	{
-		// Find the gamedll say command
-		m_pGameDLLSayCommand = g_pCVar->FindCommand( "say_team" );
-
-		// Call base class' init function
-		ConCommand::Init();
-	}
-
-	void Dispatch( const CCommand &args )
-	{
-		// Do the normal stuff, return if you want to override the say
-
-		if ( enable.GetInt() == 1 )
-		{
-			if ( isExploit( args, m_iClientCommandIndex ) )
-			{
-				return;
-			}
-		}
-
-		// Forward to gamedll
-		m_pGameDLLSayCommand->Dispatch( args );
 	}
 
 	void SetCommandClient( int index )
 	{
 		m_iClientCommandIndex = index;
 	}
-};
 
-// Don't forget to make an instance
-static CSayTeamHook		g_SayTeamHook;
-CSayTeamHook			*g_pSayTeamHook = &g_SayTeamHook;
+	virtual bool OnCommandPreExecute( const CCommand &args )
+	{
+		Msg("the pre hook worked\n");
+		if ( enable.GetInt() == 1 )
+		{
+			if ( isExploit( args, m_iClientCommandIndex ) )
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	virtual void OnCommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
+	{
+		Msg("the post hook worked\n");
+	}
+
+private:
+	int m_iClientCommandIndex;
+};
 
 bool isExploit( const CCommand &args, int ClientCommandIndex )
 {

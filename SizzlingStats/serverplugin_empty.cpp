@@ -59,6 +59,8 @@
 	#include "client_class.h"
 #endif
 
+#include "CommandCallback.h"
+
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -273,6 +275,8 @@ public:
 
 private:
 	SizzlingStats m_SizzlingStats;
+	CSayHook m_SayHook;
+	CSayTeamHook m_SayTeamHook;
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
 #ifdef COUNT_CYCLES
@@ -293,6 +297,8 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
+	m_SayHook(),
+	m_SayTeamHook(),
 	m_iClientCommandIndex(0),
 	m_bShouldRecord(false)
 {
@@ -418,6 +424,9 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//short 	userid 	chatting player
 	//string 	text 	chat text 
 
+	m_SayHook.Hook(cvar, "say");
+	m_SayTeamHook.Hook(cvar, "say_team");
+
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2 );
 	ConVar_Register( 0 );
 	return true;
@@ -428,6 +437,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::Unload( void )
 {
+	m_SayHook.Unhook(cvar);
+	m_SayTeamHook.Unhook(cvar);
 	if (pEngine)
 	{
 		pEngine->LogPrint("Unload\n");
@@ -605,6 +616,8 @@ void CEmptyServerPlugin::SetCommandClient( int index )
 {
 	++index;
 	m_iClientCommandIndex = index;
+	m_SayHook.SetCommandClient(index);
+	m_SayTeamHook.SetCommandClient(index);
 }
 
 //---------------------------------------------------------------------------------
