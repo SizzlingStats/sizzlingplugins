@@ -29,7 +29,7 @@ public:
 	// hooks the command so we can execute before and after it
 	bool Hook( ICvar *pCvar, const char *pszCommandToHook )
 	{
-		// if the cvar pointer and the string is valid
+		// if the cvar pointer and the string are valid
 		if (pCvar && pszCommandToHook)
 		{
 			// find the current registered concommand that you want to hook
