@@ -25,20 +25,29 @@ public:
 		Unhook(NULL);
 	}
 
-	// call this once when you have a valid ICvar global to pass in
+	// call this once when you have a valid ICvar global to pass in.
+	// hooks the command so we can execute before and after it
 	bool Hook( ICvar *pCvar, const char *pszCommandToHook )
 	{
+		// if the cvar pointer and the string is valid
 		if (pCvar && pszCommandToHook)
 		{
+			// find the current registered concommand that you want to hook
 			m_pOriginalCommand = pCvar->FindCommand( pszCommandToHook );
+			// if it was valid
 			if (m_pOriginalCommand)
 			{
+				// cast it to a base concommand, then unregister it from the game
 				ConCommandBase *pCommandBase = static_cast<ConCommandBase*>(m_pOriginalCommand);
 				pCvar->UnregisterConCommand(pCommandBase);
 				// Uses the other command's 'name' and 'helptext' memory for the strings.
 				// Should maybe copy it in, but since it's static data for globally defined 
 				// ConCommands, then it should be fine to use it as is. Unless we want cache 
 				// locality for the class and it's strings...
+				//
+				// construct our new con command with that name, so the game calls ours instead
+				// then we can pass execution to the old one if we want since we still have 
+				// a pointer to it.
 				m_pNewCommand = new(&m_CommandMem) ConCommand(pCommandBase->GetName(), 
 												static_cast<ICommandCallback*>(this), 
 												pCommandBase->GetHelpText(), 
@@ -48,15 +57,22 @@ public:
 		return true;
 	}
 
+	// unhooks the command and leaves it in a state the same 
+	// as before we touched it
 	void Unhook( ICvar *pCvar )
 	{
+		// if we previously hooked the command...
 		if (pCvar && m_pNewCommand)
 		{
+			// unregister our version of the command
 			pCvar->UnregisterConCommand( static_cast<ConCommandBase*>(m_pNewCommand) );
+			// re-register the previous default one
 			pCvar->RegisterConCommand( static_cast<ConCommandBase*>(m_pOriginalCommand) );
+			
+			// call the destructor and set the pointer to null
+			m_pNewCommand->~ConCommand();
+			m_pNewCommand = NULL;
 		}
-		m_pNewCommand->~ConCommand();
-		m_pNewCommand = NULL;
 	}
 
 	// define this
@@ -83,6 +99,12 @@ private:
 private:
 	ConCommand *m_pOriginalCommand;
 	ConCommand *m_pNewCommand;
+	// this memory is for the ConCommand so we can choose when 
+	// we want it's constructor called. Since calling the constructor 
+	// registers the command with the game, we want to delay that call 
+	// until we have unregistered the default game command with that 
+	// name. If we don't, only bad things can come of having two 
+	// registered concommands with the same name.
 	unsigned char m_CommandMem[sizeof(ConCommand)];
 };
 
@@ -102,7 +124,6 @@ public:
 
 	virtual bool OnCommandPreExecute( const CCommand &args )
 	{
-		Msg("the pre hook worked\n");
 		if ( enable.GetInt() == 1 )
 		{
 			if ( isExploit( args, m_iClientCommandIndex ) )
@@ -115,7 +136,6 @@ public:
 
 	virtual void OnCommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
 	{
-		Msg("the post hook worked\n");
 	}
 
 private:
@@ -138,7 +158,6 @@ public:
 
 	virtual bool OnCommandPreExecute( const CCommand &args )
 	{
-		Msg("the pre hook worked\n");
 		if ( enable.GetInt() == 1 )
 		{
 			if ( isExploit( args, m_iClientCommandIndex ) )
@@ -151,7 +170,6 @@ public:
 
 	virtual void OnCommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
 	{
-		Msg("the post hook worked\n");
 	}
 
 private:
