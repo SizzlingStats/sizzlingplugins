@@ -12,8 +12,8 @@
 #include "playerdata.h"
 #include "eiface.h"
 
-#define WEB_SERVER_IP "206.253.166.149"
-#define WEB_LISTEN_IP "206.253.166.149:1337"
+#define WEB_SERVER_IP "206.253.166.149/api/stats"
+#define WEB_LISTEN_IP "206.253.166.149/api/stats"
 
 extern CTSCallQueue		*g_pTSCallQueue;
 extern IVEngineServer	*pEngine;
@@ -175,7 +175,7 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 		CJsonObject outer(buff);
 		{
 			CJsonObject temp(buff, "stats");
-			temp.InsertKV("sessionid", sessionId);
+			//temp.InsertKV("sessionid", sessionId);
 			temp.InsertKV("map", host.m_mapname);
 			temp.InsertKV("hostname", host.m_hostname);
 			temp.InsertKV("bluname", host.m_bluname);
@@ -209,11 +209,12 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 }
 
 typedef size_t (*FnCurlCallback)(void*, size_t, size_t, void*);
+typedef int (*FnCurlDebugCallback)(CURL*, curl_infotype, char*, size_t, void*);
 
 enum HttpSendType
 {
 	POST = CURLOPT_POST,
-	PUT = CURLOPT_UPLOAD,
+	PUT = CURLOPT_PUT, //CURLOPT_UPLOAD,
 	GET = CURLOPT_HTTPGET
 };
 
@@ -229,7 +230,7 @@ public:
 	{
 	}
 
-	void Perform( const char *Url, curl_slist *pHeaderList, FnCurlCallback read_function, void *read_data, FnCurlCallback header_read_callback, void *header_read_data )
+	void Perform( const char *Url, curl_slist *pHeaderList, FnCurlCallback read_function, void *read_data, FnCurlCallback header_read_callback, void *header_read_data, FnCurlDebugCallback debug_callback = NULL, void *debug_data = NULL )
 	{
 		CURLcode res;
 
@@ -241,7 +242,15 @@ public:
 			if (Url)
 				curl_easy_setopt(curl, CURLOPT_URL, Url);
 
+			//curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1L);
+
 			curl_easy_setopt(curl, (CURLoption)m_sendType, 1L);
+
+			if (debug_callback)
+				curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, debug_callback);
+
+			if (debug_data)
+				curl_easy_setopt(curl, CURLOPT_DEBUGDATA, debug_data);
 
 			if (read_function)
 				curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_function);
@@ -462,21 +471,33 @@ public:
 		return maxSize;
 	}
 
+	static int curl_debug_callback (CURL *pCurl, curl_infotype type, char *data, size_t size, void *userdata)
+	{
+		char temp[256] = {};
+		
+		V_strncpy(temp, data, 256);
+		g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)temp) );
+		return 0;
+	}
+
 	virtual int Run()
 	{
+		/*
 		g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)"testing thread log\n") );
 		if (!m_responseInfo.HasSessionId())
 		{
-			CHttpSend a(GET);
+			CHttpSend a(POST);
 
 			struct curl_slist *chunk = NULL;
+			//chunk = curl_slist_append(chunk, "Content-type: application/json" );
 			//chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
+			//chunk = curl_slist_append(chunk, "Expect:");
 			chunk = curl_slist_append(chunk, "sizzlingstats: v0.1");
 
-			a.Perform(WEB_LISTEN_IP, chunk, NULL, NULL, header_read_callback, &m_responseInfo);
+			a.Perform(WEB_LISTEN_IP, chunk, NULL, NULL, header_read_callback, &m_responseInfo, curl_debug_callback);
 			curl_slist_free_all(chunk);
 		}
-
+		*/
 		CUtlBuffer postString;
 		char sessionId[64] = {0};
 		m_responseInfo.GetSessionId(sessionId, 64);
@@ -489,7 +510,7 @@ public:
 		producePostString( tempInfo, m_webStats, sessionId, postString );
 		m_dataListMutex.Unlock();
 
-		Yield();
+		//Yield();
 
 		m_dataListMutex.Lock();
 		m_webStats.RemoveAll();
@@ -500,8 +521,17 @@ public:
 		struct curl_slist *chunk = NULL;
 		chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
 		chunk = curl_slist_append(chunk, "Content-type: application/json");
+		chunk = curl_slist_append(chunk, "Expect:");
+		chunk = curl_slist_append(chunk, "sizzlingstats: v0.1");
 
-		a.Perform(WEB_LISTEN_IP, chunk, read_callback, &postString, NULL, NULL);
+		if (sessionId)
+		{
+			char temp[128] = {};
+			V_snprintf( temp, 128, "sessionid: %s", sessionId);
+			chunk = curl_slist_append(chunk, temp);
+		}
+
+		a.Perform(WEB_LISTEN_IP, chunk, read_callback, &postString, header_read_callback, &m_responseInfo);
 		curl_slist_free_all(chunk);
 
 		return 0;
