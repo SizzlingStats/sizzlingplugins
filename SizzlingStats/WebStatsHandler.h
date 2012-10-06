@@ -5,20 +5,19 @@
 #define WEB_STATS_HANDLER_H
 
 #include "queuethread.h"
+#include "JsonUtils.h"
 #include "utlbuffer.h"
-#include "curl/curl.h"
 
 #include "ThreadCallQueue.h"
 #include "playerdata.h"
 #include "eiface.h"
 
+#include "curlconnection.h"
+
 #define WEB_SERVER_IP "206.253.166.149/api/stats"
-#define WEB_LISTEN_IP "206.253.166.149/api/stats"
 
 extern CTSCallQueue		*g_pTSCallQueue;
 extern IVEngineServer	*pEngine;
-
-#define USE_CHUNKED 1
 
 // don't conflict with player_info_t from cdll_int.h
 typedef struct playerInfo_s
@@ -72,100 +71,6 @@ typedef struct playerWebStats_s
 	ScoreData		m_scoreData;
 } playerWebStats_t;
 
-#define END_STATIC_CHAR_CONVERSION( _name, _delimiter, _escapeChar ) \
-	}; \
-	static CUtlCharConversion _name( _escapeChar, _delimiter, sizeof( s_pConversionArray ## _name ) / sizeof( CUtlCharConversion::ConversionArray_t ), s_pConversionArray ## _name );
-
-BEGIN_CHAR_CONVERSION( s_conv, "\"", '\\' )
-	{ '\\', "\\" },
-	{ '\"', "\"" }
-END_STATIC_CHAR_CONVERSION( s_conv, "\"", '\\' );
-
-// can be a named or unnamed object
-class CJsonObject
-{
-public:
-	CJsonObject(CUtlBuffer &buff, const char *name = NULL):
-		m_buff(buff),
-		m_bNeedsComma(false)
-	{
-		if (!m_buff.IsText())
-			m_buff.SetBufferType(true,true);
-
-		if (name)
-		{
-			m_buff.PutDelimitedString(&s_conv, name);
-			m_buff.PutString(":");
-		}
-		
-		m_buff.PutString("{");
-	}
-
-	~CJsonObject()
-	{
-		m_buff.PutString("}");
-	}
-
-	void InsertKV( const char *key, const char *value )
-	{
-		InsertKey(key);
-		m_buff.PutDelimitedString(&s_conv, value);
-	}
-
-	void InsertKV( const char *key, int value )
-	{
-		InsertKey(key);
-		m_buff.PutInt(value);
-	}
-
-	void InsertKV( const char *key, uint64 value )
-	{
-		InsertKey(key);
-		m_buff.Printf( "%llu", value );//.Put(&value, sizeof(uint64));
-	}
-
-private:
-	void InsertKey( const char *key )
-	{
-		if (m_bNeedsComma)
-		{
-			m_buff.PutString(",");
-		}
-		else
-		{
-			m_bNeedsComma = true;
-		}
-		m_buff.PutDelimitedString(&s_conv, key);
-		m_buff.PutString(":");
-	}
-
-private:
-	CUtlBuffer &m_buff;
-	bool m_bNeedsComma;
-};
-
-class CJsonArray
-{
-public:
-	CJsonArray(CUtlBuffer &buff, const char *name):
-		m_buff(buff)
-	{
-		if (!m_buff.IsText())
-			m_buff.SetBufferType(true,true);
-
-		m_buff.PutDelimitedString(&s_conv, name);
-		m_buff.PutString(":[");
-	}
-
-	~CJsonArray()
-	{
-		m_buff.PutString("]");
-	}
-
-private:
-	CUtlBuffer &m_buff;
-};
-
 static void producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const char *sessionId, CUtlBuffer &buff)
 {
 	buff.SetBufferType(true, true);
@@ -207,83 +112,6 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 		}
 	}
 }
-
-typedef size_t (*FnCurlCallback)(void*, size_t, size_t, void*);
-typedef int (*FnCurlDebugCallback)(CURL*, curl_infotype, char*, size_t, void*);
-
-enum HttpSendType
-{
-	POST = CURLOPT_POST,
-	PUT = CURLOPT_PUT, //CURLOPT_UPLOAD,
-	GET = CURLOPT_HTTPGET
-};
-
-class CHttpSend
-{
-public:
-	CHttpSend( HttpSendType type = GET ):
-		m_sendType(type)
-	{
-	}
-
-	~CHttpSend()
-	{
-	}
-
-	void Perform( const char *Url, curl_slist *pHeaderList, FnCurlCallback read_function, void *read_data, FnCurlCallback header_read_callback, void *header_read_data, FnCurlDebugCallback debug_callback = NULL, void *debug_data = NULL )
-	{
-		CURLcode res;
-
-		CURL *curl = curl_easy_init();
-		if(curl) {
-			/* First set the URL that is about to receive our POST. This URL can
-			just as well be a https:// URL if that is what should receive the
-			data. */ 
-			if (Url)
-				curl_easy_setopt(curl, CURLOPT_URL, Url);
-
-			//curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1L);
-
-			curl_easy_setopt(curl, (CURLoption)m_sendType, 1L);
-
-			if (debug_callback)
-				curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, debug_callback);
-
-			if (debug_data)
-				curl_easy_setopt(curl, CURLOPT_DEBUGDATA, debug_data);
-
-			if (read_function)
-				curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_function);
-			
-			if (read_data)
-				curl_easy_setopt(curl, CURLOPT_READDATA, read_data);
-
-			if (header_read_callback)
-				curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_read_callback);
-
-			if (header_read_data)
-				curl_easy_setopt(curl, CURLOPT_HEADERDATA, header_read_data);
-
-			if (pHeaderList)
-				res = curl_easy_setopt(curl, CURLOPT_HTTPHEADER, pHeaderList);
-
-			/* Perform the request, res will get the return code */ 
-			//try
-			//{
-				res = curl_easy_perform(curl);
-			//} catch (...)
-			//{
-			//	g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)"curl threw... gross\n") );
-			//}
-
-			/* always cleanup */ 
-			curl_easy_cleanup(curl);
-		}
-	}
-
-private:
-	HttpSendType m_sendType;
-};
 
 struct responseInfo
 {
@@ -371,6 +199,7 @@ private:
 class CWebStatsHandlerThread: public CThread
 {
 public:
+	#pragma warning( push )
 	#pragma warning( disable : 4351 )
 	CWebStatsHandlerThread():
 		m_responseInfo()
@@ -378,7 +207,7 @@ public:
 		m_dataListMutex.Unlock();
 		m_hostInfoMutex.Unlock();
 	}
-	#pragma warning( default : 4351 )
+	#pragma warning( pop )
 
 	virtual ~CWebStatsHandlerThread()
 	{
@@ -449,55 +278,22 @@ public:
 		{
 			responseInfo *pInfo = static_cast<responseInfo*>(userdata);
 			const char *pStart = V_strstr(data, " ") + 1;
-			//int len = V_strlen(pStart);
-			//char temp[64] = {0};
-			//V_strncpy( temp, pStart, len-1 );
-			
 			pInfo->SetSessionId(pStart, V_strlen(pStart)-1);
-			
 		}
 		else if ( V_strstr( data, "matchurl: " ) )
 		{
 			responseInfo *pInfo = static_cast<responseInfo*>(userdata);
 			const char *pStart = V_strstr(data, " ") + 1;
-			//int len = V_strlen(pStart);
-			//char temp[64] = {0};
-			//V_strncpy( temp, pStart, len-1 );
-			
 			pInfo->SetMatchUrl(pStart, V_strlen(pStart)-1);
 		}
 		
-		//Warning(temp);
 		return maxSize;
-	}
-
-	static int curl_debug_callback (CURL *pCurl, curl_infotype type, char *data, size_t size, void *userdata)
-	{
-		char temp[256] = {};
-		
-		V_strncpy(temp, data, 256);
-		g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)temp) );
-		return 0;
 	}
 
 	virtual int Run()
 	{
-		/*
 		g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)"testing thread log\n") );
-		if (!m_responseInfo.HasSessionId())
-		{
-			CHttpSend a(POST);
 
-			struct curl_slist *chunk = NULL;
-			//chunk = curl_slist_append(chunk, "Content-type: application/json" );
-			//chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
-			//chunk = curl_slist_append(chunk, "Expect:");
-			chunk = curl_slist_append(chunk, "sizzlingstats: v0.1");
-
-			a.Perform(WEB_LISTEN_IP, chunk, NULL, NULL, header_read_callback, &m_responseInfo, curl_debug_callback);
-			curl_slist_free_all(chunk);
-		}
-		*/
 		CUtlBuffer postString;
 		char sessionId[64] = {0};
 		m_responseInfo.GetSessionId(sessionId, 64);
@@ -510,29 +306,35 @@ public:
 		producePostString( tempInfo, m_webStats, sessionId, postString );
 		m_dataListMutex.Unlock();
 
-		//Yield();
-
 		m_dataListMutex.Lock();
 		m_webStats.RemoveAll();
 		m_dataListMutex.Unlock();
 
-		CHttpSend a(POST);
-
-		struct curl_slist *chunk = NULL;
-		chunk = curl_slist_append(chunk, "Transfer-Encoding: chunked");
-		chunk = curl_slist_append(chunk, "Content-type: application/json");
-		chunk = curl_slist_append(chunk, "Expect:");
-		chunk = curl_slist_append(chunk, "sizzlingstats: v0.1");
-
-		if (sessionId)
+		CCurlConnection connection;
+		if (connection.Initialize())
 		{
-			char temp[128] = {};
-			V_snprintf( temp, 128, "sessionid: %s", sessionId);
-			chunk = curl_slist_append(chunk, temp);
-		}
+			connection.SetHttpSendType(CCurlConnection::POST);
+			connection.AddHeader("Transfer-Encoding: chunked");
+			connection.AddHeader("Content-type: application/json");
+			connection.AddHeader("Expect:");
+			connection.AddHeader("sizzlingstats: v0.1");
 
-		a.Perform(WEB_LISTEN_IP, chunk, read_callback, &postString, header_read_callback, &m_responseInfo);
-		curl_slist_free_all(chunk);
+			if (sessionId)
+			{
+				char temp[128] = {};
+				V_snprintf( temp, 128, "sessionid: %s", sessionId);
+				connection.AddHeader(temp);
+			}
+
+			connection.SetUrl(WEB_SERVER_IP);
+			connection.SetBodyReadFunction(read_callback);
+			connection.SetBodyUserdata(&postString);
+			connection.SetHeaderReadFunction(header_read_callback);
+			connection.SetHeaderUserdata(&m_responseInfo);
+
+			connection.Perform();
+			connection.Close();
+		}
 
 		return 0;
 	}

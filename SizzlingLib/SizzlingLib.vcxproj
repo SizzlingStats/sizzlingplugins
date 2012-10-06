@@ -15,6 +15,7 @@
     <ClCompile Include="downloader.cpp" />
     <ClCompile Include="FtpUploader.cpp" />
     <ClCompile Include="HtmlGenerator.cpp" />
+    <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="MRecipientFilter.cpp" />
     <ClCompile Include="playerdata.cpp" />
     <ClCompile Include="PlayerMessage.cpp" />
@@ -33,6 +34,7 @@
     <ClInclude Include="include\FtpUploader.h" />
     <ClInclude Include="include\HtmlGenerator.h" />
     <ClInclude Include="include\HttpPost.h" />
+    <ClInclude Include="include\JsonUtils.h" />
     <ClInclude Include="include\MRecipientFilter.h" />
     <ClInclude Include="include\playerdata.h" />
     <ClInclude Include="include\PlayerDataManager.h" />
@@ -59,14 +61,14 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -101,6 +103,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib />
+    <Lib>
+      <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd</IgnoreSpecificDefaultLibraries>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
