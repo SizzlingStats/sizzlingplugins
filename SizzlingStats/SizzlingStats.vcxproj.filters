@@ -21,9 +21,6 @@
     <ClCompile Include="SizzlingStats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="curlconnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SizzlingStats.h">
@@ -33,9 +30,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PluginDefines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="curlconnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,13 +10,6 @@ class CUtlBuffer;
 class CDownloader
 {
 public:
-	//struct file_t
-	//{
-	//	char *filename;
-	//	FILE *stream;
-	//};
-
-public:
 
 	CDownloader(void);
 	~CDownloader(void);

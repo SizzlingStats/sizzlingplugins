@@ -8,30 +8,23 @@
 
 #include <stdio.h>
 
-typedef void *FileHandle_t;
-
-class CSizzFileSystem
-{
-public:
-	CSizzFileSystem();
-	~CSizzFileSystem();
-
-	FileHandle_t	OpenFile( const char *pszPath, const char *pszOptions );
-	void			CloseFile( FileHandle_t file );
-
-	bool			FileExists( const char *pszPath );
-	bool			RemoveFile( const char *pszPath );
-	bool			RenameFile( const char *pszOldPath, const char *pszNewPath );
-
-	bool			IsOk( FileHandle_t file );
-
-	unsigned int	Write( const void *pInput, unsigned int numBytes, FileHandle_t file );
-};
-
 namespace sizzFile
 {
+	typedef void *FileHandle_t;
 
-	CSizzFileSystem	*GetSizzFileSystem();
+	namespace SizzFileSystem
+	{
+		FileHandle_t	OpenFile( const char *pszPath, const char *pszOptions );
+		void			CloseFile( FileHandle_t file );
+
+		bool			FileExists( const char *pszPath );
+		bool			RemoveFile( const char *pszPath );
+		bool			RenameFile( const char *pszOldPath, const char *pszNewPath );
+
+		bool			IsOk( FileHandle_t file );
+
+		unsigned int	Write( const void *pInput, unsigned int numBytes, FileHandle_t file );
+	}
 
 	class CBaseFile
 	{
@@ -51,14 +44,14 @@ namespace sizzFile
 		void Close( void )
 		{
 			if ( m_FileHandle != NULL )
-				GetSizzFileSystem()->CloseFile( m_FileHandle );
+				SizzFileSystem::CloseFile( m_FileHandle );
 			m_FileHandle = NULL;
 		}
 
 		void Open( char const *fname, char const *modes )
 		{
 			Close();
-			m_FileHandle = GetSizzFileSystem()->OpenFile( fname, modes );
+			m_FileHandle = SizzFileSystem::OpenFile( fname, modes );
 		}
 		/*
 		char *ReadLine( char *pOutput, int maxChars )
@@ -80,7 +73,7 @@ namespace sizzFile
 	
 		int Write( void const* pInput, int size )
 		{
-			return GetSizzFileSystem()->Write( pInput, size, m_FileHandle );
+			return SizzFileSystem::Write( pInput, size, m_FileHandle );
 		}
 
 		/*
@@ -115,7 +108,7 @@ namespace sizzFile
 		bool IsOk( void )
 		{
 			return ( m_FileHandle != NULL) &&
-				( GetSizzFileSystem()->IsOk( m_FileHandle ) );
+				( SizzFileSystem::IsOk( m_FileHandle ) );
 		}
 	};
 

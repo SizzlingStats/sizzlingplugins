@@ -5,7 +5,8 @@
 #include "downloader.h"
 #include "checksum_crc.h"
 #include "utlbuffer.h"
-#include "curl/curl.h"
+
+#include "curlconnection.h"
 
 // TODO: get rid of curl and use sockets @_@
 
@@ -28,37 +29,29 @@ size_t CDownloader::rcvData(void *ptr, size_t size, size_t nmemb, void *userdata
 // should the downloader keep trying if it keeps failing to dl the file?
 bool CDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 {
-	CURL *curl;
+	CCurlConnection connection;
+	if (connection.Initialize())
+	{
+		connection.SetUrl(const_cast<char*>(url));
+		connection.SetBodyWriteFunction(&CDownloader::rcvData);
+		connection.SetBodyWriteUserdata(&buf);
 
-	//curl_global_init(CURL_GLOBAL_DEFAULT);
+	#ifndef NDEBUG
+		connection.SetOption(CURLOPT_VERBOSE, 1L);
+	#endif
 
-	curl = curl_easy_init();
-	if(curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		/* Define our callback to get called when there's data to be written */ 
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CDownloader::rcvData);
-		/* Set a pointer to our struct to pass to the callback */ 
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buf);
+		CURLcode ret = connection.Perform();
+		connection.Close();
 
-		/* Switch on full protocol/debug output */ 
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
-		CURLcode res = curl_easy_perform(curl);
-
-		/* always cleanup */ 
-		curl_easy_cleanup(curl);
-
-		//curl_global_cleanup();
-
-		if(res != CURLE_OK) {
+		if (ret != CURLE_OK)
+		{
 			/* we failed */ 
-			Msg( "curl told us %d\n", res );
+			Msg( "curl told us %d\n", ret );
 			return false;
 		}
 		return true;
 	}
 
-	//curl_global_cleanup();
 	return false;
 }
 
@@ -67,7 +60,7 @@ bool CDownloader::DownloadFileAndVerify( const char *url, unsigned int crc, CUtl
 	// keeps trying until it gets it right
 	// 5 tries max
 	int failureCount = 0;	
-	while (1)
+	for (;;)
 	{
 		buf.Clear();
 		if ( DownloadFile( url, buf ) && VerifyFile( crc, buf ) )

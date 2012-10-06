@@ -11,17 +11,9 @@
 #include "SC_helpers.h"
 #include "functors.h"
 
-#define USING_SIZZ_FILE_SYSTEM
-
-#ifdef USING_SIZZ_FILE_SYSTEM
 #include "SizzFileSystem.h"
-
-using namespace sizzFile;
-#endif
-
-#ifdef USE_QUEUE
 #include "ThreadCallQueue.h"
-#endif
+
 //#include "lzss.h"
 //#include "curl\curl.h"
 //#include "zip/XUnzip.h"
@@ -30,27 +22,29 @@ using namespace sizzFile;
 //#include "LzmaDec.h"
 //#include "LzmaEnc.h"
 
-#include "utlstring.h"
+using namespace sizzFile;
 
 // Interfaces from the engine
 extern IVEngineServer			*pEngine;
-#ifdef USE_QUEUE
 extern CTSCallQueue			*g_pTSCallQueue;
-#endif
+
 void CAutoUpdater::PerformUpdateIfAvailable( const char *pluginPath,
 											 const char *pluginName,
 											 const char *pluginNameNoExtension,
 											 const char *pluginExtension,
 											 const char *pluginDescriptionPart )
 {
-#ifdef USE_QUEUE
-	CFunctor *pRemoveFileFunc = CreateFunctor( this, &CAutoUpdater::RemoveFile, PLUGIN_PATH PLUGIN_NAME_NO_EX "_old" PLUGIN_EXTENSION );
-	g_pTSCallQueue->EnqueueFunctor( pRemoveFileFunc );
-#else
 	char oldPluginPath[512];
 	V_snprintf(oldPluginPath, 512, "%s%s_old%s", pluginPath, pluginNameNoExtension, pluginExtension);
 	RemoveFile(oldPluginPath);
-#endif
+
+	// if it still exists, then we are still on the old plugin with name_old
+	// and the new plugin is waiting to be loaded, so don't try to download
+	// it again. this won't work for linux cause linux lets you delete files in use
+	if (SizzFileSystem::FileExists(oldPluginPath))
+	{
+		return;
+	}
 
 	bool isUpdate = CheckForUpdate();
 	if ( !isUpdate )
@@ -60,33 +54,16 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pluginPath,
 	V_snprintf(currentPluginPath, 512, "%s%s", pluginPath, pluginName);
 
 	Msg( "[SS]: Downloading update.\n" );
-	// this file will be zipped when downloaded because i made it that way
-	// not yet, cause zipishard
+
 	CUtlBuffer updatedFile;
 	bool success = m_downloader.DownloadFileAndVerify( m_info.fileUrl, m_info.fileCRC, updatedFile );
 	if ( success )
 	{
-		// now, unzip the file!
-		//CUtlMemory<unsigned char> unzippedFile;
-		//UnzipFile( m_info.fileName, updatedFile, unzippedFile );
-
 		// we can rename the current plugin, but not remove it
-#ifdef USE_QUEUE
-		CFunctor *pRenameFunc = CreateFunctor( g_pFullFileSystem, &IFileSystem::RenameFile, PLUGIN_PATH PLUGIN_NAME, PLUGIN_PATH PLUGIN_NAME_NO_EX "_old" PLUGIN_EXTENSION, (const char *)0 );
-		g_pTSCallQueue->EnqueueFunctor( pRenameFunc );
-#else
-#ifdef USING_SIZZ_FILE_SYSTEM
-		GetSizzFileSystem()->RenameFile( currentPluginPath, oldPluginPath );
-#else
-		g_pFullFileSystem->RenameFile( currentPluginPath, oldPluginPath );
-#endif
-#endif
+		SizzFileSystem::RenameFile( currentPluginPath, oldPluginPath );
+
 		// write the file to disk
-#ifdef USING_SIZZ_FILE_SYSTEM
 		sizzFile::COutputFile file( m_info.fileName );
-#else
-		::COutputFile file( m_info.fileName );
-#endif
 		if ( file.IsOk() )
 		{
 			file.Write( updatedFile.Base(), updatedFile.GetBytesRemaining() );
@@ -97,14 +74,9 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pluginPath,
 
 			// unload the old plugin, load the new plugin
 			V_snprintf( temp, 256, "plugin_unload %i; plugin_load %s\n", index, currentPluginPath);
-			//pEngine->ServerCommand( temp );
-#ifdef USE_QUEUE
-			CFunctor *pUnloadFunc = CreateFunctor( pEngine, &IVEngineServer::ServerCommand, (const char *)temp );
-			g_pTSCallQueue->EnqueueFunctor( pUnloadFunc );
-#else
+
 #ifndef REQUIRE_RESTART_FOR_UPDATES
-			pEngine->ServerCommand( temp );
-#endif
+			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
 #endif
 
 			// we are done with this plugin now
@@ -194,18 +166,12 @@ bool CAutoUpdater::CompareVersions( const char *v1, const char *v2 )
 
 void CAutoUpdater::RemoveFile( const char *pRelativePath )
 {
-#ifdef USING_SIZZ_FILE_SYSTEM
-	if ( GetSizzFileSystem()->FileExists( pRelativePath ) )
+	if ( SizzFileSystem::FileExists( pRelativePath ) )
 	{
-		GetSizzFileSystem()->RemoveFile( pRelativePath );
+		SizzFileSystem::RemoveFile( pRelativePath );
 	}
-#else
-	if ( g_pFullFileSystem->FileExists( pRelativePath ) )
-	{
-		g_pFullFileSystem->RemoveFile( pRelativePath );
-	}
-#endif
 }
+
 //static void *SzAlloc(void */*p*/, size_t size)
 //{
 //	return new unsigned char [size];

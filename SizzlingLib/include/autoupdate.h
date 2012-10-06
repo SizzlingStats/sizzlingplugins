@@ -8,7 +8,7 @@
 #include "utlbuffer.h"
 #include "threadtools.h"
 
-struct autoUpdateInfo_s
+typedef struct autoUpdateInfo_s
 {
 	char fileName[256];
 	char fileUrl[128];
@@ -16,13 +16,12 @@ struct autoUpdateInfo_s
 	char destDir[64];
 	unsigned int fileCRC;
 	char currentVersion[16];
-};
+} autoUpdateInfo_t;
 
-// absolutely need to thread this class
 class CAutoUpdater
 {
 public:
-	CAutoUpdater( autoUpdateInfo_s const &info ): m_info(info)
+	CAutoUpdater( autoUpdateInfo_t const &info ): m_info(info)
 	{
 	}
 	~CAutoUpdater(void)
@@ -53,14 +52,14 @@ private:
 	//unsigned int		Compress( CUtlBuffer &src, CUtlMemory<unsigned char> &dest );
 
 private:
-	autoUpdateInfo_s m_info;
+	autoUpdateInfo_t m_info;
 	CDownloader m_downloader; // EBCO makes this size 0
 };
 
 class CAutoUpdateThread: public CThread
 {
 public:
-	CAutoUpdateThread( autoUpdateInfo_s const &info ): m_autoUpdater(info)
+	CAutoUpdateThread( autoUpdateInfo_t const &info ): m_autoUpdater(info)
 	{
 	}
 

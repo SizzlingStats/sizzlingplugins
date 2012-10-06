@@ -85,12 +85,10 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "D:\Program Files\Valve\srcds\orangebox
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="curlconnection.cpp" />
     <ClCompile Include="serverplugin_empty.cpp" />
     <ClCompile Include="SizzlingStats.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="curlconnection.h" />
     <ClInclude Include="PluginDefines.h" />
     <ClInclude Include="SizzlingStats.h" />
     <ClInclude Include="WebStatsHandler.h" />

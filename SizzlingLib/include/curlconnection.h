@@ -37,6 +37,9 @@ public:
 	void SetHeaderReadFunction( FnCurlCallback fnHeaderRead );
 	void SetHeaderUserdata( void *pUserdata );
 
+	void SetBodyWriteFunction( FnCurlCallback fnWrite );
+	void SetBodyWriteUserdata( void *pUserdata );
+
 	// this is what curl can handle
 	void SetOption( CURLoption opt, long val );
 	void SetOption( CURLoption opt, void (*Fn)() );
@@ -48,7 +51,7 @@ public:
 	void AddHeader( const char *pszHeader );
 	void ClearHeaderList();
 
-	void Perform();
+	CURLcode Perform();
 
 private:
 	typedef struct curl_slist curl_slist_t;

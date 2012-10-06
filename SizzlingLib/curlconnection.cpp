@@ -20,11 +20,7 @@ CURL *CCurlConnection::Initialize()
 
 void CCurlConnection::Close()
 {
-	if (m_pHeaderList)
-	{
-		ClearHeaderList();
-		m_pHeaderList = NULL;
-	}
+	ClearHeaderList();
 
 	if (m_pCurl)
 	{
@@ -72,6 +68,16 @@ void CCurlConnection::SetHeaderUserdata( void *pUserdata )
 	SetOption(CURLOPT_HEADERDATA, pUserdata);
 }
 
+void CCurlConnection::SetBodyWriteFunction( FnCurlCallback fnWrite )
+{
+	SetOption(CURLOPT_WRITEFUNCTION, fnWrite);
+}
+
+void CCurlConnection::SetBodyWriteUserdata( void *pUserdata )
+{
+	SetOption(CURLOPT_WRITEDATA, pUserdata);
+}
+
 void CCurlConnection::AddHeader( const char *pszHeader )
 {
 	m_pHeaderList = curl_slist_append(m_pHeaderList, pszHeader);
@@ -80,6 +86,7 @@ void CCurlConnection::AddHeader( const char *pszHeader )
 void CCurlConnection::ClearHeaderList()
 {
 	curl_slist_free_all(m_pHeaderList);
+	m_pHeaderList = NULL;
 }
 
 void CCurlConnection::SetOption( CURLoption opt, long val )
@@ -108,9 +115,9 @@ void CCurlConnection::SetOption( CURLoption opt, curl_off_t val )
 	curl_easy_setopt(m_pCurl, opt, val);
 }
 	
-void CCurlConnection::Perform()
+CURLcode CCurlConnection::Perform()
 {
 	SetOption(CURLOPT_HTTPHEADER, m_pHeaderList);
-	curl_easy_perform(m_pCurl);
+	return curl_easy_perform(m_pCurl);
 }
 
