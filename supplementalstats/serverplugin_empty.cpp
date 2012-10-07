@@ -29,6 +29,8 @@
 
 // Interfaces from the engine
 IVEngineServer				*pEngine = NULL;
+IServerGameDLL				*pServerDLL;
+IServerGameEnts				*pServerEnts;
 IGameEventManager2			*gameeventmanager = NULL; // game events interface
 IPlayerInfoManager			*playerinfomanager = NULL; // game dll interface to interact with players
 CGlobalVars					*gpGlobals = NULL;
@@ -274,7 +276,7 @@ void CEmptyServerPlugin::AutoUpdate()
 	autoUpdateInfo_s a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
 	CAutoUpdater autoUpdater(a);
 	//autoUpdater.OfflineTest();
-	autoUpdater.PerformUpdateIfAvailable( PLUGIN_PATH, PLUGIN_NAME, PLUGIN_NAME_NO_EX, PLUGIN_EXTENSION, PLUGIN_DESCRIPTION_PART );
+	autoUpdater.PerformUpdateIfAvailable( s_pluginInfo );
 	//autoUpdater.testDownloadMeta();
 }
 

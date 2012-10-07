@@ -68,6 +68,10 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>rename "$(TargetDir)$(TargetFileName)"  "supplementalstats.dll"
+move /Y "$(TargetDir)\supplementalstats.dll" "D:\Program Files\Valve\srcds\orangebox\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -85,6 +89,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <PostBuildEvent>
+      <Command>rename "$(TargetDir)$(TargetFileName)"  "supplementalstats.dll"
+move /Y "$(TargetDir)\supplementalstats.dll" "D:\Program Files\Valve\srcds\orangebox\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="serverplugin_empty.cpp" />

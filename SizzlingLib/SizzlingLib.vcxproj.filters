@@ -60,6 +60,9 @@
     <ClCompile Include="curlconnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include=".\StaticSizeVector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\autoupdate.h">
@@ -123,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\curlconnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include=".\include\StaticSizeVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
