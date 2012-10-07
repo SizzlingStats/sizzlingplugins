@@ -5,7 +5,6 @@
 #define AUTOUPDATE_H
 
 #include "downloader.h"
-#include "utlbuffer.h"
 #include "threadtools.h"
 
 typedef struct autoUpdateInfo_s
@@ -18,37 +17,47 @@ typedef struct autoUpdateInfo_s
 	char currentVersion[16];
 } autoUpdateInfo_t;
 
+// this is for whoever uses the updater thread
+// they need to pass in an array of const char *
+// and this is the required mapping of array index to data
+enum EPluginInfoMap
+{
+	k_eLocalPluginPath = 0,
+	k_ePluginName,
+	k_ePluginNameNoExtension,
+	k_ePluginExtension,
+	k_ePluginDescriptionPart
+};
+
 class CAutoUpdater
 {
 public:
 	CAutoUpdater( autoUpdateInfo_t const &info ): m_info(info)
 	{
 	}
-	~CAutoUpdater(void)
+
+	~CAutoUpdater()
 	{
 	}
-	
-	void		Load()
+
+	void Load()
 	{
 	}
-	void		PerformUpdateIfAvailable( const char *pluginPath,
-											 const char *pluginName,
-											 const char *pluginNameNoExtension,
-											 const char *pluginExtension,
-											 const char *pluginDescriptionPart);
+
+	void PerformUpdateIfAvailable( const char *pUpdateInfo[] );
 
 private:
 	// returns true if there is an update available
-	bool		CheckForUpdate();
+	bool CheckForUpdate();
 
 	// returns true if v1 is newer than v2
-	bool		CompareVersions( const char *v1, const char *v2 );
+	bool CompareVersions( const char *v1, const char *v2 );
 
 	// wrapper for the filesystem removefile
-	inline void		RemoveFile( const char *pRelativePath );
+	inline void	RemoveFile( const char *pRelativePath );
+
 	// unzips the file; maybe have a new class for this?
 	//bool 		UnzipFile( const char *pRelativeName, CUtlBuffer &src, CUtlMemory<unsigned char> &dest );
-
 	//unsigned int		Compress( CUtlBuffer &src, CUtlMemory<unsigned char> &dest );
 
 private:
@@ -59,7 +68,9 @@ private:
 class CAutoUpdateThread: public CThread
 {
 public:
-	CAutoUpdateThread( autoUpdateInfo_t const &info ): m_autoUpdater(info)
+	CAutoUpdateThread( autoUpdateInfo_t const &info, const char *pUpdateInfo[] ):
+		m_autoUpdater(info),
+		m_pUpdateInfo(pUpdateInfo)
 	{
 	}
 
@@ -67,19 +78,30 @@ public:
 	{
 	}
 
+	void StartThread()
+	{
+		if (IsAlive())
+		{
+			Join();
+		}
+		Start();
+	}
+
 	virtual int Run()
 	{
-		//m_autoUpdater.PerformUpdateIfAvailable();
+		m_autoUpdater.PerformUpdateIfAvailable(m_pUpdateInfo);
+		return 0;
 	}
 
 	void ShutDown()
 	{
-		this->Join();
+		Join();
 	}
 
 private:
 	CAutoUpdater m_autoUpdater;
-	CThreadEvent m_EventSignal;
+	// the plugin will pass static data into here
+	const char **m_pUpdateInfo;
 };
 
 #endif // AUTOUPDATE_H

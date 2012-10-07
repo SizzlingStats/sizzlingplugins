@@ -4,18 +4,16 @@
 
 #include "autoupdate.h"
 
-#include "engine/iserverplugin.h"
 #include "eiface.h"
-#include "game/server/iplayerinfo.h"
-#include "tier2/fileutils.h"
 #include "SC_helpers.h"
 #include "functors.h"
 
 #include "SizzFileSystem.h"
 #include "ThreadCallQueue.h"
 
+#include "utlbuffer.h"
+
 //#include "lzss.h"
-//#include "curl\curl.h"
 //#include "zip/XUnzip.h"
 //#include "lzmaDecoder.h"
 
@@ -25,31 +23,24 @@
 using namespace sizzFile;
 
 // Interfaces from the engine
-extern IVEngineServer			*pEngine;
+extern IVEngineServer		*pEngine;
 extern CTSCallQueue			*g_pTSCallQueue;
 
-void CAutoUpdater::PerformUpdateIfAvailable( const char *pluginPath,
-											 const char *pluginName,
-											 const char *pluginNameNoExtension,
-											 const char *pluginExtension,
-											 const char *pluginDescriptionPart )
+void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 {
+	const char *pluginPath = pUpdateInfo[k_eLocalPluginPath];
+	const char *pluginNameNoExtension = pUpdateInfo[k_ePluginNameNoExtension];
+	const char *pluginExtension = pUpdateInfo[k_ePluginExtension];
+
 	char oldPluginPath[512];
 	V_snprintf(oldPluginPath, 512, "%s%s_old%s", pluginPath, pluginNameNoExtension, pluginExtension);
 	RemoveFile(oldPluginPath);
-
-	// if it still exists, then we are still on the old plugin with name_old
-	// and the new plugin is waiting to be loaded, so don't try to download
-	// it again. this won't work for linux cause linux lets you delete files in use
-	if (SizzFileSystem::FileExists(oldPluginPath))
-	{
-		return;
-	}
 
 	bool isUpdate = CheckForUpdate();
 	if ( !isUpdate )
 		return;
 
+	const char *pluginName = pUpdateInfo[k_ePluginName];
 	char currentPluginPath[512];
 	V_snprintf(currentPluginPath, 512, "%s%s", pluginPath, pluginName);
 
@@ -69,19 +60,18 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pluginPath,
 			file.Write( updatedFile.Base(), updatedFile.GetBytesRemaining() );
 			file.Close();
 
+			const char *pluginDescriptionPart = pUpdateInfo[k_ePluginDescriptionPart];
 			int index = SCHelpers::GetThisPluginIndex(pluginDescriptionPart);
 			char temp[256];
 
 			// unload the old plugin, load the new plugin
 			V_snprintf( temp, 256, "plugin_unload %i; plugin_load %s\n", index, currentPluginPath);
 
-#ifndef REQUIRE_RESTART_FOR_UPDATES
 			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
-#endif
-
-			// we are done with this plugin now
-			// it will be unloaded when the stack unwinds
-			// the new plugin is now loaded and will check for the plugin_old and delete them to finish
+			// the plugin will be unloaded when tf2 executes the command,
+			// which then also loads the new version of the plugin.
+			// the new version runs the updater which checks for plugin_old
+			// and deletes it.
 		}
 		else
 		{

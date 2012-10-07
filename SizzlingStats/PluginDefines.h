@@ -4,23 +4,30 @@
 //
 // ------------------------------------------------------
 
+#ifndef PLUGIN_DEFINES_H
+#define PLUGIN_DEFINES_H
+
 #define PLUGIN_VERSION "0.8.3.5"
 //#define RELEASE_VERSION
 
+#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
+
 #ifdef _WIN32
-#define URL_TO_META  "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/metawin32.txt"
+#define META  "metawin32.txt"
 #define PLUGIN_EXTENSION ".dll"
 #else
-#define URL_TO_META "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/metalinux.txt"
+#define META "metalinux.txt"
 #define PLUGIN_EXTENSION ".so"
 #endif
 
+#define URL_TO_META URL_BASE META
+
 #define PLUGIN_DESCRIPTION_PART "SizzlingStats" // look for this string in the description while searching for the plugin index
-#define URL_TO_UPDATED "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/sizzlingstats" PLUGIN_EXTENSION
 #define PLUGIN_NAME_NO_EX "sizzlingstats"
 #define PLUGIN_NAME PLUGIN_NAME_NO_EX PLUGIN_EXTENSION
+#define URL_TO_UPDATED URL_BASE PLUGIN_NAME
 
-#define USING_SIZZ_FILE_SYSTEM 1
+#define USING_SIZZ_FILE_SYSTEM
 
 #ifdef USING_SIZZ_FILE_SYSTEM
 #define PLUGIN_PATH "tf/addons/sizzlingplugins/sizzlingstats/bin/"
@@ -28,6 +35,17 @@
 #define PLUGIN_PATH "addons/sizzlingplugins/sizzlingstats/bin/"
 #endif
 
-#define REQUIRE_RESTART_FOR_UPDATES 1
+static const char *s_pluginInfo[] = 
+{
+	PLUGIN_PATH,
+	PLUGIN_NAME,
+	PLUGIN_NAME_NO_EX,
+	PLUGIN_EXTENSION,
+	PLUGIN_DESCRIPTION_PART
+};
+
+#define REQUIRE_RESTART_FOR_UPDATES
 
 //#define PUBLIC_RELEASE 1
+
+#endif // PLUGIN_DEFINES_H

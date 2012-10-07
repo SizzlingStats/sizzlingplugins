@@ -254,7 +254,6 @@ public:
 
 	// Additions
 	virtual bool			ConfirmInterfaces( void );
-	void					AutoUpdate();
 	void					LoadCurrentPlayers();
 	//virtual bool			GetPropOffset( const char *pClassName, const char *pPropName, unsigned int &offset, bool bServerSide );
 	//virtual void			GetPropsFromTable( const char *pTableName );
@@ -277,6 +276,7 @@ private:
 	SizzlingStats m_SizzlingStats;
 	CSayHook m_SayHook;
 	CSayTeamHook m_SayTeamHook;
+	CAutoUpdateThread	*m_pAutoUpdater;
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
 #ifdef COUNT_CYCLES
@@ -299,6 +299,7 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
+	m_pAutoUpdater(NULL),
 	m_iClientCommandIndex(0),
 	m_bShouldRecord(false)
 {
@@ -320,7 +321,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	AutoUpdate();
+	autoUpdateInfo_t a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
+	m_pAutoUpdater = new CAutoUpdateThread(a, s_pluginInfo);
+	m_pAutoUpdater->StartThread();
+
+	//AutoUpdate();
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 	if (!g_pFullFileSystem){
 		Warning( "Unable to load g_pFullFileSystem, aborting load\n" );
@@ -458,6 +463,10 @@ void CEmptyServerPlugin::Unload( void )
 		ConVar_Unregister( );
 	}
 
+	m_pAutoUpdater->ShutDown();
+	delete m_pAutoUpdater;
+	m_pAutoUpdater = NULL;
+
 	curl_global_cleanup();
 	//DisconnectTier2Libraries( );
 	//DisconnectTier1Libraries( );
@@ -475,16 +484,6 @@ void CEmptyServerPlugin::Pause( void )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::UnPause( void )
 {
-}
-
-void CEmptyServerPlugin::AutoUpdate()
-{
-    // need to change this to make it threaded
-	autoUpdateInfo_s a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
-	CAutoUpdater autoUpdater(a);
-	//autoUpdater.OfflineTest();
-	autoUpdater.PerformUpdateIfAvailable( PLUGIN_PATH, PLUGIN_NAME, PLUGIN_NAME_NO_EX, PLUGIN_EXTENSION, PLUGIN_DESCRIPTION_PART );
-	//autoUpdater.testDownloadMeta();
 }
 
 void CEmptyServerPlugin::LoadCurrentPlayers()
@@ -512,7 +511,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 {
 	pEngine->LogPrint(UTIL_VarArgs( "LevelInit: %s\n", pMapName ));
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
-	AutoUpdate();
+	m_pAutoUpdater->StartThread();
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	m_SizzlingStats.LevelInit(pMapName);
 }
@@ -556,7 +555,6 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 	pEngine->LogPrint("LevelShutdown\n");
 	m_SizzlingStats.SS_DeleteAllPlayerData();
 }
-
 
 //---------------------------------------------------------------------------------
 // Purpose: called when a client spawns into a server (i.e as they begin to play)
