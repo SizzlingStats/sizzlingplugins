@@ -10,7 +10,7 @@
 #define PLUGIN_VERSION "0.8.3.5"
 //#define RELEASE_VERSION
 
-#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
+#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/test/"
 
 #ifdef _WIN32
 #define META  "metawin32.txt"

@@ -28,6 +28,9 @@ extern CTSCallQueue			*g_pTSCallQueue;
 
 void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 {
+	if (m_bWaitingForUnload)
+		return;
+
 	const char *pluginPath = pUpdateInfo[k_eLocalPluginPath];
 	const char *pluginNameNoExtension = pUpdateInfo[k_ePluginNameNoExtension];
 	const char *pluginExtension = pUpdateInfo[k_ePluginExtension];
@@ -62,12 +65,13 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 
 			const char *pluginDescriptionPart = pUpdateInfo[k_ePluginDescriptionPart];
 			int index = SCHelpers::GetThisPluginIndex(pluginDescriptionPart);
-			char temp[256];
+			static char temp[256] = {};
 
 			// unload the old plugin, load the new plugin
 			V_snprintf( temp, 256, "plugin_unload %i; plugin_load %s\n", index, currentPluginPath);
-
+			
 			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
+			m_bWaitingForUnload = true;
 			// the plugin will be unloaded when tf2 executes the command,
 			// which then also loads the new version of the plugin.
 			// the new version runs the updater which checks for plugin_old

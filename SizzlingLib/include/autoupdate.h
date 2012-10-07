@@ -32,7 +32,10 @@ enum EPluginInfoMap
 class CAutoUpdater
 {
 public:
-	CAutoUpdater( autoUpdateInfo_t const &info ): m_info(info)
+	CAutoUpdater( autoUpdateInfo_t const &info ):
+		m_info(info),
+		m_downloader(),
+		m_bWaitingForUnload(false)
 	{
 	}
 
@@ -62,7 +65,8 @@ private:
 
 private:
 	autoUpdateInfo_t m_info;
-	CDownloader m_downloader; // EBCO makes this size 0
+	CDownloader m_downloader;
+	bool m_bWaitingForUnload;
 };
 
 class CAutoUpdateThread: public CThread
