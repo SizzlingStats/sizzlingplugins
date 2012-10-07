@@ -1,8 +1,9 @@
 #ifndef JSON_UTILS_H
 #define JSON_UTILS_H
 
-class CUtlBuffer;
 #include "platform.h"
+
+class CUtlBuffer;
 
 // can be a named or unnamed object
 class CJsonObject

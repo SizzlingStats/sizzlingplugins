@@ -272,7 +272,7 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 
 void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 {
-	char pText[64] = "";
+	char pText[64] = {};
 	//SS_PlayerData &playerData = *pPlayerData;
 	//ScoreData *pData = pPlayerData->
 	//unsigned int size = sizeof(pText);

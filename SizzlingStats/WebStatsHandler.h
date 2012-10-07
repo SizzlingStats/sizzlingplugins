@@ -30,6 +30,7 @@ typedef struct playerInfo_s
 
 typedef struct hostInfo_s
 {
+	#pragma warning( push )
 	#pragma warning( disable : 4351 )
 	hostInfo_s():
 		m_hostname(),
@@ -40,7 +41,7 @@ typedef struct hostInfo_s
 		m_redscore(0)
 	{
 	}
-	#pragma warning( default : 4351 )
+	#pragma warning( pop )
 
 	hostInfo_s(const char *hostname,
 			const char *mapname,
@@ -115,13 +116,14 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 
 struct responseInfo
 {
+	#pragma warning( push )
 	#pragma warning( disable : 4351 )
 	responseInfo(): matchUrl(), sessionId()
 	{
 		matchUrlMutex.Unlock();
 		sessionIdMutex.Unlock();
 	}
-	#pragma warning( default : 4351 )
+	#pragma warning( pop )
 
 	void SetSessionId( const char *id, int lengthToCopy )
 	{
