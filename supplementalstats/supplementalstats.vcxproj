@@ -70,7 +70,7 @@
     </Link>
     <PostBuildEvent>
       <Command>rename "$(TargetDir)$(TargetFileName)"  "supplementalstats.dll"
-move /Y "$(TargetDir)\supplementalstats.dll" "D:\Program Files\Valve\srcds\orangebox\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
+move /Y "$(TargetDir)\supplementalstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -87,7 +87,7 @@ move /Y "$(TargetDir)\supplementalstats.dll" "D:\Program Files\Valve\srcds\orang
     </Link>
     <PostBuildEvent>
       <Command>rename "$(TargetDir)$(TargetFileName)"  "supplementalstats.dll"
-copy /Y "$(TargetDir)\supplementalstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
+move /Y "$(TargetDir)\supplementalstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
     </PostBuildEvent>
     <ProjectReference />
   </ItemDefinitionGroup>
