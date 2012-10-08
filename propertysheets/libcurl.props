@@ -6,10 +6,10 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcurl;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcurl.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;libcurl.lib;ws2_32.lib;wldap32.lib</AdditionalDependencies>
+      <AdditionalDependencies>libcurl.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\win32\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

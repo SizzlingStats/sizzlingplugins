@@ -10,8 +10,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\..\hl2sdk-ob-valve\lib\common;$(SolutionDir)\..\hl2sdk-ob-valve\lib\public;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;mathlib.lib;tier0.lib;tier1.lib;tier2.lib;vstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <IgnoreSpecificDefaultLibraries>libc;libcd;libcmtd</IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>mathlib.lib;tier0.lib;tier1.lib;tier2.lib;vstdlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
