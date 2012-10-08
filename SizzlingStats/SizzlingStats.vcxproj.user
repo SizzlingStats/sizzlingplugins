@@ -7,7 +7,7 @@
     <LocalDebuggerCommand>$(orangebox_dir)\srcds.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommand>$(orangebox_dir)\srcds.exeaasdfasdfa</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(orangebox_dir)\srcds.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommandArguments>-console -game tf +maxplayers 14 +map cp_badlands</LocalDebuggerCommandArguments>
