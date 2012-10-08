@@ -41,6 +41,7 @@
     <Import Project="..\propertysheets\common.props" />
     <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
     <Import Project="..\propertysheets\sizzlinglib.props" />
+    <Import Project="..\propertysheets\srcds_settings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -48,6 +49,7 @@
     <Import Project="..\propertysheets\common.props" />
     <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
     <Import Project="..\propertysheets\sizzlinglib.props" />
+    <Import Project="..\propertysheets\srcds_settings.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

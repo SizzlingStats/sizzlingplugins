@@ -42,6 +42,7 @@
     <Import Project="..\propertysheets\sizzlinglib.props" />
     <Import Project="..\propertysheets\debugproperties.props" />
     <Import Project="..\propertysheets\libcurl.props" />
+    <Import Project="..\propertysheets\srcds_settings.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -50,6 +51,7 @@
     <Import Project="..\propertysheets\sizzlinglib.props" />
     <Import Project="..\propertysheets\releaseproperties.props" />
     <Import Project="..\propertysheets\libcurl.props" />
+    <Import Project="..\propertysheets\srcds_settings.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -85,7 +87,7 @@ move /Y "$(TargetDir)\supplementalstats.dll" "D:\Program Files\Valve\srcds\orang
     </Link>
     <PostBuildEvent>
       <Command>rename "$(TargetDir)$(TargetFileName)"  "supplementalstats.dll"
-copy /Y "$(TargetDir)\supplementalstats.dll" "D:\Program Files\Valve\srcds\orangebox\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
+copy /Y "$(TargetDir)\supplementalstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplugins\supplementalstats\bin\"</Command>
     </PostBuildEvent>
     <ProjectReference />
   </ItemDefinitionGroup>
