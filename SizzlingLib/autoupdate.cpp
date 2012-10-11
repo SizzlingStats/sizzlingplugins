@@ -69,8 +69,9 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 
 			// unload the old plugin, load the new plugin
 			V_snprintf( temp, 256, "plugin_unload %i; plugin_load %s\n", index, currentPluginPath);
-			
-			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
+
+			CLateBoundPtr<IVEngineServer> ppEngine(&pEngine);
+			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(ppEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
 			m_bWaitingForUnload = true;
 			// the plugin will be unloaded when tf2 executes the command,
 			// which then also loads the new version of the plugin.

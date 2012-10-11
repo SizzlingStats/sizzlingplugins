@@ -9,25 +9,34 @@ class CTSCallQueue
 {
 public:
 
+#pragma warning( push )
 #pragma warning( disable : 4355 )
-
 	CTSCallQueue(): m_pNopFunctor( CreateFunctor(this, &CTSCallQueue::nopFunc) ),
 					m_pCallQueueFunctor( CreateFunctor(this, &CTSCallQueue::CallOne) ),
 					m_pFuncCommandCaller( m_pNopFunctor )
 	{
 	}
-
-#pragma warning( default : 4355 )
+#pragma warning( pop )
 
 	~CTSCallQueue()
 	{
+		while ( m_queue.Count() )
+		{
+			CFunctor *pFunctor = NULL;
+			if ( m_queue.PopItem( &pFunctor ) )
+			{
+				pFunctor->Release();
+			}
+		}
+		m_pNopFunctor->Release();
+		m_pCallQueueFunctor->Release();
 	}
 
 	void CallAll()
 	{
 	    while ( m_queue.Count() )
 	    {
-            CFunctor *pFunctor;
+            CFunctor *pFunctor = NULL;
             if ( m_queue.PopItem( &pFunctor ) )
             {
                 (*pFunctor)();
@@ -44,8 +53,6 @@ public:
 	void EnqueueFunctor( CFunctor *pFunctor )
 	{
 		QueueFunctorInternal( RetAddRef( pFunctor ) );
-		// check out the compare exchange, i have no clue what it does
-		//ThreadInterlockedExchangePointer( (void* volatile*)(m_pFuncCommandCaller), m_pCallQueueFunctor );
 		ThreadInterlockedCompareExchangePointer( (void* volatile*)(&m_pFuncCommandCaller), m_pCallQueueFunctor, m_pNopFunctor );
 	}
 
@@ -57,7 +64,7 @@ private:
     {
         if ( m_queue.Count() )
         {
-            CFunctor *pFunctor;
+            CFunctor *pFunctor = NULL;
             if ( m_queue.PopItem( &pFunctor ) )
             {
                 (*pFunctor)();
