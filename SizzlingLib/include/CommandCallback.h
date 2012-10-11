@@ -51,7 +51,7 @@ public:
 				m_pNewCommand = new(&m_CommandMem) ConCommand(pCommandBase->GetName(), 
 												static_cast<ICommandCallback*>(this), 
 												pCommandBase->GetHelpText(), 
-												FCVAR_NONE);
+												pCommandBase->m_nFlags);
 			}
 		}
 		return true;
