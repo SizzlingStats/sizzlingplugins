@@ -2,6 +2,8 @@
 #ifndef STATIC_SIZE_VECTOR_H
 #define STATIC_SIZE_VECTOR_H
 
+#include "platform.h"
+
 template <typename T, int K>
 class CStaticSizeVector
 {

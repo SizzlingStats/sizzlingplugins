@@ -1,6 +1,8 @@
 
 #include "curlconnection.h"
 
+typedef void (*voidFn)();
+
 CCurlConnection::CCurlConnection():
 	m_pCurl(NULL),
 	m_pHeaderList(NULL)
@@ -50,7 +52,7 @@ void CCurlConnection::SetHttpSendType( HttpSendType type )
 
 void CCurlConnection::SetBodyReadFunction( FnCurlCallback fnRead )
 {
-	SetOption(CURLOPT_READFUNCTION, fnRead);
+	SetOption(CURLOPT_READFUNCTION, reinterpret_cast<voidFn>(fnRead));
 }
 
 void CCurlConnection::SetBodyUserdata( void *pUserdata )
@@ -60,7 +62,7 @@ void CCurlConnection::SetBodyUserdata( void *pUserdata )
 
 void CCurlConnection::SetHeaderReadFunction( FnCurlCallback fnHeaderRead )
 {
-	SetOption(CURLOPT_HEADERFUNCTION, fnHeaderRead);
+	SetOption(CURLOPT_HEADERFUNCTION, reinterpret_cast<voidFn>(fnHeaderRead));
 }
 
 void CCurlConnection::SetHeaderUserdata( void *pUserdata )
@@ -70,7 +72,7 @@ void CCurlConnection::SetHeaderUserdata( void *pUserdata )
 
 void CCurlConnection::SetBodyWriteFunction( FnCurlCallback fnWrite )
 {
-	SetOption(CURLOPT_WRITEFUNCTION, fnWrite);
+	SetOption(CURLOPT_WRITEFUNCTION, reinterpret_cast<voidFn>(fnWrite));
 }
 
 void CCurlConnection::SetBodyWriteUserdata( void *pUserdata )

@@ -2,7 +2,7 @@
 #ifndef CURL_CONNECTION_H
 #define CURL_CONNECTION_H
 
-#include "curl\curl.h"
+#include "curl/curl.h"
 
 // a connection wrapper for curl
 class CCurlConnection
