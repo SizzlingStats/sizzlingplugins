@@ -9,7 +9,7 @@
 
 # this is the only option that you need to set
 # it should point to the dir that contains sizzlingplugins and hl2sdk-ob-valve
-BASE_DIR = /home/jcristia/source
+BASE_DIR = FILL_THIS_IN
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
 LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux
@@ -35,10 +35,8 @@ ALL_INC = \
 	$(HL2SDK_INC) \
 	$(SIZZLINGSTATS_INC)
 
-GAME_DIR=~/srcds/orangebox
-
-CPLUS=/usr/bin/g++
-CLINK=/usr/bin/gcc
+CPLUS=/usr/bin/g++-4.4
+CLINK=/usr/bin/gcc-4.4
 
 LDFLAGS=-m32 -lm -ldl libtier0.so libvstdlib.so libcurl.so.4.2.0
 
@@ -54,13 +52,13 @@ else
 endif
 
 ARCH=i486
-ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32
+ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32 -fdata-sections -ffunction-sections
 
 # -fpermissive is so gcc 3.4.x doesn't complain about some template stuff
 BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp
 SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
-SHLIBLDFLAGS=-shared -static-libgcc
+SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections,--strip-all
 
 CFLAGS=$(USER_CFLAGS) $(DEFINES) $(ARCH_CFLAGS) $(BASE_CFLAGS) -Usprintf=use_Q_snprintf_instead_of_sprintf -Ustrncpy=use_Q_strncpy_instead -UPROTECTED_THINGS_ENABLE
 
@@ -71,7 +69,7 @@ CFLAGS=$(USER_CFLAGS) $(DEFINES) $(ARCH_CFLAGS) $(BASE_CFLAGS) -Usprintf=use_Q_s
 PLUGIN_SRC_DIR=$(SIZZLINGSTATS_DIR)
 SIZZLIB_SRC_DIR=$(SIZZLINGLIB_DIR)
 PUBLIC_SRC_DIR=$(HL2SDK_DIR)/public
-TIER0_PUBLIC_SRC_DIR=$(HL2SDK_DIR)/public/tier0
+TIER0_PUBLIC_SRC_DIR=$(PUBLIC_SRC_DIR)/tier0
 
 PLUGIN_OBJ_DIR=$(BUILD_OBJ_DIR)/plugin
 PLUGIN_OBJ_DIR_RELEASE=$(BUILD_OBJ_DIR_RELEASE)/plugin
