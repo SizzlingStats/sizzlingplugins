@@ -14,7 +14,7 @@
 
 #include "curlconnection.h"
 
-#define WEB_SERVER_IP "206.253.166.149/api/stats"
+#define WEB_SERVER_IP "sizzlingstats.com/api/stats"
 
 extern CTSCallQueue		*g_pTSCallQueue;
 extern IVEngineServer	*pEngine;
@@ -102,12 +102,30 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 					temp3.InsertKV("team", data[i].m_playerInfo.m_teamid);
 					temp3.InsertKV("name", data[i].m_playerInfo.m_name);
 
-					temp3.InsertKV("kills", data[i].m_scoreData.getStat(Kills));
-					temp3.InsertKV("deaths", data[i].m_scoreData.getStat(Deaths));
-					temp3.InsertKV("damage", data[i].m_scoreData.getStat(DamageDone));
-					temp3.InsertKV("heals", data[i].m_scoreData.getStat(HealsReceived));
-					temp3.InsertKV("medkills", data[i].m_scoreData.getStat(MedPicks));
-					temp3.InsertKV("assists", data[i].m_scoreData.getStat(KillAssists));
+					const ScoreData *pScores = &data[i].m_scoreData;
+					temp3.InsertKV("kills", pScores->getStat(Kills));
+					temp3.InsertKV("killassists", pScores->getStat(KillAssists));
+					temp3.InsertKV("deaths", pScores->getStat(Deaths));
+					temp3.InsertKV("captures", pScores->getStat(Captures));
+					temp3.InsertKV("defenses", pScores->getStat(Defenses));
+					temp3.InsertKV("suicides", pScores->getStat(Suicides));
+					temp3.InsertKV("dominations", pScores->getStat(Dominations));
+					temp3.InsertKV("revenge", pScores->getStat(Revenge));
+					temp3.InsertKV("buildingsbuilt", pScores->getStat(BuildingsBuilt));
+					temp3.InsertKV("buildingsdestroyed", pScores->getStat(BuildingsDestroyed));
+					temp3.InsertKV("headshots", pScores->getStat(Headshots));
+					temp3.InsertKV("backstabs", pScores->getStat(Backstabs));
+					temp3.InsertKV("healpoints", pScores->getStat(HealPoints));
+					temp3.InsertKV("invulns", pScores->getStat(Invulns));
+					temp3.InsertKV("teleports", pScores->getStat(Teleports));
+					temp3.InsertKV("damagedone", pScores->getStat(DamageDone));
+					temp3.InsertKV("crits", pScores->getStat(Crits));
+					temp3.InsertKV("resupplypoints", pScores->getStat(ResupplyPoints));
+					temp3.InsertKV("bonuspoints", pScores->getStat(BonusPoints));
+					temp3.InsertKV("points", pScores->getStat(Points));
+					temp3.InsertKV("healsreceived", pScores->getStat(HealsReceived));
+					temp3.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
+					temp3.InsertKV("medpicks", pScores->getStat(MedPicks));
 				}
 			}
 		}
@@ -321,7 +339,7 @@ public:
 			connection.AddHeader("Expect:");
 			connection.AddHeader("sizzlingstats: v0.1");
 
-			if (sessionId)
+			if (sessionId[0] != '\0')
 			{
 				char temp[128] = {};
 				V_snprintf( temp, 128, "sessionid: %s", sessionId);
