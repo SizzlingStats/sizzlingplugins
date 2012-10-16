@@ -7,10 +7,10 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-#define PLUGIN_VERSION "0.8.3.6"
+#define PLUGIN_VERSION "0.8.3.7"
 //#define RELEASE_VERSION
 
-#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
+#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/test/"
 
 #ifdef _WIN32
 #define META  "metawin32.txt"
@@ -48,6 +48,6 @@ static const char *s_pluginInfo[] =
 
 #define REQUIRE_RESTART_FOR_UPDATES
 
-#define PUBLIC_RELEASE 1
+//#define PUBLIC_RELEASE 1
 
 #endif // PLUGIN_DEFINES_H
