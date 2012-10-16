@@ -97,13 +97,13 @@ CCountedStringPool *g_pRefCountedStringPool = &g_RefCountedStrPool;
 //===========================================================================//
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
-static ConVar version("sizz_stats_version", PLUGIN_VERSION, FCVAR_NOTIFY, "The version of SizzlingStats running.", &VersionChangeCallback);
+static ConVar version("sizz_stats_version", PLUGIN_VERSION_STRING, FCVAR_NOTIFY, "The version of SizzlingStats running.", &VersionChangeCallback);
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
-    if(strcmp(version.GetString(), PLUGIN_VERSION))
+    if (strcmp(version.GetString(), PLUGIN_VERSION_STRING))
     {
-        var->SetValue(PLUGIN_VERSION);
+        var->SetValue(PLUGIN_VERSION_STRING);
     }
 }
 

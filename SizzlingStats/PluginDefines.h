@@ -7,17 +7,19 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-#define PLUGIN_VERSION "0.8.3.5"
+#define PLUGIN_VERSION "0.8.3.6"
 //#define RELEASE_VERSION
 
-#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/test/"
+#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
 
 #ifdef _WIN32
 #define META  "metawin32.txt"
 #define PLUGIN_EXTENSION ".dll"
+#define PLUGIN_VERSION_STRING PLUGIN_VERSION "_w"
 #else
 #define META "metalinux.txt"
 #define PLUGIN_EXTENSION ".so"
+#define PLUGIN_VERSION_STRING PLUGIN_VERSION "_l"
 #endif
 
 #define URL_TO_META URL_BASE META
@@ -46,6 +48,6 @@ static const char *s_pluginInfo[] =
 
 #define REQUIRE_RESTART_FOR_UPDATES
 
-//#define PUBLIC_RELEASE 1
+#define PUBLIC_RELEASE 1
 
 #endif // PLUGIN_DEFINES_H
