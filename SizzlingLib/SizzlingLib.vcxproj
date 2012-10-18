@@ -39,6 +39,7 @@
     <ClInclude Include="include\HttpPost.h" />
     <ClInclude Include="include\JsonUtils.h" />
     <ClInclude Include="include\MRecipientFilter.h" />
+    <ClInclude Include="include\NetPropUtils.h" />
     <ClInclude Include="include\playerdata.h" />
     <ClInclude Include="include\PlayerDataManager.h" />
     <ClInclude Include=".\include\StaticSizeVector.h" />

@@ -274,12 +274,27 @@ public:
 	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
 
 private:
+	void PassGameRulesPointer()
+	{
+		if ( !m_bPassedGameRulesPointer )
+		{
+			void *pGameRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
+			if (pGameRules)
+			{
+				m_SizzlingStats.SetTeamplayRoundBasedGameRules(pGameRules);
+				m_bPassedGameRulesPointer = true;
+			}
+		}
+	}
+
+private:
 	SizzlingStats m_SizzlingStats;
 	CSayHook m_SayHook;
 	CSayTeamHook m_SayTeamHook;
 	CAutoUpdateThread	*m_pAutoUpdater;
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
+	bool m_bPassedGameRulesPointer;
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
@@ -302,7 +317,8 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SayTeamHook(),
 	m_pAutoUpdater(NULL),
 	m_iClientCommandIndex(0),
-	m_bShouldRecord(false)
+	m_bShouldRecord(false),
+	m_bPassedGameRulesPointer(false)
 {
 }
 
@@ -392,6 +408,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//pEngine->ServerCommand( "con_logfile sizzstats.txt\n" );
 	m_SizzlingStats.GetPropOffsets();
 	//GetMessageInts();
+
+	PassGameRulesPointer();
 
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
 	gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
@@ -514,6 +532,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
 	m_pAutoUpdater->StartThread();
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
+	PassGameRulesPointer();
 	m_SizzlingStats.LevelInit(pMapName);
 }
 
@@ -541,6 +560,41 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 	//	}
 	//	Bot_RunAll();
 	//}
+		/*
+	int *state = ((int *)((unsigned char*)g_pTFGameRulesProxy + 836));
+	bool *bWaiting = ((bool *)((unsigned char*)g_pTFGameRulesProxy + 852));
+	if (state && bWaiting)
+	{
+		static int oldstate = 0;
+		static bool waiting = false;
+		if (oldstate != *state)
+		{
+			//g_pMessage->AllUserHudHintText( UTIL_VarArgs( "state changed from %i to %i\n", oldstate, *state ) );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "state changed from %i to %i\n", oldstate, *state );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			oldstate = *state;
+		}
+		if (waiting != *bWaiting)
+		{
+			//g_pMessage->AllUserHudHintText( UTIL_VarArgs( "state changed from %i to %i\n", oldstate, *state ) );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			if (!waiting)
+				Msg( "waiting for players\n" );
+			else
+				Msg( "not waiting for players\n" );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			Msg( "~~~~~~~~~\n" );
+			waiting = *bWaiting;
+		}
+	}*/
 }
 
 //---------------------------------------------------------------------------------

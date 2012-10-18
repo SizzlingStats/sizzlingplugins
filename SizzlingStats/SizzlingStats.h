@@ -14,6 +14,8 @@
 
 #include "PluginDefines.h"
 
+#include "NetPropUtils.h"
+
 #define MAX_PLAYERS 34
 
 //#include "PlayerDataManager.h"
@@ -47,7 +49,13 @@ public:
 	// called when the plugin is unloaded
 	void	Unload();
 
+	// called on level start
 	void	LevelInit(const char *pMapName);
+
+	void	SetTeamplayRoundBasedGameRules( void *pGameRules )
+	{
+		m_pTeamplayRoundBasedGameRules = pGameRules;
+	}
 
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( edict_t *pEdict );
@@ -66,6 +74,14 @@ public:
 
 	//	chat message to be sent to all users
 	void	SS_AllUserChatMessage( const char *szMessage );
+
+	void	SS_TournamentMatchStarted();
+
+	void	SS_TournamentMatchEnded();
+
+	void	SS_RoundStarted();
+
+	void	SS_RoundEnded();
 
 	//	displays the stats for use at the end of a round
 	void	SS_DisplayStats( SS_PlayerData &PlayerData );
@@ -124,10 +140,15 @@ private:
 	unsigned int	m_PlayerFlagsOffset;
 	unsigned int	m_TeamRoundsWonOffset;
 	unsigned int	m_PlayerClassOffset;
+	unsigned int	m_iRoundStateOffset;
+	unsigned int	m_bInWaitingForPlayersOffset;
 	float			m_flTimeOfLastCap;
 
 	int				m_nCurrentPlayers;
 	int				m_nCurrentRound;
+
+	CSendPropHook	m_iRoundStateHook;
+	CSendPropHook	m_bInWaitingForPlayersHook;
 
 	CUtlHashFast<playerAndExtra>	m_playerDataArchive;
 	// the vector is for freeing all of the mempool memory in the archive when we destruct
@@ -138,6 +159,7 @@ private:
 	SS_PlayerData	*m_pPlayerData[MAX_PLAYERS];
 	// this is temp storage for faster access than going through the playerdata map to store everything
 	extradata_t		*m_pEntIndexToExtraData[MAX_PLAYERS]; // 33 slot servers will break if this is only set to 33 indicies
+	void *m_pTeamplayRoundBasedGameRules;
 #ifndef PUBLIC_RELEASE
 	CWebStatsHandlerThread	*m_pWebStatsThread;
 #endif

@@ -354,5 +354,20 @@ namespace SCHelpers
 		return 0;
 	}
 
+	void *GetTeamplayRoundBasedGameRulesPointer()
+	{
+		SendProp *pSendProp = SCHelpers::GetPropFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data" );
+		if ( pSendProp )
+		{
+			SendTableProxyFn proxyfn = pSendProp->GetDataTableProxyFn();
+			if ( proxyfn )
+			{
+				CSendProxyRecipients recp;
+				return proxyfn( NULL, NULL, NULL, &recp, 0 );
+			}
+		}
+		return NULL;
+	}
+
 } // namespace SCHelpers
 

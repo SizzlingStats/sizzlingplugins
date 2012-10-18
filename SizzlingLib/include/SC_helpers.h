@@ -88,6 +88,8 @@ namespace SCHelpers
 	//---------------------------------------------------------------------------------
 	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
 
+	void *GetTeamplayRoundBasedGameRulesPointer();
+
 } // namespace SCHelpers
 
 #endif	// SC_HELPERS_H
