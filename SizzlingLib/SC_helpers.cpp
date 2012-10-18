@@ -354,7 +354,7 @@ namespace SCHelpers
 		return 0;
 	}
 
-	void *GetTeamplayRoundBasedGameRulesPointer()
+	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer()
 	{
 		SendProp *pSendProp = SCHelpers::GetPropFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data" );
 		if ( pSendProp )
@@ -363,7 +363,7 @@ namespace SCHelpers
 			if ( proxyfn )
 			{
 				CSendProxyRecipients recp;
-				return proxyfn( NULL, NULL, NULL, &recp, 0 );
+				return reinterpret_cast<CTeamplayRoundBasedRules*>(proxyfn( NULL, NULL, NULL, &recp, 0 ));
 			}
 		}
 		return NULL;

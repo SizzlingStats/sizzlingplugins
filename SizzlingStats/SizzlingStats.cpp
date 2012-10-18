@@ -49,13 +49,9 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_PlayerFlagsOffset(0), 
 								m_TeamRoundsWonOffset(0),
 								m_PlayerClassOffset(0), // what am i using this for yet??
-								m_iRoundStateOffset(0),
-								m_bInWaitingForPlayersOffset(0),
 								m_flTimeOfLastCap(0.0f), // the stupid hack is back
 								m_nCurrentPlayers(0),
 								m_nCurrentRound(0),
-								m_iRoundStateHook(),
-								m_bInWaitingForPlayersHook(),
 								m_playerDataArchive(),
 								//m_playerDataArchiveVec(0, 32),
 								m_PlayerDataMemPool(MAX_PLAYERS),	// think about increasing this to
@@ -95,6 +91,7 @@ SizzlingStats::~SizzlingStats()
 
 void SizzlingStats::Load()
 {
+    GetPropOffsets();
 	ConVar *pVar = g_pCVar->FindVar("hostname");
 	if (pVar)
 	{
@@ -687,21 +684,6 @@ void SizzlingStats::GetPropOffsets()
 	m_PlayerFlagsOffset = GetPropOffsetFromTable( "DT_BasePlayer", "m_fFlags", bError );
 	m_TeamRoundsWonOffset = GetPropOffsetFromTable( "DT_Team", "m_iRoundsWon", bError ); 
 
-	SendProp *piRoundState = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState" );
-	SendProp *pbInWaitingForPlayers = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
-	/*
-	if ( piRoundState && pbInWaitingForPlayers )
-	{
-		unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
-			GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
-
-		m_iRoundStateOffset = gamerulesoffset + piRoundState->GetOffset();
-		m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
-
-		m_iRoundStateHook.Hook( piRoundState, 
-		m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, 
-	}
-	*/
 	//oKills = m_PlayerFlagsOffset;
 
 	//CBaseEntity *pEntity = gEntList.FindEntityByClassname( pServerEnts->EdictToBaseEntity( engine->PEntityOfEntIndex( gpGlobals->maxClients ) ), "CWeaponIFMSteadyCam" );

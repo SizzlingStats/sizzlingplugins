@@ -60,7 +60,8 @@
 #endif
 
 #include "CommandCallback.h"
-
+#include "teamplay_gamerule_states.h"
+#include "NetPropUtils.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -274,27 +275,78 @@ public:
 	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
 
 private:
-	void PassGameRulesPointer()
+	void GetGameRules()
 	{
-		if ( !m_bPassedGameRulesPointer )
+		if ( !m_pTeamplayRoundBasedRules )
 		{
-			void *pGameRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
-			if (pGameRules)
-			{
-				m_SizzlingStats.SetTeamplayRoundBasedGameRules(pGameRules);
-				m_bPassedGameRulesPointer = true;
-			}
+			m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
 		}
+	}
+	
+	static bool RoundStateChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+	{
+	    using namespace Teamplay_GameRule_States;
+	    
+	    Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(*reinterpret_cast<const gamerules_roundstate_t*>(pData)) ) );
+	    return true;
+	}
+	
+	static bool WaitingForPlayersChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+	{
+	    bool bWaiting = *reinterpret_cast<const bool*>(pData);
+	    if (bWaiting)
+	    {
+	        Msg( "waiting for players, if mp_tournament is 1, a tournament game is not active\n" );
+	    }
+	    else
+	    {
+	        Msg( "not waiting for players, if mp_tournament is 1, a tournament game is active\n" );
+	    }
+	    return true;
+	}
+	
+	void HookProps()
+	{
+	    using namespace SCHelpers;
+	    
+	    bool bError = false;
+	    // is there a possibility that the hooking will fail?
+        unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
+		    GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
+
+        SendProp *piRoundState = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState" );
+        if (piRoundState)
+        {
+            m_iRoundStateOffset = gamerulesoffset + piRoundState->GetOffset();
+            m_iRoundStateHook.Hook( piRoundState, &CEmptyServerPlugin::RoundStateChangeCallback );
+        }
+        
+        SendProp *pbInWaitingForPlayers = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
+        if (pbInWaitingForPlayers)
+        {
+            m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
+            m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, &CEmptyServerPlugin::WaitingForPlayersChangeCallback );
+        }
+	}
+	
+	void UnhookProps()
+	{
+	    m_iRoundStateHook.Unhook();
+	    m_bInWaitingForPlayersHook.Unhook();
 	}
 
 private:
 	SizzlingStats m_SizzlingStats;
 	CSayHook m_SayHook;
 	CSayTeamHook m_SayTeamHook;
+	CSendPropHook	m_iRoundStateHook;
+	CSendPropHook	m_bInWaitingForPlayersHook;
 	CAutoUpdateThread	*m_pAutoUpdater;
+	CTeamplayRoundBasedRules *m_pTeamplayRoundBasedRules;
+	unsigned int	m_iRoundStateOffset;
+	unsigned int	m_bInWaitingForPlayersOffset;
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
-	bool m_bPassedGameRulesPointer;
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
@@ -315,10 +367,14 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
+	m_iRoundStateHook(),
+	m_bInWaitingForPlayersHook(),
 	m_pAutoUpdater(NULL),
+	m_pTeamplayRoundBasedRules(NULL),
+	m_iRoundStateOffset(0),
+	m_bInWaitingForPlayersOffset(0),
 	m_iClientCommandIndex(0),
-	m_bShouldRecord(false),
-	m_bPassedGameRulesPointer(false)
+	m_bShouldRecord(false)
 {
 }
 
@@ -405,11 +461,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	gpGlobals = playerinfomanager->GetGlobalVars();
 
-	//pEngine->ServerCommand( "con_logfile sizzstats.txt\n" );
-	m_SizzlingStats.GetPropOffsets();
-	//GetMessageInts();
-
-	PassGameRulesPointer();
+	GetGameRules();
+	HookProps();
 
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
 	gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
@@ -476,6 +529,8 @@ void CEmptyServerPlugin::Unload( void )
 	m_SizzlingStats.SS_DeleteAllPlayerData();
 
 	m_SizzlingStats.Unload();
+	
+	UnhookProps();
 
 	if (cvar)
 	{
@@ -532,7 +587,8 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
 	m_pAutoUpdater->StartThread();
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
-	PassGameRulesPointer();
+	GetGameRules();
+	
 	m_SizzlingStats.LevelInit(pMapName);
 }
 

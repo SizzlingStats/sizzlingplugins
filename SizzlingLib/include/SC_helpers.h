@@ -13,6 +13,7 @@ class CBaseEntity;
 struct edict_t;
 class SendTable;
 class SendProp;
+class CTeamplayRoundBasedRules;
 
 namespace SCHelpers
 {
@@ -88,7 +89,7 @@ namespace SCHelpers
 	//---------------------------------------------------------------------------------
 	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
 
-	void *GetTeamplayRoundBasedGameRulesPointer();
+	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
 
 } // namespace SCHelpers
 
