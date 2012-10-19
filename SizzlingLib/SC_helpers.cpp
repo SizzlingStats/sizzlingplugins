@@ -363,7 +363,8 @@ namespace SCHelpers
 			if ( proxyfn )
 			{
 				CSendProxyRecipients recp;
-				return reinterpret_cast<CTeamplayRoundBasedRules*>(proxyfn( NULL, NULL, NULL, &recp, 0 ));
+				void *pGameRules = proxyfn( NULL, NULL, NULL, &recp, 0 );
+				return reinterpret_cast<CTeamplayRoundBasedRules*>(pGameRules);
 			}
 		}
 		return NULL;

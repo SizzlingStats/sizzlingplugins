@@ -285,48 +285,50 @@ private:
 	
 	static bool RoundStateChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 	{
-	    using namespace Teamplay_GameRule_States;
-	    
-	    Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(*reinterpret_cast<const gamerules_roundstate_t*>(pData)) ) );
-	    return true;
+		using namespace Teamplay_GameRule_States;
+
+		const gamerules_roundstate_t *pState = reinterpret_cast<const gamerules_roundstate_t*>(pData);
+
+		Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(*pState) ) );
+		return true;
 	}
 	
 	static bool WaitingForPlayersChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 	{
-	    bool bWaiting = *reinterpret_cast<const bool*>(pData);
-	    if (bWaiting)
-	    {
-	        Msg( "waiting for players, if mp_tournament is 1, a tournament game is not active\n" );
-	    }
-	    else
-	    {
-	        Msg( "not waiting for players, if mp_tournament is 1, a tournament game is active\n" );
-	    }
-	    return true;
+		bool bWaiting = *reinterpret_cast<const bool*>(pData);
+		if (bWaiting)
+		{
+			Msg( "waiting for players, if mp_tournament is 1, a tournament game is not active\n" );
+		}
+		else
+		{
+			Msg( "not waiting for players, if mp_tournament is 1, a tournament game is active\n" );
+		}
+		return true;
 	}
 	
 	void HookProps()
 	{
-	    using namespace SCHelpers;
-	    
-	    bool bError = false;
-	    // is there a possibility that the hooking will fail?
-        unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
-		    GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
-
-        SendProp *piRoundState = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState" );
-        if (piRoundState)
-        {
-            m_iRoundStateOffset = gamerulesoffset + piRoundState->GetOffset();
-            m_iRoundStateHook.Hook( piRoundState, &CEmptyServerPlugin::RoundStateChangeCallback );
-        }
-        
-        SendProp *pbInWaitingForPlayers = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
-        if (pbInWaitingForPlayers)
-        {
-            m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
-            m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, &CEmptyServerPlugin::WaitingForPlayersChangeCallback );
-        }
+		using namespace SCHelpers;
+		
+		bool bError = false;
+		// is there a possibility that the hooking will fail?
+		unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
+			GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
+		
+		SendProp *piRoundState = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState" );
+		if (piRoundState)
+		{
+			m_iRoundStateOffset = gamerulesoffset + piRoundState->GetOffset();
+			m_iRoundStateHook.Hook( piRoundState, &CEmptyServerPlugin::RoundStateChangeCallback );
+		}
+		
+		SendProp *pbInWaitingForPlayers = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
+		if (pbInWaitingForPlayers)
+		{
+			m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
+			m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, &CEmptyServerPlugin::WaitingForPlayersChangeCallback );
+		}
 	}
 	
 	void UnhookProps()
@@ -461,8 +463,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	gpGlobals = playerinfomanager->GetGlobalVars();
 
-	GetGameRules();
-	HookProps();
+	//GetGameRules();
+	//HookProps();
 
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
 	gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
@@ -587,7 +589,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
 	m_pAutoUpdater->StartThread();
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
-	GetGameRules();
+	
 	
 	m_SizzlingStats.LevelInit(pMapName);
 }
@@ -598,6 +600,8 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
+	GetGameRules();
+	HookProps();
 }
 
 //---------------------------------------------------------------------------------
