@@ -283,17 +283,29 @@ private:
 		}
 	}
 	
-	static bool RoundStateChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+	bool RoundStateChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 	{
 		using namespace Teamplay_GameRule_States;
 
-		const gamerules_roundstate_t *pState = reinterpret_cast<const gamerules_roundstate_t*>(pData);
+		gamerules_roundstate_t state = *reinterpret_cast<const gamerules_roundstate_t*>(pData);
 
-		Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(*pState) ) );
+		Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(state) ) );
+		
+		switch (state)
+		{
+		case GR_STATE_RND_RUNNING:
+			m_SizzlingStats.SS_RoundStarted();
+		case GR_STATE_TEAM_WIN:
+		case GR_STATE_RESTART:
+		case GR_STATE_STALEMATE:
+			m_SizzlingStats.SS_RoundEnded();
+		default:
+			break;
+		}
 		return true;
 	}
 	
-	static bool WaitingForPlayersChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
+	bool WaitingForPlayersChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 	{
 		bool bWaiting = *reinterpret_cast<const bool*>(pData);
 		if (bWaiting)

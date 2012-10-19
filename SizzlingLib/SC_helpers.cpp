@@ -258,19 +258,25 @@ namespace SCHelpers
 	//---------------------------------------------------------------------------------
 	SendTable *GetDataTable( const char *pTableName, SendTable *pTable )
 	{
-		SendTable *pSendTable = pTable;
-		if (pSendTable == NULL)
+		if (!pTable)
 			return NULL;
+		
+		SendTable *pSendTable = pTable;
 		if ( FStrEq( pTableName, pSendTable->GetName() ) )
 			return pSendTable;
+		
 		int num = pSendTable->GetNumProps();
-		for (int i = 0; i < num; i++){
+		for (int i = 0; i < num; i++)
+		{
 			SendProp *pProp = pSendTable->GetProp(i);
-			SendTable *pSubTable = GetDataTable( pTableName, pProp->GetDataTable() );
-			if (pSubTable == NULL)
-				continue;
-			if ( FStrEq(pSubTable->GetName(), pTableName) )
-				return pSubTable;
+			if (pProp)
+			{
+				SendTable *pSubTable = GetDataTable( pTableName, pProp->GetDataTable() );
+				if (pSubTable == NULL)
+					continue;
+				if ( FStrEq(pSubTable->GetName(), pTableName) )
+					return pSubTable;
+			}
 		}
 		return NULL;
 	}
