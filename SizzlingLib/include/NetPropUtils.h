@@ -7,8 +7,16 @@
 
 #include "Thunk.h"
 
-// return true to call the original proxy fn as well
-typedef bool (*SendVarProxyFnCallback)(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID);
+// callback class for classes that hook props
+//
+// inherit from this and provide the callback
+class IPropHookCallback
+{
+public:
+	// return true to call the default 
+	// game function as well
+	virtual bool SendPropHookCallback( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID ) = 0;
+};
 
 class CSendPropHook: private CThunkCDecl<CSendPropHook>
 {
@@ -16,7 +24,7 @@ public:
 	CSendPropHook():
 		m_pProp(NULL),
 		m_pOldProxyFn(NULL),
-		m_pCallback(NULL)
+		m_pThis(NULL)
 	{
 		InitThunk(reinterpret_cast<CThunkCDecl<CSendPropHook>::ThunkType>(&CSendPropHook::FnCallback), this);
 	}
@@ -26,15 +34,15 @@ public:
 		Unhook();
 	}
 
-	void Hook( SendProp *pProp, SendVarProxyFnCallback callbackFn )
+	void Hook( SendProp *pProp, IPropHookCallback *pThis )
 	{
 		// if we haven't hooked already
-		if (!IsHooked() && pProp && callbackFn)
+		if (!IsHooked() && pProp && pThis)
 		{
 			m_pProp = pProp;
 			m_pOldProxyFn = m_pProp->GetProxyFn();
 			m_pProp->SetProxyFn(GetThunk<SendVarProxyFn>());
-			m_pCallback = callbackFn;
+			m_pThis = pThis;
 		}
 	}
 
@@ -45,7 +53,7 @@ public:
 			m_pProp->SetProxyFn(m_pOldProxyFn);
 			m_pProp = NULL;
 			m_pOldProxyFn = NULL;
-			m_pCallback = NULL;
+			m_pThis = NULL;
 		}
 	}
 
@@ -58,7 +66,7 @@ public:
 private:
 	void __cdecl FnCallback( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID )
 	{
-		if (m_pCallback(pProp, pStructBase, pData, pOut, iElement, objectID))
+		if (m_pThis->SendPropHookCallback(pProp, pStructBase, pData, pOut, iElement, objectID))
 		{
 			m_pOldProxyFn(pProp, pStructBase, pData, pOut, iElement, objectID);
 		}
@@ -67,7 +75,7 @@ private:
 private:
 	SendProp *m_pProp;
 	SendVarProxyFn m_pOldProxyFn;
-	SendVarProxyFnCallback m_pCallback;
+	IPropHookCallback *m_pThis;
 };
 
 #endif // NETPROP_UTILS_H

@@ -78,6 +78,8 @@ namespace SCHelpers
 	//---------------------------------------------------------------------------------
 	SendTable *GetDataTable( const char *pTableName, SendTable *pTable );
 
+	SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName);
+
 	//---------------------------------------------------------------------------------
 	// Purpose: returns the specified prop from the table provided.
 	//			if prop or table not found, bErr returns true and pointer returns NULL

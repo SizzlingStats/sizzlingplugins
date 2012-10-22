@@ -228,7 +228,7 @@ static char *UTIL_VarArgs( char *format, ... )
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
-class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandCallback
+class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandCallback//, public IPropHookCallback
 {
 public:
 	CEmptyServerPlugin();
@@ -282,6 +282,20 @@ private:
 			m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
 		}
 	}
+
+	/*
+	virtual bool SendPropHookCallback( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID )
+	{
+		using namespace SCHelpers;
+		if (FStrEq(pProp->GetName(), "m_iRoundState"))
+		{
+			return RoundStateChangeCallback(pProp, pStructBase, pData, pOut, iElement, objectID);
+		}
+		else if (FStrEq(pProp->GetName(), "m_bInWaitingForPlayers"))
+		{
+			return WaitingForPlayersChangeCallback(pProp, pStructBase, pData, pOut, iElement, objectID);
+		}
+	}
 	
 	bool RoundStateChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
 	{
@@ -328,18 +342,18 @@ private:
 		unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
 			GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
 		
-		SendProp *piRoundState = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState" );
+		SendProp *piRoundState = GetPropFromClassAndTable( "CTeamplayRoundBasedRulesProxy", "DT_TeamplayRoundBasedRules", "m_iRoundState" );
 		if (piRoundState)
 		{
 			m_iRoundStateOffset = gamerulesoffset + piRoundState->GetOffset();
-			m_iRoundStateHook.Hook( piRoundState, &CEmptyServerPlugin::RoundStateChangeCallback );
+			m_iRoundStateHook.Hook( piRoundState, this );
 		}
 		
-		SendProp *pbInWaitingForPlayers = GetPropFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
+		SendProp *pbInWaitingForPlayers = GetPropFromClassAndTable( "CTeamplayRoundBasedRulesProxy", "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
 		if (pbInWaitingForPlayers)
 		{
 			m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
-			m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, &CEmptyServerPlugin::WaitingForPlayersChangeCallback );
+			m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, this );
 		}
 	}
 	
@@ -348,17 +362,38 @@ private:
 	    m_iRoundStateHook.Unhook();
 	    m_bInWaitingForPlayersHook.Unhook();
 	}
+	*/
+
+	void GetPropOffsets()
+	{
+		using namespace SCHelpers;
+
+		if (!m_pTeamplayRoundBasedRules)
+		{
+			GetGameRules();
+		}
+		
+		bool bError = false;
+		unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
+			GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
+		
+		int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
+		int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
+
+		m_iRoundState = ((int *)((unsigned char*)m_pTeamplayRoundBasedRules + roundstateoffset));
+		m_bInWaitingForPlayers = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + waitingoffset));
+	}
 
 private:
 	SizzlingStats m_SizzlingStats;
 	CSayHook m_SayHook;
 	CSayTeamHook m_SayTeamHook;
-	CSendPropHook	m_iRoundStateHook;
-	CSendPropHook	m_bInWaitingForPlayersHook;
+	//CSendPropHook	m_iRoundStateHook;
+	//CSendPropHook	m_bInWaitingForPlayersHook;
 	CAutoUpdateThread	*m_pAutoUpdater;
 	CTeamplayRoundBasedRules *m_pTeamplayRoundBasedRules;
-	unsigned int	m_iRoundStateOffset;
-	unsigned int	m_bInWaitingForPlayersOffset;
+	int	*m_iRoundState;
+	bool *m_bInWaitingForPlayers;
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
 #ifdef COUNT_CYCLES
@@ -381,12 +416,12 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
-	m_iRoundStateHook(),
-	m_bInWaitingForPlayersHook(),
+	//m_iRoundStateHook(),
+	//m_bInWaitingForPlayersHook(),
 	m_pAutoUpdater(NULL),
 	m_pTeamplayRoundBasedRules(NULL),
-	m_iRoundStateOffset(0),
-	m_bInWaitingForPlayersOffset(0),
+	m_iRoundState(NULL),
+	m_bInWaitingForPlayers(NULL),
 	m_iClientCommandIndex(0),
 	m_bShouldRecord(false)
 {
@@ -476,6 +511,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	gpGlobals = playerinfomanager->GetGlobalVars();
 
 	//GetGameRules();
+	GetPropOffsets();
 	//HookProps();
 
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
@@ -544,7 +580,7 @@ void CEmptyServerPlugin::Unload( void )
 
 	m_SizzlingStats.Unload();
 	
-	UnhookProps();
+	//UnhookProps();
 
 	if (cvar)
 	{
@@ -612,8 +648,9 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
-	GetGameRules();
-	HookProps();
+	//GetGameRules();
+	GetPropOffsets();
+	//HookProps();
 }
 
 //---------------------------------------------------------------------------------
@@ -623,7 +660,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 {
 	//if ( simulating )
 	//{
-		g_pTSCallQueue->callQueueGameFrame();
+	g_pTSCallQueue->callQueueGameFrame();
 	//	curtime = engine->Time();
 	//	if ( curtime - oldtime >= 10.0 ){
 	//		oldtime = curtime;
@@ -632,41 +669,50 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 	//	}
 	//	Bot_RunAll();
 	//}
-		/*
-	int *state = ((int *)((unsigned char*)g_pTFGameRulesProxy + 836));
-	bool *bWaiting = ((bool *)((unsigned char*)g_pTFGameRulesProxy + 852));
-	if (state && bWaiting)
+	if ( simulating )
 	{
-		static int oldstate = 0;
-		static bool waiting = false;
-		if (oldstate != *state)
+		if (m_iRoundState && m_bInWaitingForPlayers)
 		{
-			//g_pMessage->AllUserHudHintText( UTIL_VarArgs( "state changed from %i to %i\n", oldstate, *state ) );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "state changed from %i to %i\n", oldstate, *state );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			oldstate = *state;
+			static int oldstate = 0;
+			static bool waiting = false;
+		
+			if (oldstate != *m_iRoundState)
+			{
+				using namespace Teamplay_GameRule_States;
+
+				//Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(state) ) );
+		
+				switch (*m_iRoundState)
+				{
+				case GR_STATE_RND_RUNNING:
+					m_SizzlingStats.SS_RoundStarted();
+					break;
+				case GR_STATE_TEAM_WIN:
+				case GR_STATE_RESTART:
+				case GR_STATE_STALEMATE:
+					m_SizzlingStats.SS_RoundEnded();
+					break;
+				default:
+					break;
+				}
+			}
+			if (waiting != *m_bInWaitingForPlayers)
+			{
+				//g_pMessage->AllUserHudHintText( UTIL_VarArgs( "state changed from %i to %i\n", oldstate, *state ) );
+				Msg( "~~~~~~~~~\n" );
+				Msg( "~~~~~~~~~\n" );
+				Msg( "~~~~~~~~~\n" );
+				if (!waiting)
+					Msg( "waiting for players\n" );
+				else
+					Msg( "not waiting for players\n" );
+				Msg( "~~~~~~~~~\n" );
+				Msg( "~~~~~~~~~\n" );
+				Msg( "~~~~~~~~~\n" );
+				waiting = *m_bInWaitingForPlayers;
+			}
 		}
-		if (waiting != *bWaiting)
-		{
-			//g_pMessage->AllUserHudHintText( UTIL_VarArgs( "state changed from %i to %i\n", oldstate, *state ) );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			if (!waiting)
-				Msg( "waiting for players\n" );
-			else
-				Msg( "not waiting for players\n" );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			Msg( "~~~~~~~~~\n" );
-			waiting = *bWaiting;
-		}
-	}*/
+	}
 }
 
 //---------------------------------------------------------------------------------

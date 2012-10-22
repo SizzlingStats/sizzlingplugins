@@ -281,6 +281,37 @@ namespace SCHelpers
 		return NULL;
 	}
 
+	SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName)
+	{
+		ServerClass *pServerClass = pServerDLL->GetAllServerClasses();
+		if (!pServerClass)
+		{
+			Warning("servergamedll->GetAllServerClasses() returned null\n");
+			return NULL;
+		}
+		while (pServerClass)
+		{
+			if ( FStrEq(szClassName, pServerClass->GetName()) )
+			{
+				SendTable *pTable = GetDataTable( szTableName, pServerClass->m_pTable );
+				if (pTable)
+				{
+					int numprops = pTable->GetNumProps();
+					for (int i = 0; i < numprops; ++i)
+					{
+						SendProp *pProp = pTable->GetProp(i);
+						if (pProp && FStrEq(szPropName, pProp->GetName()) )
+						{
+							return pProp;
+						}
+					}
+				}
+			}
+			pServerClass = pServerClass->m_pNext;
+		}
+		Warning("prop %s not found in %s => %s\n", szPropName, szClassName, szTableName);
+	}
+
 	//---------------------------------------------------------------------------------
 	// Purpose: returns the specified prop from the table provided.
 	//			if prop or table not found, bErr returns true and pointer returns NULL

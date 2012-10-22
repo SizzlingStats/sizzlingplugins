@@ -271,6 +271,26 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
 
+void SizzlingStats::SS_TournamentMatchStarted()
+{
+	SS_AllUserChatMessage( "tournament match started\n" );
+}
+
+void SizzlingStats::SS_TournamentMatchEnded()
+{
+	SS_AllUserChatMessage( "tournament match ended\n" );
+}
+
+void SizzlingStats::SS_RoundStarted()
+{
+	SS_AllUserChatMessage( "round started\n" );
+}
+
+void SizzlingStats::SS_RoundEnded()
+{
+	SS_AllUserChatMessage( "round ended\n" );
+}
+
 void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 {
 	char pText[64] = {};
