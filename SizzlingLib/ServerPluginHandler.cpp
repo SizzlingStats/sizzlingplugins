@@ -3,6 +3,7 @@
 //
 // ---------------------
 
+#include <stddef.h>
 #include "ServerPluginHandler.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

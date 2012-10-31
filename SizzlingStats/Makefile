@@ -38,7 +38,7 @@ ALL_INC = \
 CPLUS=/usr/bin/g++-4.4
 CLINK=/usr/bin/gcc-4.4
 
-LDFLAGS=-m32 -lm -ldl libtier0.so libvstdlib.so libcurl.so.4.2.0
+LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so libcurl.so.4.2.0
 
 BUILD_DIR=$(SIZZLINGSTATS_DIR)
 RELEASE_DIR=./Release
@@ -56,7 +56,7 @@ ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32
             -fdata-sections -ffunction-sections -fno-rtti
 
 # -fpermissive is so gcc 3.4.x doesn't complain about some template stuff
-BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp
+BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DNO_MALLOC_OVERRIDE=1
 SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
 SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections,--strip-all
@@ -118,9 +118,9 @@ TIER0_OBJS = \
 
 all: 
 	$(MAKE) dirs
-	ln -sf $(LIBS_DIR)/libvstdlib.so libvstdlib.so
+	ln -sf $(LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
 	ln -sf $(LIBS_DIR)/libcurl.so.4.2.0 libcurl.so.4.2.0
-	ln -sf $(LIBS_DIR)/libtier0.so libtier0.so
+	ln -sf $(LIBS_DIR)/libtier0_srv.so libtier0_srv.so
 	$(MAKE) sizzlingstats_$(ARCH).$(SHLIBEXT)
 
 dirs:
