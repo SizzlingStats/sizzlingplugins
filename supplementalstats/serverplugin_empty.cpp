@@ -34,7 +34,7 @@ IServerGameEnts				*pServerEnts;
 IGameEventManager2			*gameeventmanager = NULL; // game events interface
 IPlayerInfoManager			*playerinfomanager = NULL; // game dll interface to interact with players
 CGlobalVars					*gpGlobals = NULL;
-s_ServerPlugin				*g_pServerPluginHandler = NULL;
+extern s_ServerPlugin		*g_pServerPluginHandler;
 extern UserIdTracker 		*g_pUserIdTracker;
 
 struct playerInfo
@@ -170,8 +170,8 @@ CEmptyServerPlugin::~CEmptyServerPlugin()
 //---------------------------------------------------------------------------------
 bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
 {
-	ConnectTier1Libraries( &interfaceFactory, 1 );
-	ConnectTier2Libraries( &interfaceFactory, 1 );
+	//ConnectTier1Libraries( &interfaceFactory, 1 );
+	//ConnectTier2Libraries( &interfaceFactory, 1 );
 
 	if ( !cvar )
 	{
@@ -252,8 +252,8 @@ void CEmptyServerPlugin::Unload( void )
 	gameeventmanager->RemoveListener( this ); // make sure we are unloaded from the event system
 	
 	ConVar_Unregister( );
-	DisconnectTier2Libraries( );
-	DisconnectTier1Libraries( );
+	//DisconnectTier2Libraries( );
+	//DisconnectTier1Libraries( );
 }
 
 //---------------------------------------------------------------------------------
