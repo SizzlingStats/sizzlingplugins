@@ -32,26 +32,25 @@ namespace SCHelpers
 		return ( num1 < num2 );
 	}
 
-	inline bool FStrEq(const char *sz1, const char *sz2)
+	inline bool FStrEq( const char *sz1, const char *sz2 )
 	{
 		return(Q_stricmp(sz1, sz2) == 0);
 	}
 
-	edict_t *UserIDToEdict( int userid );
-	unsigned int UserIDToSteamID( int userid );
+	static edict_t *UserIDToEdict( int userid );
+	
+	static unsigned int UserIDToSteamID( int userid );
 
-	CBaseEntity *GetEntityByClassname( const char *pszClassname );
+	static CBaseEntity *GetEntityByClassname( const char *pszClassname );
 
-	//CBaseEntity *GetBaseFromID(int id);
-
-	int UserIDToEntIndex( int userid );
+	static int UserIDToEntIndex( int userid );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: Returns the 4 bit nibble for a hex character
 	// Input  : c - 
 	// Output : unsigned char
 	//-----------------------------------------------------------------------------
-	unsigned char S_nibble( char c );
+	static unsigned char S_nibble( char c );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: 
@@ -60,7 +59,7 @@ namespace SCHelpers
 	//			*out - 
 	//			maxoutputbytes - 
 	//-----------------------------------------------------------------------------
-	void S_bigendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
+	static void S_bigendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: 
@@ -69,29 +68,28 @@ namespace SCHelpers
 	//			*out - 
 	//			maxoutputbytes - 
 	//-----------------------------------------------------------------------------
-	void S_littleendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
+	static void S_littleendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
 
-	unsigned int GetThisPluginIndex( const char *pszDescriptionPart );
+	static unsigned int GetThisPluginIndex( const char *pszDescriptionPart );
 
 	//---------------------------------------------------------------------------------
 	// Purpose: used by the GetPropOffsetFromTable func to get a specific table
 	//---------------------------------------------------------------------------------
-	SendTable *GetDataTable( const char *pTableName, SendTable *pTable );
-
-	SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName);
+	static SendTable *GetDataTable( const char *pTableName, SendTable *pTable );
 
 	//---------------------------------------------------------------------------------
-	// Purpose: returns the specified prop from the table provided.
-	//			if prop or table not found, bErr returns true and pointer returns NULL
+	// Purpose: returns the specified prop from the class and table provided.
+	//			if prop or table not found, pointer returns NULL
 	//---------------------------------------------------------------------------------
-	SendProp *GetPropFromTable(const char *pTableName, const char *pPropName, bool *bErr = NULL);
+	static SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName);
+	
 	//---------------------------------------------------------------------------------
 	// Purpose: returns the specified prop offset relative to the table provided.
 	//			if offset or table not found, bErr returns true and offset returned is 0
 	//---------------------------------------------------------------------------------
-	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
+	static unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
 
-	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
+	static CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
 
 } // namespace SCHelpers
 

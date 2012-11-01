@@ -25,18 +25,6 @@ namespace SCHelpers
 	{
 		int index = g_pUserIdTracker->GetEntIndex(userid);
 		return pEngine->PEntityOfEntIndex(index);
-		/*edict_t *pEntity = NULL;
-		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-		{
-			pEntity = pEngine->PEntityOfEntIndex( i );
-			if ( !pEntity || pEntity->IsFree() )
-				continue;
-			if ( pEngine->GetPlayerUserId( pEntity ) == userid )
-			{
-				return pEntity;
-			}
-		}
-		return NULL;*/
 	}
 
 	unsigned int UserIDToSteamID( int userid )
@@ -52,20 +40,6 @@ namespace SCHelpers
 		{
 			return 0;
 		}
-		/*edict_t *pEntity = NULL;
-		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-		{
-			pEntity = pEngine->PEntityOfEntIndex( i );
-			if ( !pEntity || pEntity->IsFree() )
-				continue;
-			if ( pEngine->GetPlayerUserId( pEntity ) == userid )
-			{
-				const CSteamID *pSteamID = pEngine->GetClientSteamID( pEntity );
-				if ( pSteamID )
-					return pSteamID->GetAccountID();
-			}
-		}
-		return 0;*/
 	}
 
 	CBaseEntity *GetEntityByClassname( const char *pszClassname )	// i'd like to than df's source code and a late night of stripping away bs for this one
@@ -121,33 +95,9 @@ namespace SCHelpers
 		return NULL;
 	}
 
-	//CBaseEntity *GetBaseFromID(int id) {
-	//   edict_t *pEntity = NULL;
-	//   for(int i = 1; i <= ppEngineClient->GetMaxClients(); i++) { 
-	//      pEntity = pEngine->PEntityOfEntIndex(i); 
-	//      if(!pEntity || pEntity->IsFree()) 
-	//		  continue; 
-	//      if(pEngine->GetPlayerUserId(pEntity) == id) 
-	//		  return pEngine->PEntityOfEntIndex(i)->GetUnknown()->GetBaseEntity();
-	//   } 
-	//   return 0; 
-	//}
-
 	int UserIDToEntIndex( int userid )
 	{
 		return g_pUserIdTracker->GetEntIndex(userid);
-		/*edict_t *pEntity = NULL;
-		for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-		{
-			pEntity = pEngine->PEntityOfEntIndex( i );
-			if ( !pEntity || pEntity->IsFree() )
-				continue;
-			if ( pEngine->GetPlayerUserId( pEntity ) == userid )
-			{
-				return i;
-			}
-		}
-		return 0;*/
 	}
 
 	//-----------------------------------------------------------------------------
@@ -281,6 +231,10 @@ namespace SCHelpers
 		return NULL;
 	}
 
+	//---------------------------------------------------------------------------------
+	// Purpose: returns the specified prop from the class and table provided.
+	//			if prop or table not found, pointer returns NULL
+	//---------------------------------------------------------------------------------
 	SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName)
 	{
 		ServerClass *pServerClass = pServerDLL->GetAllServerClasses();
@@ -310,47 +264,6 @@ namespace SCHelpers
 			pServerClass = pServerClass->m_pNext;
 		}
 		Warning("prop %s not found in %s => %s\n", szPropName, szClassName, szTableName);
-	}
-
-	//---------------------------------------------------------------------------------
-	// Purpose: returns the specified prop from the table provided.
-	//			if prop or table not found, bErr returns true and pointer returns NULL
-	//---------------------------------------------------------------------------------
-	SendProp *GetPropFromTable(const char *pTableName, const char *pPropName, bool *bErr )
-	{
-		ServerClass *pClass = pServerDLL->GetAllServerClasses();
-		if (!pClass)
-		{
-			if ( bErr )
-				*bErr = true;
-			Warning("servergamedll->GetAllServerClasses() returned null\n");
-			return 0;
-		}
-		while (pClass)
-		{
-			SendTable *pTable = GetDataTable( pTableName, pClass->m_pTable );
-			if (pTable == NULL)
-			{
-				pClass = pClass->m_pNext;
-				continue;
-			}
-			int num = pTable->GetNumProps();
-			for (int i = 0; i < num; i++)
-			{
-				SendProp *pProp = pTable->GetProp(i);
-				if ( FStrEq( pPropName, pProp->GetName() ) )
-				{
-					if ( bErr )
-						*bErr = false;
-					return pProp;
-				}
-			}
-			pClass = pClass->m_pNext;
-		}
-		Warning("prop %s not found in %s or table name incorrect\n", pPropName, pTableName);
-		if ( bErr )
-			*bErr = true;
-		return 0;
 	}
 
 	//---------------------------------------------------------------------------------
@@ -393,7 +306,7 @@ namespace SCHelpers
 
 	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer()
 	{
-		SendProp *pSendProp = SCHelpers::GetPropFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data" );
+		SendProp *pSendProp = SCHelpers::GetPropFromClassAndTable( "CTFGameRulesProxy", "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data" );
 		if ( pSendProp )
 		{
 			SendTableProxyFn proxyfn = pSendProp->GetDataTableProxyFn();
