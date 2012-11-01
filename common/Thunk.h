@@ -14,7 +14,7 @@
 #include <stdio.h>
 typedef unsigned long ADDRTYPE;
 
-int VirtualProtect(const void *addr, size_t len, int prot, int *prev)
+int VirtualProtect(const void *addr, size_t len, int prot, unsigned int *prev)
 {
 	ADDRTYPE p = (ADDRTYPE) addr & ~(PAGESIZE-1);
 	int ret = mprotect((void*)p, (ADDRTYPE)addr - p + len, prot);
