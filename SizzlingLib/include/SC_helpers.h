@@ -37,20 +37,20 @@ namespace SCHelpers
 		return(Q_stricmp(sz1, sz2) == 0);
 	}
 
-	static edict_t *UserIDToEdict( int userid );
+	edict_t *UserIDToEdict( int userid );
 	
-	static unsigned int UserIDToSteamID( int userid );
+	unsigned int UserIDToSteamID( int userid );
 
-	static CBaseEntity *GetEntityByClassname( const char *pszClassname );
+	CBaseEntity *GetEntityByClassname( const char *pszClassname );
 
-	static int UserIDToEntIndex( int userid );
+	int UserIDToEntIndex( int userid );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: Returns the 4 bit nibble for a hex character
 	// Input  : c - 
 	// Output : unsigned char
 	//-----------------------------------------------------------------------------
-	static unsigned char S_nibble( char c );
+	unsigned char S_nibble( char c );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: 
@@ -59,7 +59,7 @@ namespace SCHelpers
 	//			*out - 
 	//			maxoutputbytes - 
 	//-----------------------------------------------------------------------------
-	static void S_bigendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
+	void S_bigendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: 
@@ -68,28 +68,28 @@ namespace SCHelpers
 	//			*out - 
 	//			maxoutputbytes - 
 	//-----------------------------------------------------------------------------
-	static void S_littleendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
+	void S_littleendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
 
-	static unsigned int GetThisPluginIndex( const char *pszDescriptionPart );
+	unsigned int GetThisPluginIndex( const char *pszDescriptionPart );
 
 	//---------------------------------------------------------------------------------
 	// Purpose: used by the GetPropOffsetFromTable func to get a specific table
 	//---------------------------------------------------------------------------------
-	static SendTable *GetDataTable( const char *pTableName, SendTable *pTable );
+	SendTable *GetDataTable( const char *pTableName, SendTable *pTable );
 
 	//---------------------------------------------------------------------------------
 	// Purpose: returns the specified prop from the class and table provided.
 	//			if prop or table not found, pointer returns NULL
 	//---------------------------------------------------------------------------------
-	static SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName);
+	SendProp *GetPropFromClassAndTable(const char *szClassName, const char *szTableName, const char *szPropName);
 	
 	//---------------------------------------------------------------------------------
 	// Purpose: returns the specified prop offset relative to the table provided.
 	//			if offset or table not found, bErr returns true and offset returned is 0
 	//---------------------------------------------------------------------------------
-	static unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
+	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
 
-	static CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
+	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
 
 } // namespace SCHelpers
 
