@@ -9,7 +9,7 @@
 
 # this is the only option that you need to set
 # it should point to the dir that contains sizzlingplugins and hl2sdk-ob-valve
-BASE_DIR = ../..
+BASE_DIR = FILL_THIS_IN
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
 LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux
