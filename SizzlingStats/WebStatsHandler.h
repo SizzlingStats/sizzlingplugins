@@ -348,9 +348,9 @@ public:
 
 			connection.SetUrl(WEB_SERVER_IP);
 			connection.SetBodyReadFunction(read_callback);
-			connection.SetBodyUserdata(&postString);
+			connection.SetBodyReadUserdata(&postString);
 			connection.SetHeaderReadFunction(header_read_callback);
-			connection.SetHeaderUserdata(&m_responseInfo);
+			connection.SetHeaderReadUserdata(&m_responseInfo);
 
 			connection.Perform();
 			connection.Close();

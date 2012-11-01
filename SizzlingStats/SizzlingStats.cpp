@@ -517,8 +517,7 @@ static void threadstuff()
 	htmlGen.EndFile();
 	char temp[256];
 	V_snprintf(temp, sizeof(temp), "ftp://%s:%s@%s/public/sizzlingstats/asdf.html.uploading", ftp_user.GetString(), ftp_pass.GetString(), ftp_server.GetString());
-	CFtpUploader uploader(temp);
-	uploader.UploadFile(html);
+	CFtpUploader::UploadFile(temp, html);
 	Msg("size of html buff: %i\n", html.GetBytesRemaining());
 	CFunctor *pFunctor = CreateFunctor(messagethis);
 	// do i need to delete functors?

@@ -32,10 +32,10 @@ public:
 	void SetHttpSendType( HttpSendType type );
 
 	void SetBodyReadFunction( FnCurlCallback fnRead );
-	void SetBodyUserdata( void *pUserdata );
+	void SetBodyReadUserdata( void *pUserdata );
 
 	void SetHeaderReadFunction( FnCurlCallback fnHeaderRead );
-	void SetHeaderUserdata( void *pUserdata );
+	void SetHeaderReadUserdata( void *pUserdata );
 
 	void SetBodyWriteFunction( FnCurlCallback fnWrite );
 	void SetBodyWriteUserdata( void *pUserdata );

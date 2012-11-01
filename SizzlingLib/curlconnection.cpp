@@ -55,7 +55,7 @@ void CCurlConnection::SetBodyReadFunction( FnCurlCallback fnRead )
 	SetOption(CURLOPT_READFUNCTION, reinterpret_cast<voidFn>(fnRead));
 }
 
-void CCurlConnection::SetBodyUserdata( void *pUserdata )
+void CCurlConnection::SetBodyReadUserdata( void *pUserdata )
 {
 	SetOption(CURLOPT_READDATA, pUserdata);
 }
@@ -65,7 +65,7 @@ void CCurlConnection::SetHeaderReadFunction( FnCurlCallback fnHeaderRead )
 	SetOption(CURLOPT_HEADERFUNCTION, reinterpret_cast<voidFn>(fnHeaderRead));
 }
 
-void CCurlConnection::SetHeaderUserdata( void *pUserdata )
+void CCurlConnection::SetHeaderReadUserdata( void *pUserdata )
 {
 	SetOption(CURLOPT_HEADERDATA, pUserdata);
 }
