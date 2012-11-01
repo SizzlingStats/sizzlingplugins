@@ -10,14 +10,6 @@
 
 // TODO: get rid of curl and use sockets @_@
 
-CDownloader::CDownloader()
-{
-}
-
-CDownloader::~CDownloader()
-{	
-}
-
 size_t CDownloader::rcvData(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);

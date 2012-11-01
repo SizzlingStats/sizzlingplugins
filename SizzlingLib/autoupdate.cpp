@@ -50,7 +50,7 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 	Msg( "[SS]: Downloading update.\n" );
 
 	CUtlBuffer updatedFile;
-	bool success = m_downloader.DownloadFileAndVerify( m_info.fileUrl, m_info.fileCRC, updatedFile );
+	bool success = CDownloader::DownloadFileAndVerify( m_info.fileUrl, m_info.fileCRC, updatedFile );
 	if ( success )
 	{
 		// we can rename the current plugin, but not remove it
@@ -93,7 +93,7 @@ bool CAutoUpdater::CheckForUpdate()
 {
 	CUtlBuffer metaBuffer;
 	// gets the version and crc like this: "x.x.x.x\nffffffff"
-	bool downloadOk = m_downloader.DownloadFile( m_info.metaUrl, metaBuffer );
+	bool downloadOk = CDownloader::DownloadFile( m_info.metaUrl, metaBuffer );
 	if ( !downloadOk )
 		return false;
 	

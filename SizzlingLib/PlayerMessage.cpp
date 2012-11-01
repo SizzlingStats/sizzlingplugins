@@ -15,17 +15,6 @@
 // Interfaces from the engine
 extern IVEngineServer			*pEngine; // helper functions (messaging clients, loading content, making entities, running commands, etc)
 
-static PlayerMessage gMessage;
-PlayerMessage *g_pMessage = &gMessage;
-
-PlayerMessage::PlayerMessage()
-{
-}
-
-PlayerMessage::~PlayerMessage()
-{	
-}
-
 	//	COLOURS
     //[CSS]         Print       SayText2
     //-----------------------------------
@@ -50,7 +39,7 @@ PlayerMessage::~PlayerMessage()
     //    \x04      Green         -
     //    \x05      Olive         -
 
-void PlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
+void CPlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
 {
 	// Create a filter and add this client to it
 	SRecipientFilter filter;
@@ -70,7 +59,7 @@ void PlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessa
 	return;
 }
 
-void PlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage )
+void CPlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage )
 {
 	edict_t *pEntity = pEngine->PEntityOfEntIndex( entindex );
 	// Create a filter and add this client to it
@@ -91,7 +80,7 @@ void PlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage )
 	return;
 }
 
-void PlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessage, const char *szPrefix )
+void CPlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessage, const char *szPrefix )
 {
 	// Create a filter and add this client to it
 	SRecipientFilter filter;
@@ -115,7 +104,7 @@ void PlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessa
 	return;
 }
 
-void PlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage, const char *szPrefix )
+void CPlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage, const char *szPrefix )
 {
 	edict_t *pEntity = pEngine->PEntityOfEntIndex( entindex );
 	// Create a filter and add this client to it
@@ -140,7 +129,7 @@ void PlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage, 
 	return;
 }
 
-void PlayerMessage::AllUserChatMessage( const char *szMessage )
+void CPlayerMessage::AllUserChatMessage( const char *szMessage )
 {
 	// Create a filter and add this client to it
 	MRecipientFilter filter;
@@ -160,7 +149,7 @@ void PlayerMessage::AllUserChatMessage( const char *szMessage )
 	return;
 }
 
-void PlayerMessage::AllUserChatMessage( const char *szMessage, const char *szPrefix )
+void CPlayerMessage::AllUserChatMessage( const char *szMessage, const char *szPrefix )
 {
 	// Create a filter and add this client to it
 	MRecipientFilter filter;
@@ -184,7 +173,7 @@ void PlayerMessage::AllUserChatMessage( const char *szMessage, const char *szPre
 	return;
 }
 
-void PlayerMessage::AllUserHudReset()
+void CPlayerMessage::AllUserHudReset()
 {
 	MRecipientFilter filter;
 	filter.AddAllPlayers();
@@ -194,7 +183,7 @@ void PlayerMessage::AllUserHudReset()
 	pEngine->MessageEnd();
 }
 
-void PlayerMessage::AllUserHudMsg( const char *szMessage, colour rgba, float timeonscreen, float x, float y, int channel )
+void CPlayerMessage::AllUserHudMsg( const char *szMessage, colour rgba, float timeonscreen, float x, float y, int channel )
 {
 	MRecipientFilter filter;
 	filter.AddAllPlayers();
@@ -255,7 +244,7 @@ void PlayerMessage::AllUserHudMsg( const char *szMessage, colour rgba, float tim
 //}
 }
 
-void PlayerMessage::AllUserHudHintText( const char *szMessage )
+void CPlayerMessage::AllUserHudHintText( const char *szMessage )
 {
 	MRecipientFilter filter;
 	filter.AddAllPlayers();
@@ -276,7 +265,7 @@ void PlayerMessage::AllUserHudHintText( const char *szMessage )
 #define MOTDPANEL_TYPE_FILE		"3"	/**< Treat msg as a filename to be openned */
           // ^^ FILE LOADS STUFF FROM THE CLIENT (bad)
 
-void PlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, const char *url )
+void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, const char *url )
 {
 	SRecipientFilter filter;
 	filter.AddRecipient( clientIndex );
@@ -325,7 +314,7 @@ void PlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, cons
 	return;
 }
 
-void PlayerMessage::SingleUserEmptyVGUIMenu( int clientIndex )
+void CPlayerMessage::SingleUserEmptyVGUIMenu( int clientIndex )
 {
 	SRecipientFilter filter;
 	filter.AddRecipient( clientIndex );

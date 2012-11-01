@@ -176,7 +176,7 @@ private:
 	int m_iClientCommandIndex;
 };
 
-bool isExploit( const CCommand &args, int ClientCommandIndex )
+static bool isExploit( const CCommand &args, int ClientCommandIndex )
 {
 	const char *pChar = V_strstr( args.ArgS(), "%" );
 	while ( pChar )
@@ -197,7 +197,7 @@ bool isExploit( const CCommand &args, int ClientCommandIndex )
 	return false;
 }
 
-bool validString( const char **pChar )
+static bool validString( const char **pChar )
 {
 	if ( *pChar )
 	{
@@ -222,3 +222,4 @@ bool validString( const char **pChar )
 	}
 	return true;
 }
+

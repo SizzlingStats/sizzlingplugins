@@ -1296,8 +1296,8 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( /*FStrEq( name, "teamplay_game_over" ) ||*/ FStrEq( name, "tf_game_over" ) )
 	{
-		g_pMessage->AllUserChatMessage( "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n" );
-		g_pMessage->AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
+		CPlayerMessage::AllUserChatMessage( "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n" );
+		CPlayerMessage::AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
 		m_SizzlingStats.SS_GameOver();
 	}
 	/*else if ( FStrEq( name, "tournament_stateupdate" ) )

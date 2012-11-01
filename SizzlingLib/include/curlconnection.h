@@ -62,3 +62,4 @@ private:
 };
 
 #endif // CURL_CONNECTION_H
+

@@ -34,7 +34,6 @@ class CAutoUpdater
 public:
 	CAutoUpdater( autoUpdateInfo_t const &info ):
 		m_info(info),
-		m_downloader(),
 		m_bWaitingForUnload(false)
 	{
 	}
@@ -54,7 +53,7 @@ private:
 	bool CheckForUpdate();
 
 	// returns true if v1 is newer than v2
-	bool CompareVersions( const char *v1, const char *v2 );
+	static bool CompareVersions( const char *v1, const char *v2 );
 
 	// wrapper for the filesystem removefile
 	inline void	RemoveFile( const char *pRelativePath );
@@ -65,7 +64,6 @@ private:
 
 private:
 	autoUpdateInfo_t m_info;
-	CDownloader m_downloader;
 	bool m_bWaitingForUnload;
 };
 
@@ -109,3 +107,4 @@ private:
 };
 
 #endif // AUTOUPDATE_H
+

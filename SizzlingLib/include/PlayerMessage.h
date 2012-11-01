@@ -14,30 +14,23 @@ struct colour
 	}
 };
 
-class PlayerMessage
+class CPlayerMessage
 {
 public:
-	PlayerMessage(void);
-	~PlayerMessage(void);
+	static void	SingleUserChatMessage( edict_t *pEntity, const char *szMessage );
+	static void	SingleUserChatMessage( int entindex, const char *szMessage );
+	static void	SingleUserChatMessage( edict_t *pEntity, const char *szMessage, const char *szPrefix );
+	static void	SingleUserChatMessage( int entindex, const char *szMessage, const char *szPrefix );
+	static void	AllUserChatMessage( const char *szMessage );
+	static void	AllUserChatMessage( const char *szMessage, const char *szPrefix );
+	static void	AllUserHudReset();
 
-	void		SingleUserChatMessage( edict_t *pEntity, const char *szMessage );
-	void		SingleUserChatMessage( int entindex, const char *szMessage );
-	void		SingleUserChatMessage( edict_t *pEntity, const char *szMessage, const char *szPrefix );
-	void		SingleUserChatMessage( int entindex, const char *szMessage, const char *szPrefix );
-	void		AllUserChatMessage( const char *szMessage );
-	void		AllUserChatMessage( const char *szMessage, const char *szPrefix );
-	void		AllUserHudReset();
+	static void	AllUserHudMsg( const char *szMessage, colour rgba, float timeonscreen, float x = -1, float y = -1, int channel = 1 );
+	static void	AllUserHudHintText( const char *szMessage );
 
-	void		AllUserHudMsg( const char *szMessage, colour rgba, float timeonscreen, float x = -1, float y = -1, int channel = 1 );
-	void		AllUserHudHintText( const char *szMessage );
-
-	void		SingleUserVGUIMenu( int clientIndex, const char *title, const char *url );
-	void		SingleUserEmptyVGUIMenu( int clientIndex );
-
-private:
-
+	static void	SingleUserVGUIMenu( int clientIndex, const char *title, const char *url );
+	static void	SingleUserEmptyVGUIMenu( int clientIndex );
 };
 
-extern PlayerMessage *g_pMessage;
-
 #endif // PLAYER_MESSAGE_H
+

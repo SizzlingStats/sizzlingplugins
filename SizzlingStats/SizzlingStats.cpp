@@ -262,12 +262,12 @@ void SizzlingStats::SS_Msg( const char *pMsg, ... )
 
 void SizzlingStats::SS_SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
 {
-	g_pMessage->SingleUserChatMessage( pEntity, szMessage );
+	CPlayerMessage::SingleUserChatMessage( pEntity, szMessage );
 }
 
 void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 {
-	g_pMessage->AllUserChatMessage( szMessage, "\x04[\x05SizzlingStats\x04]\x06: \x03" );
+	CPlayerMessage::AllUserChatMessage( szMessage, "\x04[\x05SizzlingStats\x04]\x06: \x03" );
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
 
@@ -478,30 +478,30 @@ void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 {
 	char version[32];
 	V_snprintf( version, 32, "SizzlingStats v%s\n", pszVersion );
-	g_pMessage->SingleUserChatMessage( entindex, "-----------------------\n" );
-	g_pMessage->SingleUserChatMessage( entindex, version );
-	g_pMessage->SingleUserChatMessage( entindex, "Credits go to:\n" );
-	g_pMessage->SingleUserChatMessage( entindex, "SizzlingCalamari for creation and development.\n" );
-	g_pMessage->SingleUserChatMessage( entindex, "Drunken F00l for his insight on coding with the Source Engine.\n" );
-	g_pMessage->SingleUserChatMessage( entindex, "Whal3r for his endless testing whenever I called him in.\n" );
-	g_pMessage->SingleUserChatMessage( entindex, "-----------------------\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "-----------------------\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, version );
+	CPlayerMessage::SingleUserChatMessage( entindex, "Credits go to:\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "SizzlingCalamari for creation and development.\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "Drunken F00l for his insight on coding with the Source Engine.\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "Whal3r for his endless testing whenever I called him in.\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "-----------------------\n" );
 }
 
 #ifndef PUBLIC_RELEASE
 
 static void messagethis()
 {
-	g_pMessage->AllUserChatMessage("thread completed execution\n");
+	CPlayerMessage::AllUserChatMessage("thread completed execution\n");
 }
 
 static void messagemain()
 {
-	g_pMessage->AllUserChatMessage("message from main\n");
+	CPlayerMessage::AllUserChatMessage("message from main\n");
 }
 
 static void messagethread()
 {
-	g_pMessage->AllUserChatMessage("message from thread\n");
+	CPlayerMessage::AllUserChatMessage("message from thread\n");
 }
 
 static void threadstuff()
@@ -609,7 +609,7 @@ void SizzlingStats::SS_TestPost()
 				V_snprintf(temp, 128, "name=%s&steamid=%s", Data.GetPlayerInfo()->GetName(), Data.GetPlayerInfo()->GetNetworkIDString());
 				//g_pThreadPool->AddCall(SS_SendHttpPostData, (const char *)temp);
 				//SS_SendHttpPostData(temp);
-				g_pMessage->AllUserChatMessage(temp);
+				CPlayerMessage::AllUserChatMessage(temp);
 			}
 		}
 	}
@@ -637,7 +637,7 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 	if (m_pWebStatsThread->HasMatchUrl())
 	{
 		m_pWebStatsThread->GetMatchUrl(temp, 128);
-		g_pMessage->SingleUserVGUIMenu( entindex, "testasdf", temp );
+		CPlayerMessage::SingleUserVGUIMenu( entindex, "testasdf", temp );
 	}
 }
 
