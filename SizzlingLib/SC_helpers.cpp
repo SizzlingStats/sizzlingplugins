@@ -264,6 +264,7 @@ namespace SCHelpers
 			pServerClass = pServerClass->m_pNext;
 		}
 		Warning("prop %s not found in %s => %s\n", szPropName, szClassName, szTableName);
+		return NULL;
 	}
 
 	//---------------------------------------------------------------------------------

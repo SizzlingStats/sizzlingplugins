@@ -6,7 +6,6 @@
 #include "tier1/utlvector.h"
 #include "tier1/stringpool.h"
 
-extern PlayerMessage	*g_pMessage;
 extern IGameEventManager2		*gameeventmanager;
 
 SendTable		*GetDataTable( const char *pTableName, SendTable *pTable );
@@ -226,7 +225,7 @@ void SizzlingMatches::SM_SingleUserChatMessage( edict_t *pEntity, const char *pF
 	char message[254];
 
 	V_vsnprintf( message, 254, pFormat, argList );
-	g_pMessage->SingleUserChatMessage( pEntity, message );
+	CPlayerMessage::SingleUserChatMessage( pEntity, message );
 
 	va_end( argList );
 }
@@ -238,8 +237,8 @@ void SizzlingMatches::SM_AllUserChatMessage( const char *pFormat, ... )
 	char message[254];
 
 	V_vsnprintf( message, 254, pFormat, argList );
-	g_pMessage->AllUserChatMessage( message, "\x04[\x05SizzlingMatches\x04]\x06: \x03" );
-	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
+	CPlayerMessage::AllUserChatMessage( message, "\x04[\x05SizzlingMatches\x04]\x06: \x03" );
+	//CPlayerMessage::AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 
 	va_end( argList );
 }
@@ -414,8 +413,8 @@ void SizzlingMatches::SM_PlayerChangeReadyState( int userid, bool state )
 //
 //	V_snprintf( ready, 255, "Ready:\n" );
 //	V_snprintf( notready, 255, "Not Ready:\n" );
-//	//g_pMessage->AllUserHudMsg( "Ready", rgba, 3.0f, 0.15, 0.10, 2 );
-//	//g_pMessage->AllUserHudMsg( "Not Ready", rgba, 3.0f, 0.65, 0.10, 3 );
+//	//CPlayerMessage::AllUserHudMsg( "Ready", rgba, 3.0f, 0.15, 0.10, 2 );
+//	//CPlayerMessage::AllUserHudMsg( "Not Ready", rgba, 3.0f, 0.65, 0.10, 3 );
 //	FOR_EACH_MAP_FAST( m_SteamIDToPlayerDataMap, itMapName )
 //	{
 //		SM_PlayerData *pData = m_SteamIDToPlayerDataMap.Element( itMapName );
@@ -433,8 +432,8 @@ void SizzlingMatches::SM_PlayerChangeReadyState( int userid, bool state )
 //	}
 //	SM_Msg( "%s", ready );
 //	SM_Msg( "%s", notready );
-//	g_pMessage->AllUserHudMsg( ready, rgba, 3.0f, 0.10, 0.09, 4 );
-//	g_pMessage->AllUserHudMsg( notready, rgba, 3.0f, 0.60, 0.09, 5 );
+//	CPlayerMessage::AllUserHudMsg( ready, rgba, 3.0f, 0.10, 0.09, 4 );
+//	CPlayerMessage::AllUserHudMsg( notready, rgba, 3.0f, 0.60, 0.09, 5 );
 //	SM_Msg( "refreshtime: %f\n", gpGlobals->curtime );
 //}
 
@@ -450,8 +449,8 @@ void SizzlingMatches::SM_PlayerChangeReadyState( int userid, bool state )
 //	memset( blu, 0, sizeof(blu) );
 //	V_snprintf( red, 255, "Red:" );
 //	V_snprintf( blu, 255, "Blu:" );
-//	//g_pMessage->AllUserHudMsg( "Ready", rgba, 3.0f, 0.15, 0.10, 2 );
-//	//g_pMessage->AllUserHudMsg( "Not Ready", rgba, 3.0f, 0.65, 0.10, 3 );
+//	//CPlayerMessage::AllUserHudMsg( "Ready", rgba, 3.0f, 0.15, 0.10, 2 );
+//	//CPlayerMessage::AllUserHudMsg( "Not Ready", rgba, 3.0f, 0.65, 0.10, 3 );
 //	FOR_EACH_MAP_FAST( m_SteamIDToPlayerDataMap, itMapName )
 //	{
 //		SM_PlayerData *pData = m_SteamIDToPlayerDataMap.Element( itMapName );
@@ -466,8 +465,8 @@ void SizzlingMatches::SM_PlayerChangeReadyState( int userid, bool state )
 //	}
 //	SM_Msg( "%s\n", red );
 //	SM_Msg( "%s\n", blu );
-//	g_pMessage->AllUserHudMsg( red, clrred, 3.0f, 0.05, 0.09, 4 );
-//	g_pMessage->AllUserHudMsg( blu, clrblue, 3.0f, 0.55, 0.09, 5 );
+//	CPlayerMessage::AllUserHudMsg( red, clrred, 3.0f, 0.05, 0.09, 4 );
+//	CPlayerMessage::AllUserHudMsg( blu, clrblue, 3.0f, 0.55, 0.09, 5 );
 //	SM_Msg( "refreshtime: %f\n", gpGlobals->curtime );
 //}
 
@@ -507,11 +506,11 @@ void SizzlingMatches::SM_DisplayNames( const char *RedTeamPlayers, const char *B
 	//clrgreen.b = clrgreen.r = clrgreen.a = clrwhite.a = 0;
 	clrwhite.r = clrwhite.g = clrwhite.b = clrgreen.g = 85;
 
-	g_pMessage->AllUserHudReset();
-	g_pMessage->AllUserHudMsg( "Red:", clrgreen, 4.0f, 0.55, 0.09, 2 );				// y values the same because hudmsg has auto position correction
-	g_pMessage->AllUserHudMsg( "Blu:", clrgreen, 4.0f, 0.05, 0.09, 3 );
-	g_pMessage->AllUserHudMsg( RedTeamPlayers, clrwhite, 4.0f, 0.55, 0.09, 4 );
-	g_pMessage->AllUserHudMsg( BluTeamPlayers, clrwhite, 4.0f, 0.05, 0.09, 5 );
+	CPlayerMessage::AllUserHudReset();
+	CPlayerMessage::AllUserHudMsg( "Red:", clrgreen, 4.0f, 0.55, 0.09, 2 );				// y values the same because hudmsg has auto position correction
+	CPlayerMessage::AllUserHudMsg( "Blu:", clrgreen, 4.0f, 0.05, 0.09, 3 );
+	CPlayerMessage::AllUserHudMsg( RedTeamPlayers, clrwhite, 4.0f, 0.55, 0.09, 4 );
+	CPlayerMessage::AllUserHudMsg( BluTeamPlayers, clrwhite, 4.0f, 0.05, 0.09, 5 );
 	if ( m_n12sectimer > 3 )
 	{
 		SM_AllUserChatMessage( "Type \".ready\" to ready up and \".notready\" to unready.\n" );
@@ -590,7 +589,7 @@ void SizzlingMatches::FireEvent()
 	if ( m_bTimer5 == false )
 	{
 		char red[255] = "", blu[255] = "";
-		//g_pMessage->AllUserHudMsg( "test\ntest", rgba, 2.0f, 0.95f, 0.90f, 2 );
+		//CPlayerMessage::AllUserHudMsg( "test\ntest", rgba, 2.0f, 0.95f, 0.90f, 2 );
 		SM_GetNamesLists( red, 255, blu, 255 );
 		//SM_Msg( "%s\n", red );
 		//SM_Msg( "%s\n", blu );

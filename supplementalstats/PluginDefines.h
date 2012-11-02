@@ -7,7 +7,7 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-#define PLUGIN_VERSION "1.1.0.0"
+#define PLUGIN_VERSION "1.1.0.1"
 //#define RELEASE_VERSION
 
 #ifdef _WIN32

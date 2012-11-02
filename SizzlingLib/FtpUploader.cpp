@@ -53,11 +53,12 @@ bool CFtpUploader::UploadFile( const char *ftpUrl, CUtlBuffer &buff )
 		
 		curl_slist_free_all (pPostCommandList);
 		
-		if(res != CURLE_OK)
+		if (res != CURLE_OK)
 		{
 			Msg( "curl told us %d\n", res );
 			return false;
 		}
+		return true;
 	}
 	else
 	{

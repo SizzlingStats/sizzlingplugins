@@ -70,8 +70,6 @@ IServerGameEnts			*pServerEnts = NULL;
 
 CGlobalVars				*gpGlobals = NULL;
 
-extern PlayerMessage	*g_pMessage;
-
 //===========================================================================//
 
 unsigned int oKills = 0;
