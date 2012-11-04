@@ -149,6 +149,9 @@ private:
 	extradata_t		*m_pEntIndexToExtraData[MAX_PLAYERS]; // 33 slot servers will break if this is only set to 33 indicies
 #ifndef PUBLIC_RELEASE
 	CWebStatsHandlerThread	*m_pWebStatsThread;
+	ConVarRef m_refHostname;
+	ConVarRef m_refBlueTeamName;
+	ConVarRef m_refRedTeamName;
 #endif
 	hostInfo_t m_hostInfo;
 };

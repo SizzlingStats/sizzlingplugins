@@ -41,6 +41,8 @@ static ConVar ftp_server("sizz_stats_ftp_hostname", "ftp.myserver.com", FCVAR_DO
 static ConVar ftp_port("sizz_stats_ftp_port", "21", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP port to use when using web stats.");
 ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "Hostname of the external public directory of the FTP server.");
 
+static ConVar show_msg("sizz_stats_show_chat_messages", 0, FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
+
 #endif
 
 #pragma warning( push )
@@ -60,6 +62,9 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_pEntIndexToExtraData(),
 #ifndef PUBLIC_RELEASE
 								m_pWebStatsThread(new CWebStatsHandlerThread()),
+								m_refHostname("hostname"),
+								m_refBlueTeamName("mp_tournament_blueteamname"),
+								m_refRedTeamName("mp_tournament_redteamname"),
 #endif
 								m_hostInfo()
 {
@@ -92,11 +97,9 @@ SizzlingStats::~SizzlingStats()
 void SizzlingStats::Load()
 {
     GetPropOffsets();
-	ConVar *pVar = g_pCVar->FindVar("hostname");
-	if (pVar)
-	{
-		V_strncpy(m_hostInfo.m_hostname, pVar->GetString(), 64);
-	}
+	m_refHostname.Init( "hostname", false );
+	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
+	m_refRedTeamName.Init("mp_tournament_redteamname", false);
 }
 
 void SizzlingStats::Unload()
@@ -109,7 +112,6 @@ void SizzlingStats::Unload()
 
 void SizzlingStats::LevelInit(const char *pMapName)
 {
-	V_strncpy(m_hostInfo.m_mapname, pMapName, 64);
 #ifndef PUBLIC_RELEASE
 	m_pWebStatsThread->Join();
 	m_pWebStatsThread->ResetSession();
@@ -262,33 +264,40 @@ void SizzlingStats::SS_Msg( const char *pMsg, ... )
 
 void SizzlingStats::SS_SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
 {
+#ifndef PUBLIC_RELEASE
+	if (show_msg.GetInt() != 0)
+#endif
 	CPlayerMessage::SingleUserChatMessage( pEntity, szMessage );
 }
 
 void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 {
+#ifndef PUBLIC_RELEASE
+	if (show_msg.GetInt() != 0)
+#endif
 	CPlayerMessage::AllUserChatMessage( szMessage, "\x04[\x05SizzlingStats\x04]\x06: \x03" );
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
 
 void SizzlingStats::SS_TournamentMatchStarted()
 {
-	SS_AllUserChatMessage( "tournament match started\n" );
+	Msg( "tournament match started\n" );
 }
 
 void SizzlingStats::SS_TournamentMatchEnded()
 {
-	SS_AllUserChatMessage( "tournament match ended\n" );
+	Msg( "tournament match ended\n" );
+	//m_pWebStatsThread->SendGameOverEvent();
 }
 
 void SizzlingStats::SS_RoundStarted()
 {
-	SS_AllUserChatMessage( "round started\n" );
+	Msg( "round started\n" );
 }
 
 void SizzlingStats::SS_RoundEnded()
 {
-	SS_AllUserChatMessage( "round ended\n" );
+	Msg( "round ended\n" );
 }
 
 void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
@@ -402,31 +411,12 @@ void SizzlingStats::SS_CheckFixEndOfRoundCappers( int capper )
 
 void SizzlingStats::SS_EndOfRound()
 {
-	if (!V_strlen(m_hostInfo.m_bluname))
-	{
-		ConVar *pVar = cvar->FindVar("mp_tournament_blueteamname");
-		if (pVar)
-		{
-			V_strncpy(m_hostInfo.m_bluname, pVar->GetString(), 32);
-		}
-	}
-	if (!V_strlen(m_hostInfo.m_redname))
-	{
-		ConVar *pVar = cvar->FindVar("mp_tournament_redteamname");
-		if (pVar)
-		{
-			V_strncpy(m_hostInfo.m_redname, pVar->GetString(), 32);
-		}
-	}
-	if (!V_strlen(m_hostInfo.m_hostname))
-	{
-		ConVar *pVar = cvar->FindVar("hostname");
-		if (pVar)
-		{
-			V_strncpy(m_hostInfo.m_hostname, pVar->GetString(), 64);
-		}
-	}
 #ifndef PUBLIC_RELEASE
+	V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
+	V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
+	V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
+	V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
+
 	m_pWebStatsThread->SetHostData(m_hostInfo);
 #endif
 	for (int i = 0; i < MAX_PLAYERS; ++i)
