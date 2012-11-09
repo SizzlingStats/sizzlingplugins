@@ -1660,3 +1660,4 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 //}
 // 
 //ConCommand my_say( "ss_kickall", KickAll_SS , "kicks everyone (including you) with a message of your choice", 0);
+

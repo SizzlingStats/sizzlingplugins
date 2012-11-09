@@ -697,3 +697,4 @@ void SizzlingStats::GetPropOffsets()
 
 	//CBaseEntity *pEntity = gEntList.FindEntityByClassname( pServerEnts->EdictToBaseEntity( engine->PEntityOfEntIndex( gpGlobals->maxClients ) ), "CWeaponIFMSteadyCam" );
 }
+

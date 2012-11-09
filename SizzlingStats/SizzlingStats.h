@@ -8,9 +8,10 @@
 #include "tier1/utlvector.h"
 #include "tier1/utlhash.h"
 #include "mempool.h"
-#include "utlobjectreference.h"
+//#include "utlobjectreference.h"
 
 #include "WebStatsHandler.h"
+#include "convar.h"
 
 #include "PluginDefines.h"
 
@@ -157,3 +158,4 @@ private:
 };
 
 #endif // SIZZLING_STATS_H
+

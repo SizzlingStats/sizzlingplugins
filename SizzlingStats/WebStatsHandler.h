@@ -8,16 +8,17 @@
 #include "JsonUtils.h"
 #include "utlbuffer.h"
 
-#include "ThreadCallQueue.h"
+//#include "ThreadCallQueue.h"
 #include "playerdata.h"
-#include "eiface.h"
+//#include "eiface.h"
 
 #include "curlconnection.h"
 
 #define WEB_SERVER_IP "sizzlingstats.com/api/stats"
+#define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.1"
 
-extern CTSCallQueue		*g_pTSCallQueue;
-extern IVEngineServer	*pEngine;
+//extern CTSCallQueue		*g_pTSCallQueue;
+//extern IVEngineServer	*pEngine;
 
 // don't conflict with player_info_t from cdll_int.h
 typedef struct playerInfo_s
@@ -312,7 +313,7 @@ public:
 
 	virtual int Run()
 	{
-		g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)"testing thread log\n") );
+		//g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)"testing thread log\n") );
 
 		CUtlBuffer postString;
 		char sessionId[64] = {0};
@@ -337,7 +338,7 @@ public:
 			connection.AddHeader("Transfer-Encoding: chunked");
 			connection.AddHeader("Content-type: application/json");
 			connection.AddHeader("Expect:");
-			connection.AddHeader("sizzlingstats: v0.1");
+			connection.AddHeader(HEADER_SIZZSTATS_VERSION);
 
 			if (sessionId[0] != '\0')
 			{
@@ -390,3 +391,4 @@ private:
 };
 
 #endif // WEB_STATS_HANDLER_H
+
