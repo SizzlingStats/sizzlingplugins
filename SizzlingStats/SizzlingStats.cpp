@@ -60,12 +60,10 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_ExtraDataMemPool(MAX_PLAYERS),	// avoid the slowdown from people joining
 								m_pPlayerData(),
 								m_pEntIndexToExtraData(),
-#ifndef PUBLIC_RELEASE
-								m_pWebStatsThread(new CWebStatsHandlerThread()),
+								m_pWebStatsHandler(NULL),
 								m_refHostname("hostname"),
 								m_refBlueTeamName("mp_tournament_blueteamname"),
 								m_refRedTeamName("mp_tournament_redteamname"),
-#endif
 								m_hostInfo()
 {
 	m_playerDataArchive.Init(32);
@@ -87,9 +85,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 
 SizzlingStats::~SizzlingStats()
 {
-#ifndef PUBLIC_RELEASE
-	delete m_pWebStatsThread;
-#endif
 	m_PlayerDataMemPool.Clear();
 	m_ExtraDataMemPool.Clear();
 }
@@ -100,22 +95,17 @@ void SizzlingStats::Load()
 	m_refHostname.Init( "hostname", false );
 	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
 	m_refRedTeamName.Init("mp_tournament_redteamname", false);
+	m_pWebStatsHandler = new CWebStatsHandler();
 }
 
 void SizzlingStats::Unload()
 {
-#ifndef PUBLIC_RELEASE
 	//m_pWebStatsThread->StartThread();
-	m_pWebStatsThread->Join();
-#endif
+	delete m_pWebStatsHandler;
 }
 
 void SizzlingStats::LevelInit(const char *pMapName)
 {
-#ifndef PUBLIC_RELEASE
-	m_pWebStatsThread->Join();
-	m_pWebStatsThread->ResetSession();
-#endif
 }
 
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
@@ -287,7 +277,7 @@ void SizzlingStats::SS_TournamentMatchStarted()
 void SizzlingStats::SS_TournamentMatchEnded()
 {
 	Msg( "tournament match ended\n" );
-	//m_pWebStatsThread->SendGameOverEvent();
+	m_pWebStatsHandler->SendGameOverEvent();
 }
 
 void SizzlingStats::SS_RoundStarted()
@@ -416,9 +406,9 @@ void SizzlingStats::SS_EndOfRound()
 	V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
 	V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
 	V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
-
-	m_pWebStatsThread->SetHostData(m_hostInfo);
 #endif
+	m_pWebStatsHandler->SetHostData(m_hostInfo);
+
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		playerAndExtra data = {m_pPlayerData[i], m_pEntIndexToExtraData[i]};
@@ -429,27 +419,21 @@ void SizzlingStats::SS_EndOfRound()
 
 			if (data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex() > 1)
 			{
-				//V_snprintf(m_postStrings[Data.GetEntIndex()], 256, "name=%s&steamid=%s", Data.GetPlayerInfo()->GetName(), Data.GetPlayerInfo()->GetNetworkIDString());
-				//g_pThreadPool->AddCall(SS_SendHttpPostData, (const char *)temp);
-#ifndef PUBLIC_RELEASE
 				playerWebStats_t stats;
+#ifndef PUBLIC_RELEASE
 				stats.m_scoreData = data.m_pPlayerData->GetScoreData(m_nCurrentRound);
 				V_strncpy(stats.m_playerInfo.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
-				//stats.m_playerInfo.m_steamid = data.m_pPlayerData->
 				V_strncpy(stats.m_playerInfo.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
 				stats.m_playerInfo.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
-
-				m_pWebStatsThread->EnqueueItem(stats);
 #endif
+				m_pWebStatsHandler->EnqueuePlayerStats(stats);
 				SS_DisplayStats( *data.m_pPlayerData );
 			}
 			data.m_pPlayerData->UpdateTotalData( m_nCurrentRound );
 			data.m_pPlayerData->ResetExtraData( m_nCurrentRound );
 		}
 	}
-#ifndef PUBLIC_RELEASE
-	m_pWebStatsThread->StartThread();
-#endif
+	m_pWebStatsHandler->SendStatsToWeb();
 }
 
 void SizzlingStats::SS_ResetData()
@@ -546,65 +530,6 @@ void SizzlingStats::TeamNameChange( int entIndex, const char *teamname )
 
 #ifndef PUBLIC_RELEASE
 
-static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
-	const int maxSize = size*nmemb;
-	if ( pBuffer->GetBytesRemaining() >= maxSize )
-	{
-		pBuffer->Get( ptr, maxSize );
-		return maxSize;
-	}
-	else
-	{
-		const int bytesRemaining = pBuffer->GetBytesRemaining();
-		pBuffer->Get( ptr, bytesRemaining );
-		return bytesRemaining;
-	}
-}
-
-void SS_SendHttpPostData()
-{
-	CURL *curl;
-	CURLcode res;
-
-	curl = curl_easy_init();
-	if(curl) {
-		/* First set the URL that is about to receive our POST. This URL can
-		just as well be a https:// URL if that is what should receive the
-		data. */ 
-		curl_easy_setopt(curl, CURLOPT_URL, "204.12.223.55:1337");
-		/* Now specify the POST data */ 
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "matchid=0&name=SizzlingStats&steamid=123456789&kills=999&deaths=0");
-
-		/* Perform the request, res will get the return code */ 
-		res = curl_easy_perform(curl);
-
-		/* always cleanup */ 
-		curl_easy_cleanup(curl);
-	}
-}
-
-void SizzlingStats::SS_TestPost()
-{
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (m_pPlayerData[i])
-		{
-			SS_PlayerData &Data = *m_pPlayerData[i];
-			if ( Data.GetPlayerInfo()->GetTeamIndex() > 1 )	// don't send stats messages to spectators
-			{
-				char temp[128];
-				V_snprintf(temp, 128, "name=%s&steamid=%s", Data.GetPlayerInfo()->GetName(), Data.GetPlayerInfo()->GetNetworkIDString());
-				//g_pThreadPool->AddCall(SS_SendHttpPostData, (const char *)temp);
-				//SS_SendHttpPostData(temp);
-				CPlayerMessage::AllUserChatMessage(temp);
-			}
-		}
-	}
-	g_pThreadPool->AddCall(&SS_SendHttpPostData);
-}
-
 void SizzlingStats::SS_TestThreading()
 {
 	g_pThreadPool->AddCall(loopmessage);
@@ -621,12 +546,12 @@ void SizzlingStats::SS_UploadStats()
 
 void SizzlingStats::SS_ShowHtmlStats( int entindex )
 {
-	char temp[128];
+	char temp[128] = {};
 	//V_snprintf(temp, 256, "%s/sizzlingstats/asdf.html", web_hostname.GetString());
-	if (m_pWebStatsThread->HasMatchUrl())
+	if (m_pWebStatsHandler->HasMatchUrl())
 	{
-		m_pWebStatsThread->GetMatchUrl(temp, 128);
-		CPlayerMessage::SingleUserVGUIMenu( entindex, "testasdf", temp );
+		m_pWebStatsHandler->GetMatchUrl(temp, 128);
+		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp );
 	}
 }
 
@@ -634,9 +559,6 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 
 void SizzlingStats::SS_GameOver()
 {
-#ifndef PUBLIC_RELEASE
-	m_pWebStatsThread->ResetSession();
-#endif
 }
 
 void SizzlingStats::GetPropOffsets()

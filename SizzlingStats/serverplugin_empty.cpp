@@ -1379,10 +1379,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		{
 			m_SizzlingStats.SS_TestThreading();
 		}
-		else if ( FStrEq( text, ".testpost" ) )
-		{
-			m_SizzlingStats.SS_TestPost();
-		}
 		else if ( FStrEq( text, ".menutest" ) )
 		{
 			KeyValues *kv = new KeyValues( "menu" );

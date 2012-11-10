@@ -8,18 +8,16 @@
 #include "tier1/utlvector.h"
 #include "tier1/utlhash.h"
 #include "mempool.h"
-//#include "utlobjectreference.h"
 
 #include "WebStatsHandler.h"
+
 #include "convar.h"
 
 #include "PluginDefines.h"
 
 #define MAX_PLAYERS 34
 
-//#include "PlayerDataManager.h"
-
-class CWebStatsHandlerThread;
+class CFuncQueueThread;
 class SS_PlayerData;
 struct extradata_s;
 struct edict_t;
@@ -31,9 +29,6 @@ struct playerAndExtra
 public:
 	SS_PlayerData	*m_pPlayerData;
 	extradata_t		*m_pExtraData;
-	
-//private:
-//	DECLARE_REFERENCED_CLASS(playerAndExtra);
 };
 
 class SizzlingStats
@@ -95,13 +90,9 @@ public:
 	//	called when a user types ".ss_credits"
 	void	SS_Credits( int entindex, const char *pszVersion );
 
-	void	SS_TestPost();
-
 	void	SetTeamScores( int redscore, int bluscore );
 
 	void	TeamNameChange( int entindex, const char *teamname );
-
-	friend void	SS_SendHttpPostData();
 
 	void	SS_TestThreading();
 
@@ -148,14 +139,15 @@ private:
 	SS_PlayerData	*m_pPlayerData[MAX_PLAYERS];
 	// this is temp storage for faster access than going through the playerdata map to store everything
 	extradata_t		*m_pEntIndexToExtraData[MAX_PLAYERS]; // 33 slot servers will break if this is only set to 33 indicies
-#ifndef PUBLIC_RELEASE
-	CWebStatsHandlerThread	*m_pWebStatsThread;
+#ifdef PUBLIC_RELEASE
+	CNullWebStatsHandler *m_pWebStatsHandler;
+#else
+	CWebStatsHandler *m_pWebStatsHandler;
+#endif
 	ConVarRef m_refHostname;
 	ConVarRef m_refBlueTeamName;
 	ConVarRef m_refRedTeamName;
-#endif
 	hostInfo_t m_hostInfo;
 };
 
 #endif // SIZZLING_STATS_H
-

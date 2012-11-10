@@ -14,7 +14,10 @@
 
 #include "curlconnection.h"
 
+#include "funcqueuethread.h"
+
 #define WEB_SERVER_IP "sizzlingstats.com/api/stats"
+#define GAMEOVER_URL "sizzlingstats.com/api/stats/gameover"
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.1"
 
 //extern CTSCallQueue		*g_pTSCallQueue;
@@ -217,178 +220,59 @@ private:
 	char					sessionId[64];
 };
 
-class CWebStatsHandlerThread: public CThread
+class CWebStatsHandler
 {
 public:
-	#pragma warning( push )
-	#pragma warning( disable : 4351 )
-	CWebStatsHandlerThread():
-		m_responseInfo()
-	{
-		m_dataListMutex.Unlock();
-		m_hostInfoMutex.Unlock();
-	}
-	#pragma warning( pop )
+	CWebStatsHandler();
+	~CWebStatsHandler();
 
-	virtual ~CWebStatsHandlerThread()
-	{
-	}
+	void ClearPlayerStats();
+	void EnqueuePlayerStats(playerWebStats_t const &item);
 
-	void SetHostData(hostInfo_t const &info)
-	{
-		m_hostInfoMutex.Lock();
+	void SetHostData(hostInfo_t const &info);
 
-		V_strncpy(m_hostInfo.m_hostname, info.m_hostname, 64);
-		V_strncpy(m_hostInfo.m_mapname, info.m_mapname, 64);
-		V_strncpy(m_hostInfo.m_bluname, info.m_bluname, 32);
-		V_strncpy(m_hostInfo.m_redname, info.m_redname, 32);
-		m_hostInfo.m_bluscore = info.m_bluscore;
-		m_hostInfo.m_redscore = info.m_redscore;
+	void GetMatchUrl( char *str, int maxlen );
+	bool HasMatchUrl();
 
-		m_hostInfoMutex.Unlock();
-	}
+	void SendStatsToWeb();
+	void SendGameOverEvent();
 
-	void ClearQueue()
-	{
-		m_dataListMutex.Lock();
-		m_webStats.RemoveAll();
-		m_dataListMutex.Unlock();
-	}
-
-	void EnqueueItem(playerWebStats_t const &item)
-	{
-		m_dataListMutex.Lock();
-		m_webStats.AddToTail( item );
-		m_dataListMutex.Unlock();
-	}
-
-	void StartThread()
-	{
-		if (IsAlive())
-		{
-			Join();
-		}
-		Start();
-	}
-
-	// used for sending the stats data
-	static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
-	{
-		CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
-		const int maxSize = size*nmemb;
-		if ( pBuffer->GetBytesRemaining() >= maxSize )
-		{
-			pBuffer->Get( ptr, maxSize );
-			return maxSize;
-		}
-		else
-		{
-			const int bytesRemaining = pBuffer->GetBytesRemaining();
-			pBuffer->Get( ptr, bytesRemaining );
-			return bytesRemaining;
-		}
-	}
-
-	// used for grabbing the sessionid and matchurl
-	static size_t header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
-	{
-		const int maxSize = size*nmemb;
-		char *data = (char*)ptr;
-
-		if ( V_strstr( data, "sessionid: " ) )
-		{
-			responseInfo *pInfo = static_cast<responseInfo*>(userdata);
-			const char *pStart = V_strstr(data, " ") + 1;
-			pInfo->SetSessionId(pStart, V_strlen(pStart)-1);
-		}
-		else if ( V_strstr( data, "matchurl: " ) )
-		{
-			responseInfo *pInfo = static_cast<responseInfo*>(userdata);
-			const char *pStart = V_strstr(data, " ") + 1;
-			pInfo->SetMatchUrl(pStart, V_strlen(pStart)-1);
-		}
-		
-		return maxSize;
-	}
-
-	virtual int Run()
-	{
-		//g_pTSCallQueue->EnqueueFunctor( CreateFunctor(pEngine, &IVEngineServer::LogPrint, (const char *)"testing thread log\n") );
-
-		CUtlBuffer postString;
-		char sessionId[64] = {0};
-		m_responseInfo.GetSessionId(sessionId, 64);
-		
-		m_hostInfoMutex.Lock();
-		hostInfo_t tempInfo(m_hostInfo);
-		m_hostInfoMutex.Unlock();
-
-		m_dataListMutex.Lock();
-		producePostString( tempInfo, m_webStats, sessionId, postString );
-		m_dataListMutex.Unlock();
-
-		m_dataListMutex.Lock();
-		m_webStats.RemoveAll();
-		m_dataListMutex.Unlock();
-
-		CCurlConnection connection;
-		if (connection.Initialize())
-		{
-			connection.SetHttpSendType(CCurlConnection::POST);
-			connection.AddHeader("Transfer-Encoding: chunked");
-			connection.AddHeader("Content-type: application/json");
-			connection.AddHeader("Expect:");
-			connection.AddHeader(HEADER_SIZZSTATS_VERSION);
-
-			if (sessionId[0] != '\0')
-			{
-				char temp[128] = {};
-				V_snprintf( temp, 128, "sessionid: %s", sessionId);
-				connection.AddHeader(temp);
-			}
-
-			connection.SetUrl(WEB_SERVER_IP);
-			connection.SetBodyReadFunction(read_callback);
-			connection.SetBodyReadUserdata(&postString);
-			connection.SetHeaderReadFunction(header_read_callback);
-			connection.SetHeaderReadUserdata(&m_responseInfo);
-
-			connection.Perform();
-			connection.Close();
-		}
-
-		return 0;
-	}
-
-	void ResetSession()
-	{
-		//Join(); // make sure we have the sessionid in an active thread before we try to reset it
-		m_responseInfo.ResetSessionId();
-		//m_responseInfo.ResetMatchUrl();
-	}
-
-	void GetMatchUrl( char *str, int maxlen )
-	{
-		m_responseInfo.GetMatchUrl(str, maxlen);
-	}
-
-	bool HasMatchUrl()
-	{
-		return m_responseInfo.HasMatchUrl();
-	}
-
-	/*virtual void OnExit()
-	{
-	}*/
+protected:
+	void SendStatsToWebInternal();
+	void SendGameOverEventInternal();
 
 private:
-	
-	CUtlVector<playerWebStats_t>	m_webStats;
-	hostInfo_t						m_hostInfo;
+	// used for sending the data
+	static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userdata);
+
+	// used for grabbing the sessionid and matchurl
+	static size_t header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata);
+
+private:
+	CFuncQueueThread m_queue;
 	CThreadMutexPthread				m_dataListMutex;
 	CThreadMutexPthread				m_hostInfoMutex;
+	CUtlVector<playerWebStats_t>	m_webStats;
+	hostInfo_t						m_hostInfo;
 	responseInfo					m_responseInfo;
 };
 
-#endif // WEB_STATS_HANDLER_H
+class CNullWebStatsHandler
+{
+public:
+	CNullWebStatsHandler() {}
+	~CNullWebStatsHandler() {}
 
+	void ClearPlayerStats() {}
+	void EnqueuePlayerStats(playerWebStats_t const &item) {}
+
+	void SetHostData(hostInfo_t const &info) {}
+
+	void GetMatchUrl( char *str, int maxlen ) {}
+	bool HasMatchUrl() { return false; }
+
+	void SendStatsToWeb() {}
+	void SendGameOverEvent() {}
+};
+
+#endif // WEB_STATS_HANDLER_H
