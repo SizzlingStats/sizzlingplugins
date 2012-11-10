@@ -68,9 +68,9 @@ public:
 
 	void	SS_TournamentMatchEnded();
 
-	void	SS_RoundStarted();
+	void	SS_RoundStarted( bool bTournamentMode );
 
-	void	SS_RoundEnded();
+	void	SS_RoundEnded( bool bTournamentMode );
 
 	//	displays the stats for use at the end of a round
 	void	SS_DisplayStats( SS_PlayerData &PlayerData );

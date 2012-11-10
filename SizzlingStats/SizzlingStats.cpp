@@ -280,12 +280,12 @@ void SizzlingStats::SS_TournamentMatchEnded()
 	m_pWebStatsHandler->SendGameOverEvent();
 }
 
-void SizzlingStats::SS_RoundStarted()
+void SizzlingStats::SS_RoundStarted( bool bTournamentMode )
 {
 	Msg( "round started\n" );
 }
 
-void SizzlingStats::SS_RoundEnded()
+void SizzlingStats::SS_RoundEnded( bool bTournamentMode )
 {
 	Msg( "round ended\n" );
 }

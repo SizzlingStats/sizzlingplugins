@@ -698,12 +698,12 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			//bool bInSetup = *m_bInSetup;
 			//bool bAwaitingReadyRestart = *m_bAwaitingReadyRestart;
 
-			//static int oldRoundState = roundstate;
+			static int oldRoundState = roundstate;
 			static bool oldWaitingForPlayers = true;
 			//static bool oldInSetup = true;
 			//static bool oldAwaitingReadyRestart = false;
 
-			/*
+			
 			if (oldRoundState != *m_iRoundState)
 			{
 				using namespace Teamplay_GameRule_States;
@@ -713,17 +713,17 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 				switch (oldRoundState)
 				{
 				case GR_STATE_RND_RUNNING:
-					m_SizzlingStats.SS_RoundStarted();
+					m_SizzlingStats.SS_RoundStarted(m_bMatchStarted);
 					break;
 				case GR_STATE_TEAM_WIN:
 				case GR_STATE_RESTART:
 				case GR_STATE_STALEMATE:
-					m_SizzlingStats.SS_RoundEnded();
+					m_SizzlingStats.SS_RoundEnded(m_bMatchStarted);
 					break;
 				default:
 					break;
 				}
-			}*/
+			}
 			if (oldWaitingForPlayers != bWaitingForPlayers)
 			{
 				using namespace Teamplay_GameRule_States;
