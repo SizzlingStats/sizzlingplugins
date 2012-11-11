@@ -54,9 +54,9 @@ void CWebStatsHandler::SendStatsToWeb()
 	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendStatsToWebInternal));
 }
 
-void CWebStatsHandler::SendGameOverEvent()
+void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 {
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal));
+	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
 }
 
 size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
@@ -140,19 +140,23 @@ void CWebStatsHandler::SendStatsToWebInternal()
 	}
 }
 
-void CWebStatsHandler::SendGameOverEventInternal()
+void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 {
 	if (m_responseInfo.HasSessionId())
 	{
 		CCurlConnection connection;
 		if (connection.Initialize())
 		{
-			connection.SetHttpSendType(CCurlConnection::PUT);
+			connection.SetHttpSendType(CCurlConnection::POST);
 			connection.AddHeader("Transfer-Encoding: chunked");
-			connection.AddHeader("Content-type: application/json");
+			//connection.AddHeader("Content-type: application/json");
 			connection.AddHeader("Expect:");
 			connection.AddHeader(HEADER_SIZZSTATS_VERSION);
 			connection.AddHeader("event: gameover");
+
+			char lengthHeader[64] = {};
+			V_snprintf( lengthHeader, 64, "matchlength: %f.0", flMatchDuration );
+			connection.AddHeader(lengthHeader);
 
 			{
 				char sessionId[64] = {};

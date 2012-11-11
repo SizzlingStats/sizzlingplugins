@@ -404,7 +404,7 @@ private:
 	//bool *m_bAwaitingReadyRestart;
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
-	bool m_bMatchStarted;
+	bool m_bTournamentMatchStarted;
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
@@ -436,7 +436,7 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	//m_bAwaitingReadyRestart(NULL),
 	m_iClientCommandIndex(0),
 	m_bShouldRecord(false),
-	m_bMatchStarted(false)
+	m_bTournamentMatchStarted(false)
 {
 }
 
@@ -712,13 +712,16 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 				oldRoundState = *m_iRoundState;
 				switch (oldRoundState)
 				{
+				case GR_STATE_PREROUND:
+					m_SizzlingStats.SS_PreRoundFreeze(m_bTournamentMatchStarted);
+					break;
 				case GR_STATE_RND_RUNNING:
-					m_SizzlingStats.SS_RoundStarted(m_bMatchStarted);
+					m_SizzlingStats.SS_RoundStarted(m_bTournamentMatchStarted);
 					break;
 				case GR_STATE_TEAM_WIN:
 				case GR_STATE_RESTART:
 				case GR_STATE_STALEMATE:
-					m_SizzlingStats.SS_RoundEnded(m_bMatchStarted);
+					m_SizzlingStats.SS_RoundEnded(m_bTournamentMatchStarted);
 					break;
 				default:
 					break;
@@ -733,18 +736,18 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 
 				if (bWaitingForPlayers == true)
 				{
-					if (m_bMatchStarted)
+					if (m_bTournamentMatchStarted)
 					{
 						m_SizzlingStats.SS_TournamentMatchEnded();
-						m_bMatchStarted = false;
+						m_bTournamentMatchStarted = false;
 					}
 				}
 				else
 				{
-					if (bTournamentMode && !m_bMatchStarted/* && IsValidState((gamerules_roundstate_t)roundstate)*/)
+					if (bTournamentMode && !m_bTournamentMatchStarted/* && IsValidState((gamerules_roundstate_t)roundstate)*/)
 					{
 						m_SizzlingStats.SS_TournamentMatchStarted();
-						m_bMatchStarted = true;
+						m_bTournamentMatchStarted = true;
 					}
 				}
 
@@ -765,10 +768,10 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 	m_CycleCount.Init( (int64)0 );
 #endif
 	pEngine->LogPrint("LevelShutdown\n");
-	if (m_bMatchStarted)
+	if (m_bTournamentMatchStarted)
 	{
 		m_SizzlingStats.SS_TournamentMatchEnded();
-		m_bMatchStarted = false;
+		m_bTournamentMatchStarted = false;
 	}
 	m_pTeamplayRoundBasedRules = NULL;
 	m_SizzlingStats.SS_DeleteAllPlayerData();

@@ -61,10 +61,12 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_pPlayerData(),
 								m_pEntIndexToExtraData(),
 								m_pWebStatsHandler(NULL),
-								m_refHostname("hostname"),
-								m_refBlueTeamName("mp_tournament_blueteamname"),
-								m_refRedTeamName("mp_tournament_redteamname"),
-								m_hostInfo()
+								m_refHostname("hostname", true),
+								m_refBlueTeamName("mp_tournament_blueteamname", true),
+								m_refRedTeamName("mp_tournament_redteamname", true),
+								m_hostInfo(),
+								m_flRoundDuration(0),
+								m_flMatchDuration(0)
 {
 	m_playerDataArchive.Init(32);
 
@@ -92,15 +94,18 @@ SizzlingStats::~SizzlingStats()
 void SizzlingStats::Load()
 {
     GetPropOffsets();
-	m_refHostname.Init( "hostname", false );
+	m_refHostname.Init("hostname", false);
 	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
 	m_refRedTeamName.Init("mp_tournament_redteamname", false);
+#ifndef PUBLIC_RELEASE
 	m_pWebStatsHandler = new CWebStatsHandler();
+#else
+	m_pWebStatsHandler = new CNullWebStatsHandler();
+#endif
 }
 
 void SizzlingStats::Unload()
 {
-	//m_pWebStatsThread->StartThread();
 	delete m_pWebStatsHandler;
 }
 
@@ -272,12 +277,21 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 void SizzlingStats::SS_TournamentMatchStarted()
 {
 	Msg( "tournament match started\n" );
+	m_flMatchDuration = Plat_FloatTime();
 }
 
 void SizzlingStats::SS_TournamentMatchEnded()
 {
 	Msg( "tournament match ended\n" );
-	m_pWebStatsHandler->SendGameOverEvent();
+	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
+	m_pWebStatsHandler->SendGameOverEvent(m_flMatchDuration);
+	SetTeamScores(0, 0);
+}
+
+void SizzlingStats::SS_PreRoundFreeze( bool bTournamentMode )
+{
+	Msg( "pre-round started\n" );
+	m_flRoundDuration = Plat_FloatTime();
 }
 
 void SizzlingStats::SS_RoundStarted( bool bTournamentMode )
@@ -285,9 +299,11 @@ void SizzlingStats::SS_RoundStarted( bool bTournamentMode )
 	Msg( "round started\n" );
 }
 
+// this is called after the endround func
 void SizzlingStats::SS_RoundEnded( bool bTournamentMode )
 {
 	Msg( "round ended\n" );
+	//m_flRoundDuration = Plat_FloatTime();
 }
 
 void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
@@ -401,6 +417,7 @@ void SizzlingStats::SS_CheckFixEndOfRoundCappers( int capper )
 
 void SizzlingStats::SS_EndOfRound()
 {
+	m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
 #ifndef PUBLIC_RELEASE
 	V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
 	V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);

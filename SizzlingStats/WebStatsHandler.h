@@ -235,11 +235,11 @@ public:
 	bool HasMatchUrl();
 
 	void SendStatsToWeb();
-	void SendGameOverEvent();
+	void SendGameOverEvent(double flMatchDuration);
 
 protected:
 	void SendStatsToWebInternal();
-	void SendGameOverEventInternal();
+	void SendGameOverEventInternal(double flMatchDuration);
 
 private:
 	// used for sending the data
@@ -272,7 +272,7 @@ public:
 	bool HasMatchUrl() { return false; }
 
 	void SendStatsToWeb() {}
-	void SendGameOverEvent() {}
+	void SendGameOverEvent(double flMatchDuration) {}
 };
 
 #endif // WEB_STATS_HANDLER_H

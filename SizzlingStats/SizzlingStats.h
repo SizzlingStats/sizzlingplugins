@@ -68,6 +68,8 @@ public:
 
 	void	SS_TournamentMatchEnded();
 
+	void	SS_PreRoundFreeze( bool bTournamentMode );
+
 	void	SS_RoundStarted( bool bTournamentMode );
 
 	void	SS_RoundEnded( bool bTournamentMode );
@@ -148,6 +150,8 @@ private:
 	ConVarRef m_refBlueTeamName;
 	ConVarRef m_refRedTeamName;
 	hostInfo_t m_hostInfo;
+	double m_flRoundDuration;
+	double m_flMatchDuration;
 };
 
 #endif // SIZZLING_STATS_H
