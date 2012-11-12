@@ -678,9 +678,13 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 	g_pTSCallQueue->callQueueGameFrame();
 
 	m_SizzlingStats.GameFrame();
+	
 	if (m_bRoundEnded)
 	{
+		// call the endgame event since a frame passed 
+		// from when it happened
 		m_SizzlingStats.SS_RoundEnded();
+		m_bRoundEnded = false;
 	}
 
 	if (m_iRoundState && m_bInWaitingForPlayers)
@@ -734,6 +738,9 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			case GR_STATE_TEAM_WIN:
 			case GR_STATE_RESTART:
 			case GR_STATE_STALEMATE:
+				// need to wait until the next frame to call endround 
+				// since the cap point stats won't be updated in the 
+				// game yet.
 				m_bRoundEnded = true;
 				break;
 			default:
