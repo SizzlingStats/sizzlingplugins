@@ -144,19 +144,15 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 {
 	if (m_responseInfo.HasSessionId())
 	{
-		/*CCurlConnection connection;
+		CCurlConnection connection;
 		if (connection.Initialize())
 		{
 			connection.SetHttpSendType(CCurlConnection::POST);
-			connection.AddHeader("Transfer-Encoding: chunked");
-			//connection.AddHeader("Content-type: application/json");
-			connection.AddHeader("Expect:");
 			connection.AddHeader(HEADER_SIZZSTATS_VERSION);
-			connection.AddHeader("event: gameover");
 
 			{
 				char lengthHeader[64] = {};
-				V_snprintf( lengthHeader, 64, "matchlength: %f.0", flMatchDuration );
+				V_snprintf( lengthHeader, 64, "matchduration: %.0f", flMatchDuration );
 				connection.AddHeader(lengthHeader);
 			}
 
@@ -169,11 +165,12 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 				connection.AddHeader(temp);
 			}
 
+			connection.SetOption(CURLOPT_POSTFIELDS, "");
 			connection.SetUrl(GAMEOVER_URL);
 
-			connection.Perform();
+			CURLcode res = connection.Perform();
 			connection.Close();
-		}*/
+		}
 		m_responseInfo.ResetSessionId();
 	}
 }
