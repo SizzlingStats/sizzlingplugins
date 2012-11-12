@@ -90,8 +90,6 @@ public:
 
 	void	SetTeamScores( int redscore, int bluscore );
 
-	void	TeamNameChange( int entindex, const char *teamname );
-
 	void	SS_TestThreading();
 
 	void	SS_UploadStats();

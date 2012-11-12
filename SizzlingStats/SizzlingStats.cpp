@@ -307,7 +307,6 @@ void SizzlingStats::SS_RoundStarted()
 	SS_AllUserChatMessage( "Stats Recording Started\n" );
 }
 
-// this is called after the endround func
 void SizzlingStats::SS_RoundEnded()
 {
 	Msg( "round ended\n" );
@@ -411,7 +410,8 @@ void SizzlingStats::SS_EndOfRound()
 		playerAndExtra data = {m_pPlayerData[i], m_pEntIndexToExtraData[i]};
 		if (data.m_pPlayerData)
 		{
-			data.m_pPlayerData->UpdateRoundData(m_nCurrentRound, m_aPropOffsets); //needs to be before the updateextradata or crash cause no vector
+			// UpdateRoundData needs to be before the UpdateExtraData or crash cause no vector
+			data.m_pPlayerData->UpdateRoundData(m_nCurrentRound, m_aPropOffsets);
 			data.m_pPlayerData->UpdateExtraData(m_nCurrentRound, *data.m_pExtraData);
 
 			if (data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex() > 1)
@@ -459,13 +459,10 @@ void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 {
 	char version[32];
 	V_snprintf( version, 32, "SizzlingStats v%s\n", pszVersion );
-	CPlayerMessage::SingleUserChatMessage( entindex, "-----------------------\n" );
 	CPlayerMessage::SingleUserChatMessage( entindex, version );
-	CPlayerMessage::SingleUserChatMessage( entindex, "Credits go to:\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "SizzlingCalamari for creation and development.\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "Drunken F00l for his insight on coding with the Source Engine.\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "Whal3r for his endless testing whenever I called him in.\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "-----------------------\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "By:\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "SizzlingCalamari\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "Technosex\n" );
 }
 
 #ifndef PUBLIC_RELEASE
@@ -520,19 +517,6 @@ void SizzlingStats::SetTeamScores( int redscore, int bluscore )
 {
 	m_hostInfo.m_redscore = redscore;
 	m_hostInfo.m_bluscore = bluscore;
-}
-
-void SizzlingStats::TeamNameChange( int entIndex, const char *teamname )
-{
-	int teamindex = m_pPlayerData[entIndex]->GetPlayerInfo()->GetTeamIndex();
-	if (teamindex == 2)
-	{
-		V_strncpy(m_hostInfo.m_redname, teamname, 32);
-	}
-	else
-	{
-		V_strncpy(m_hostInfo.m_bluname, teamname, 32);
-	}
 }
 
 #ifndef PUBLIC_RELEASE
