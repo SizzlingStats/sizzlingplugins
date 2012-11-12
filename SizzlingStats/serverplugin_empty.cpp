@@ -528,7 +528,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//HookProps();
 
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
-	//gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
+	gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
+	gameeventmanager->AddListener( this, "arena_round_start", true );
 	gameeventmanager->AddListener( this, "teamplay_round_win", true );			// end round
 	//gameeventmanager->AddListener( this, "teamplay_point_captured", true );		// point captured
 	gameeventmanager->AddListener( this, "arena_win_panel", true );
