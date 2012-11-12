@@ -33,7 +33,6 @@
     <ClInclude Include="include\CommandCallback.h" />
     <ClInclude Include="include\curlconnection.h" />
     <ClInclude Include="include\downloader.h" />
-    <ClInclude Include="include\EventQueue.h" />
     <ClInclude Include="include\FtpUploader.h" />
     <ClInclude Include="include\HtmlGenerator.h" />
     <ClInclude Include="include\HttpPost.h" />

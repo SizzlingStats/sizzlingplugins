@@ -200,7 +200,6 @@ public:
 	void		UpdateTotalData( int CurrentRound );
 	void		ResetTotalData();
 	ScoreData	GetTotalData();
-	void		FixForCapperPoints( int CurrentRound );
 
 	void		UpdateExtraData( int CurrentRound, extradata_t &dat );
 
@@ -208,7 +207,6 @@ public:
 
 	ScoreData	GetScoreData( int RoundNumber ) const;
 
-	void		SetDoFixTrue();
 	void		ResetExtraData( int CurrentRound );
 
 private:
@@ -219,7 +217,6 @@ private:
 
 	CUtlVector<ScoreData> m_aRoundScoreData;	//[Round Number][Data Number]
 	ScoreData m_aTotalScoreData;		//[data number]
-	bool bDoFix;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

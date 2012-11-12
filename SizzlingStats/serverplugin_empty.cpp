@@ -391,8 +391,8 @@ private:
 
 private:
 	SizzlingStats m_SizzlingStats;
-	CSayHook m_SayHook;
-	CSayTeamHook m_SayTeamHook;
+	//CSayHook m_SayHook;
+	//CSayTeamHook m_SayTeamHook;
 	//CSendPropHook	m_iRoundStateHook;
 	//CSendPropHook	m_bInWaitingForPlayersHook;
 	ConVarRef m_refTournamentMode;
@@ -423,8 +423,8 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
-	m_SayHook(),
-	m_SayTeamHook(),
+	//m_SayHook(),
+	//m_SayTeamHook(),
 	//m_iRoundStateHook(),
 	//m_bInWaitingForPlayersHook(),
 	m_refTournamentMode("mp_tournament"),
@@ -528,19 +528,19 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//HookProps();
 
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
-	gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
+	//gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
 	gameeventmanager->AddListener( this, "teamplay_round_win", true );			// end round
 	//gameeventmanager->AddListener( this, "teamplay_point_captured", true );		// point captured
 	gameeventmanager->AddListener( this, "arena_win_panel", true );
 	gameeventmanager->AddListener( this, "teamplay_win_panel", true );			//fix for incorrect round points
-	gameeventmanager->AddListener( this, "player_chat", true );			// player types in chat
-	gameeventmanager->AddListener( this, "player_changename", true );	// player changes name
+	//gameeventmanager->AddListener( this, "player_chat", true );			// player types in chat
+	//gameeventmanager->AddListener( this, "player_changename", true );	// player changes name
 	gameeventmanager->AddListener( this, "player_healed", true );		// player healed (not incl buffs)
 	gameeventmanager->AddListener( this, "teamplay_game_over", true );	// happens when mp_winlimit is met
 	gameeventmanager->AddListener( this, "tf_game_over", true );		// happens when mp_timelimit is met
 	gameeventmanager->AddListener( this, "medic_death", true );			// when a medic dies
 	gameeventmanager->AddListener( this, "player_say", true );
-	gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
+	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
 
 	//gameeventmanager->AddListener( this, "player_chargedeployed", true );	// when a medic deploys uber/kritz
@@ -564,8 +564,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//short 	userid 	chatting player
 	//string 	text 	chat text 
 
-	m_SayHook.Hook(cvar, "say");
-	m_SayTeamHook.Hook(cvar, "say_team");
+	//m_SayHook.Hook(cvar, "say");
+	//m_SayTeamHook.Hook(cvar, "say_team");
 
 	m_refTournamentMode.Init("mp_tournament", false);
 
@@ -579,8 +579,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::Unload( void )
 {
-	m_SayHook.Unhook(cvar);
-	m_SayTeamHook.Unhook(cvar);
+	//m_SayHook.Unhook(cvar);
+	//m_SayTeamHook.Unhook(cvar);
 	if (pEngine)
 	{
 		pEngine->LogPrint("Unload\n");
@@ -648,7 +648,7 @@ const char *CEmptyServerPlugin::GetPluginDescription( void )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::LevelInit( char const *pMapName )
 {
-	pEngine->LogPrint(UTIL_VarArgs( "LevelInit: %s\n", pMapName ));
+	//pEngine->LogPrint(UTIL_VarArgs( "LevelInit: %s\n", pMapName ));
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
 	m_pAutoUpdater->StartThread();
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
@@ -673,88 +673,69 @@ void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, in
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::GameFrame( bool simulating )
 {
-	//if ( simulating )
-	//{
 	g_pTSCallQueue->callQueueGameFrame();
-	//	curtime = engine->Time();
-	//	if ( curtime - oldtime >= 10.0 ){
-	//		oldtime = curtime;
-	//		g_pMessage->AllUserHudMsg( "HELLO WHALE\n" );
-	//		g_pMessage->AllUserHudHintText( "jajajaja\n" );
-	//	}
-	//	Bot_RunAll();
-	//}
-	//if (m_iRoundState)
-	//{
-	//	Msg( UTIL_VarArgs( "round state is now %s\n", Teamplay_GameRule_States::GetStateName((Teamplay_GameRule_States::gamerules_roundstate_t)*m_iRoundState) ) );
-	//}
-	
-	//if ( simulating )
-	//{
-		if (m_iRoundState && m_bInWaitingForPlayers /*&& m_bInSetup && m_bAwaitingReadyRestart*/)
+
+	m_SizzlingStats.GameFrame();
+
+	if (m_iRoundState && m_bInWaitingForPlayers /*&& m_bInSetup && m_bAwaitingReadyRestart*/)
+	{
+		bool bWaitingForPlayers = *m_bInWaitingForPlayers;
+		static bool oldWaitingForPlayers = true;
+
+		int roundstate = *m_iRoundState;
+		static int oldRoundState = roundstate;
+
+		if (oldWaitingForPlayers != bWaitingForPlayers)
 		{
-			int roundstate = *m_iRoundState;
-			bool bWaitingForPlayers = *m_bInWaitingForPlayers;
-			//bool bInSetup = *m_bInSetup;
-			//bool bAwaitingReadyRestart = *m_bAwaitingReadyRestart;
+			using namespace Teamplay_GameRule_States;
 
-			static int oldRoundState = roundstate;
-			static bool oldWaitingForPlayers = true;
-			//static bool oldInSetup = true;
-			//static bool oldAwaitingReadyRestart = false;
+			Msg( UTIL_VarArgs( "round state is %s\n", GetStateName((gamerules_roundstate_t)roundstate) ) );
+			bool bTournamentMode = m_refTournamentMode.GetInt() == 1;
 
-			
-			if (oldRoundState != *m_iRoundState)
+			if (bWaitingForPlayers == true)
 			{
-				using namespace Teamplay_GameRule_States;
-
-				//Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(state) ) );
-				oldRoundState = *m_iRoundState;
-				switch (oldRoundState)
+				if (m_bTournamentMatchStarted)
 				{
-				case GR_STATE_PREROUND:
-					m_SizzlingStats.SS_PreRoundFreeze(m_bTournamentMatchStarted);
-					break;
-				case GR_STATE_RND_RUNNING:
-					m_SizzlingStats.SS_RoundStarted(m_bTournamentMatchStarted);
-					break;
-				case GR_STATE_TEAM_WIN:
-				case GR_STATE_RESTART:
-				case GR_STATE_STALEMATE:
-					m_SizzlingStats.SS_RoundEnded(m_bTournamentMatchStarted);
-					break;
-				default:
-					break;
+					m_SizzlingStats.SS_TournamentMatchEnded();
+					m_bTournamentMatchStarted = false;
 				}
 			}
-			if (oldWaitingForPlayers != bWaitingForPlayers)
+			else
 			{
-				using namespace Teamplay_GameRule_States;
-
-				Msg( UTIL_VarArgs( "round state is %s\n", GetStateName((gamerules_roundstate_t)roundstate) ) );
-				bool bTournamentMode = m_refTournamentMode.GetInt() == 1;
-
-				if (bWaitingForPlayers == true)
+				if (bTournamentMode && !m_bTournamentMatchStarted/* && IsValidState((gamerules_roundstate_t)roundstate)*/)
 				{
-					if (m_bTournamentMatchStarted)
-					{
-						m_SizzlingStats.SS_TournamentMatchEnded();
-						m_bTournamentMatchStarted = false;
-					}
+					m_SizzlingStats.SS_TournamentMatchStarted();
+					m_bTournamentMatchStarted = true;
 				}
-				else
-				{
-					if (bTournamentMode && !m_bTournamentMatchStarted/* && IsValidState((gamerules_roundstate_t)roundstate)*/)
-					{
-						m_SizzlingStats.SS_TournamentMatchStarted();
-						m_bTournamentMatchStarted = true;
-					}
-				}
-
-				oldWaitingForPlayers = bWaitingForPlayers;
 			}
+
+			oldWaitingForPlayers = bWaitingForPlayers;
 		}
-	//}
+
+		if (oldRoundState != roundstate)
+		{
+			using namespace Teamplay_GameRule_States;
+
+			//Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(state) ) );
+			switch (roundstate)
+			{
+			case GR_STATE_PREROUND:
+				m_SizzlingStats.SS_PreRoundFreeze();
+				break;
+			case GR_STATE_RND_RUNNING:
+				m_SizzlingStats.SS_RoundStarted();
+				break;
+			case GR_STATE_TEAM_WIN:
+			case GR_STATE_RESTART:
+			case GR_STATE_STALEMATE:
+				m_SizzlingStats.SS_RoundEnded();
+				break;
+			default:
+				break;
+			}
+			oldRoundState = roundstate;
+		}
+	}
 }
 
 //---------------------------------------------------------------------------------
@@ -767,7 +748,7 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 	Msg( "milliseconds: %i\n", m_CycleCount.GetMilliseconds() );
 	m_CycleCount.Init( (int64)0 );
 #endif
-	pEngine->LogPrint("LevelShutdown\n");
+	//pEngine->LogPrint("LevelShutdown\n");
 	if (m_bTournamentMatchStarted)
 	{
 		m_SizzlingStats.SS_TournamentMatchEnded();
@@ -782,7 +763,7 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 {
-	pEngine->LogPrint(UTIL_VarArgs( "ClientActive: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
+	//pEngine->LogPrint(UTIL_VarArgs( "ClientActive: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
 	if( !pEdict || pEdict->IsFree() )		//TODO: decide on having the null and isfree check in the insert, or outside
 		return;								// for now... BOTH!	heuheuuehuhuehuhe
 
@@ -795,7 +776,7 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 {
-	pEngine->LogPrint(UTIL_VarArgs( "ClientDisconnect: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
+	//pEngine->LogPrint(UTIL_VarArgs( "ClientDisconnect: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
 	if( !pEdict || pEdict->IsFree() )
 		return;
 	m_SizzlingStats.SS_DeletePlayer( pEdict );
@@ -808,15 +789,15 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientPutInServer( edict_t *pEntity, char const *playername )
 {
-	pEngine->LogPrint(UTIL_VarArgs( "ClientPutInServer: %s, %u, %u\n", playername, (unsigned int)pEntity, pEngine->IndexOfEdict(pEntity) ));
-	if( !pEntity || pEntity->IsFree() )
-		return;
+	//pEngine->LogPrint(UTIL_VarArgs( "ClientPutInServer: %s, %u, %u\n", playername, (unsigned int)pEntity, pEngine->IndexOfEdict(pEntity) ));
+	//if( !pEntity || pEntity->IsFree() )
+	//	return;
 
-	IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo( pEntity );
-	if (pPlayerInfo)
-		Msg("player: %s put in server\n", pPlayerInfo->GetName() );
-	else
-		Msg("ClientPutInServer error\n");
+	//IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo( pEntity );
+	//if (pPlayerInfo)
+	//	Msg("player: %s put in server\n", pPlayerInfo->GetName() );
+	//else
+	//	Msg("ClientPutInServer error\n");
 
 	//KeyValues *kv = new KeyValues( "msg" );
 	//kv->SetString( "title", "Hello" );
@@ -835,8 +816,8 @@ void CEmptyServerPlugin::SetCommandClient( int index )
 {
 	++index;
 	m_iClientCommandIndex = index;
-	m_SayHook.SetCommandClient(index);
-	m_SayTeamHook.SetCommandClient(index);
+	//m_SayHook.SetCommandClient(index);
+	//m_SayTeamHook.SetCommandClient(index);
 }
 
 //---------------------------------------------------------------------------------
@@ -867,12 +848,12 @@ void CEmptyServerPlugin::ClientSettingsChanged( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CEmptyServerPlugin::ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen )
 {
-	pEngine->LogPrint(UTIL_VarArgs( "ClientConnect: %s, %u, %u\n", pszName, (unsigned int)pEntity, pEngine->IndexOfEdict(pEntity) ));
-	IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo( pEntity );
-	if (pPlayerInfo)
-		Msg("player: %s connected\n", pPlayerInfo->GetName() );
-	else
-		Msg("ClientConnect error\n");
+	//pEngine->LogPrint(UTIL_VarArgs( "ClientConnect: %s, %u, %u\n", pszName, (unsigned int)pEntity, pEngine->IndexOfEdict(pEntity) ));
+	//IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo( pEntity );
+	//if (pPlayerInfo)
+	//	Msg("player: %s connected\n", pPlayerInfo->GetName() );
+	//else
+	//	Msg("ClientConnect error\n");
 
 	return PLUGIN_CONTINUE;
 }
@@ -909,18 +890,18 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientConnect( bool *bAllowConnect, edict_t *p
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CCommand &args )
 {
-	const char *pcmd = args[0];
+	//const char *pcmd = args[0];
 
-	if ( !pEntity || pEntity->IsFree() ) 
-	{
-		return PLUGIN_CONTINUE;
-	}
+	//if ( !pEntity || pEntity->IsFree() ) 
+	//{
+	//	return PLUGIN_CONTINUE;
+	//}
 
-	if ( SCHelpers::FStrEq( pcmd, "closed_htmlpage" ) )
-	{
-		Msg( "index: %i, closed_htmlpage\n", m_iClientCommandIndex );
-		//g_pMessage->SingleUserEmptyVGUIMenu( m_iClientCommandIndex );
-	}
+	//if ( SCHelpers::FStrEq( pcmd, "closed_htmlpage" ) )
+	//{
+	//	Msg( "index: %i, closed_htmlpage\n", m_iClientCommandIndex );
+	//	//g_pMessage->SingleUserEmptyVGUIMenu( m_iClientCommandIndex );
+	//}
 
 	//if ( FStrEq( pcmd, "SA_changefov" ) )
 	//{
@@ -998,7 +979,7 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CEmptyServerPlugin::NetworkIDValidated( const char *pszUserName, const char *pszNetworkID )
 {
-	pEngine->LogPrint(UTIL_VarArgs( "NetworkIDValidated: %s, %s\n", pszUserName, pszNetworkID ));
+	//pEngine->LogPrint(UTIL_VarArgs( "NetworkIDValidated: %s, %s\n", pszUserName, pszNetworkID ));
 	return PLUGIN_CONTINUE;
 }
 
@@ -1240,123 +1221,57 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	using namespace SCHelpers;
 
 	const char * name = event->GetName();
-	//Msg( "CEmptyServerPlugin::FireGameEvent: Got event \"%s\"\n", name );
-/*	if ( FStrEq( name, "player_shoot" ) )
-	{
-		Msg( "userid %i fired weapon\n", event->GetInt( "userid" ) );
-		int userid = event->GetInt( "userid" );
-		m_SizzlingStats.m_UserIDToExtraDataMap.Element( m_SizzlingStats.m_UserIDToExtraDataMap.Find( userid ) ).shots_fired += 1;
-	}
-	else */if ( m_bShouldRecord && FStrEq( name, "player_healed" ) )
+
+	if ( m_bShouldRecord && FStrEq( name, "player_healed" ) )
 	{
 		IGameEvent &gameevent = *event;
 		int patient = gameevent.GetInt( "patient" );
-		if ( patient == gameevent.GetInt( "healer" ) )
-			return;
-
-		//m_SizzlingStats.m_UserIDToExtraDataMap.Element( m_SizzlingStats.m_UserIDToExtraDataMap.Find( patient ) ).healsrecv += gameevent.GetInt( "amount" );
-		int patientIndex = g_pUserIdTracker->GetEntIndex( patient );
-		if (patientIndex > 0)
-			m_SizzlingStats.getEntIndexToExtraData()[patientIndex]->healsrecv += gameevent.GetInt( "amount" );
+		if ( patient != gameevent.GetInt( "healer" ) )
+		{
+			int patientIndex = g_pUserIdTracker->GetEntIndex( patient );
+			if (patientIndex > 0)
+			{
+				m_SizzlingStats.getEntIndexToExtraData()[patientIndex]->healsrecv += gameevent.GetInt( "amount" );
+			}
+		}
 	}
-	//else if ( FStrEq( name, "player_spawn" ) )
-	//{
-	//	int nClass = event->GetInt( "class" );
-	//	if ( nClass != 5 )	// 5 is medic
-	//		return;
-
-	//	int userid = event->GetInt( "userid" );
-	//	m_SizzlingStats.m_UserIDToExtraDataMap.Element( m_SizzlingStats.m_UserIDToExtraDataMap.Find( userid ) ).currentubertime
-	//}
-	//else if ( FStrEq( name, "player_chargedeployed" ) )
-	//{
-	//	int medic = event->GetInt( "userid" );
-
-	//}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{
-		IGameEvent &gameevent = *event;
-		int killerIndex = g_pUserIdTracker->GetEntIndex( gameevent.GetInt( "attacker" ) );	// med picks
-		int victimIndex = g_pUserIdTracker->GetEntIndex( gameevent.GetInt( "userid" ) );
-		bool charged = gameevent.GetBool( "charged" ); // med drops
+		int killerIndex = g_pUserIdTracker->GetEntIndex( event->GetInt( "attacker" ) );	// med picks
+		int victimIndex = g_pUserIdTracker->GetEntIndex( event->GetInt( "userid" ) );
+		bool charged = event->GetBool( "charged" ); // med drops
 
 		if ( killerIndex > 0 && killerIndex != victimIndex )
+		{
 			m_SizzlingStats.getEntIndexToExtraData()[killerIndex]->medpicks += 1;
+		}
 
 		if ( charged && victimIndex > 0 )
+		{
 			m_SizzlingStats.getEntIndexToExtraData()[victimIndex]->ubersdropped += 1;
+		}
 	}
 	else if ( FStrEq( name, "teamplay_round_win" ) || FStrEq( name, "teamplay_round_stalemate" ) )
 	{
 		m_bShouldRecord = false;
-		m_SizzlingStats.SS_AllUserChatMessage( "Stats Recording Stopped\n" );
-		m_SizzlingStats.SS_EndOfRound();
 	}
 	else if ( FStrEq( name, "teamplay_round_active" ) || FStrEq( name, "arena_round_start" ) )
 	{
-		m_SizzlingStats.SS_ResetData();
 		m_bShouldRecord = true;
-		m_SizzlingStats.SS_AllUserChatMessage( "Stats Recording Started\n" );
-		//GetEntityByClassname( "CTeam" );
 	}
 	else if ( FStrEq( name, "teamplay_win_panel" ) || FStrEq( name, "arena_win_panel" ) )
 	{
-		//pEngine->LogPrint(UTIL_VarArgs( "[SIZZLOG]: winreason '%i'\n", event->GetInt("winreason")));
-		//pEngine->LogPrint(UTIL_VarArgs( "[SIZZLOG]: bluescore: '%i', redscore '%i'\n", event->GetInt("blue_score"), event->GetInt("red_score")));
 		m_SizzlingStats.SetTeamScores(event->GetInt("red_score"), event->GetInt("blue_score"));
-
-
-		//if ( event->GetInt("winreason") == 1 ) //Reason: 1=CP 3=Flag 4=defended 5=Stalemate/Death 7=flag maybe
-		//{
-		//	char cappers[32] = "";
-		//	V_strncpy( cappers, event->GetString( "cappers" ), 32);
-		//	int length = V_strlen( cappers );
-		//	for (int i = 0; i < length; i++)
-		//	{
-		//		m_SizzlingStats.SS_CheckFixEndOfRoundCappers( cappers[i] );
-		//	}
-		//}
-		
-		//Msg( "time of win panel: %f\n", gpGlobals->curtime );
-		float time = gpGlobals->curtime;
-		//GetEventInt(event, "winreason");    //Reason: 1=CP 3=Flag 4=defended 5=Stalemate/Death like below.
-		if ( time - m_SizzlingStats.SS_GetTimeOfLastCap() < 0.00001 )
-		{
-			char cappers[32] = "";
-			V_strncpy( cappers, event->GetString( "cappers" ), 32);
-			int length = V_strlen( cappers );
-			for (int i = 0; i < length; ++i)
-			{
-				m_SizzlingStats.SS_CheckFixEndOfRoundCappers( cappers[i] );
-
-				//int index = cappers[i];
-				//Msg("%i captured a point\n", index );
-				//m_SizzlingStats.SS_PrintIndex();
-			}
-		}
-	}
-	else if ( FStrEq( name, "teamplay_point_captured" ) )
-	{
-		//Msg( "time of cap: %f\n", gpGlobals->curtime );
-		//Msg( "cp name: %s\n", event->GetString( "cpname" ) );
-		m_SizzlingStats.SS_SetTimeOfLastCap( gpGlobals->curtime );
-
 	}
 	else if ( /*FStrEq( name, "teamplay_game_over" ) ||*/ FStrEq( name, "tf_game_over" ) )
 	{
 		CPlayerMessage::AllUserChatMessage( "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n" );
 		CPlayerMessage::AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
-		m_SizzlingStats.SS_GameOver();
-	}
-	/*else if ( FStrEq( name, "tournament_stateupdate" ) )
-	{
-		if (event->GetBool("namechange"))
+		if (m_bTournamentMatchStarted)
 		{
-			int id = UserIDToEntIndex(event->GetInt("userid"));
-			// ent index to get the team id to change the name of
-			m_SizzlingStats.TeamNameChange( id, event->GetString("newname") );
+			CPlayerMessage::AllUserChatMessage( "\x03To view the match stats, type \".ss_showstats\"\n" );
 		}
-	}*/
+	}
 	else if ( FStrEq( name, "player_say" ) )
 	{
 		const char *text = event->GetString( "text" );
@@ -1365,10 +1280,12 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
 			if ( entindex != 0 )
+			{
 				m_SizzlingStats.SS_Credits( entindex, PLUGIN_VERSION );
+			}
 		}
 #ifndef PUBLIC_RELEASE
-		else if ( FStrEq( text, ".testshowstats" ) )
+		else if ( FStrEq( text, ".ss_showstats" ) )
 		{
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );

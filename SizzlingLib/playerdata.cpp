@@ -51,8 +51,7 @@ SS_PlayerData::SS_PlayerData():
 }
 
 SS_PlayerData::SS_PlayerData( edict_t *pEdict, IPlayerInfo *pInfo ):
-	m_BasePlayerData( pEdict, pInfo ),
-	bDoFix( false )
+	m_BasePlayerData( pEdict, pInfo )
 {
 }
 
@@ -64,17 +63,17 @@ void SS_PlayerData::UpdateRoundData( int CurrentRound, const unsigned int pPropO
 {
 	ScoreData scoreData;
 	for (int i = 0; i < 20; i++)
+	{
 		scoreData.data[i] = GetDataFromOffset(i, pPropOffsets);
+	}
 
 	if ( !m_aRoundScoreData.IsValidIndex( CurrentRound ) )
-		m_aRoundScoreData.AddToTail( scoreData );
-	else
-		m_aRoundScoreData.Element( CurrentRound ) = scoreData;
-
-	if ( bDoFix )
 	{
-		FixForCapperPoints( CurrentRound );
-		bDoFix = false;
+		m_aRoundScoreData.AddToTail( scoreData );
+	}
+	else
+	{
+		m_aRoundScoreData.Element( CurrentRound ) = scoreData;
 	}
 }
 
@@ -93,12 +92,6 @@ void SS_PlayerData::ResetTotalData()
 ScoreData SS_PlayerData::GetTotalData()
 {
 	return m_aTotalScoreData;
-}
-
-void SS_PlayerData::FixForCapperPoints( int CurrentRound )
-{
-	m_aRoundScoreData.Element( CurrentRound ).data[ Captures ] += 1;
-	m_aRoundScoreData.Element( CurrentRound ).data[ Points ] += 2;
 }
 
 void SS_PlayerData::UpdateExtraData( int CurrentRound, extradata_t &dat )
@@ -120,11 +113,6 @@ int SS_PlayerData::GetStat( int RoundNumber, int StatID )
 ScoreData SS_PlayerData::GetScoreData( int RoundNumber ) const
 {
 	return m_aRoundScoreData.Element(RoundNumber);
-}
-
-void SS_PlayerData::SetDoFixTrue()
-{
-	bDoFix = true;
 }
 
 void SS_PlayerData::ResetExtraData( int CurrentRound )

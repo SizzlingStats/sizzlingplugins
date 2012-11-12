@@ -56,7 +56,7 @@ void CWebStatsHandler::SendStatsToWeb()
 
 void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 {
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
+	//m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
 }
 
 size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
@@ -154,9 +154,11 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 			connection.AddHeader(HEADER_SIZZSTATS_VERSION);
 			connection.AddHeader("event: gameover");
 
-			char lengthHeader[64] = {};
-			V_snprintf( lengthHeader, 64, "matchlength: %f.0", flMatchDuration );
-			connection.AddHeader(lengthHeader);
+			{
+				char lengthHeader[64] = {};
+				V_snprintf( lengthHeader, 64, "matchlength: %f.0", flMatchDuration );
+				connection.AddHeader(lengthHeader);
+			}
 
 			{
 				char sessionId[64] = {};

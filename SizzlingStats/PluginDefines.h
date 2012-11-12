@@ -7,10 +7,16 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-#define PLUGIN_VERSION "0.8.3.7"
-//#define RELEASE_VERSION
+//#define PUBLIC_RELEASE 1
 
-#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/test/"
+#ifdef PUBLIC_RELEASE
+	#define PLUGIN_VERSION "0.8.3.7"
+	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
+#else
+	#define PLUGIN_VERSION "0.9.0.0"
+	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
+#endif
+//#define RELEASE_VERSION
 
 #ifdef _WIN32
 #define META  "metawin32.txt"
@@ -32,9 +38,9 @@
 #define USING_SIZZ_FILE_SYSTEM
 
 #ifdef USING_SIZZ_FILE_SYSTEM
-#define PLUGIN_PATH "tf/addons/sizzlingplugins/sizzlingstats/bin/"
+#define PLUGIN_PATH "tf/addons/sizzlingplugins/sizzlingstats/"
 #else
-#define PLUGIN_PATH "addons/sizzlingplugins/sizzlingstats/bin/"
+#define PLUGIN_PATH "addons/sizzlingplugins/sizzlingstats/"
 #endif
 
 static const char *s_pluginInfo[] = 
@@ -47,7 +53,5 @@ static const char *s_pluginInfo[] =
 };
 
 #define REQUIRE_RESTART_FOR_UPDATES
-
-//#define PUBLIC_RELEASE 1
 
 #endif // PLUGIN_DEFINES_H

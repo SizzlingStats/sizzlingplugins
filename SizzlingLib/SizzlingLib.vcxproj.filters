@@ -74,9 +74,6 @@
     <ClInclude Include="include\downloader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\EventQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\FtpUploader.h">
       <Filter>Header Files</Filter>
     </ClInclude>

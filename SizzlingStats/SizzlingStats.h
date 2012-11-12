@@ -46,6 +46,8 @@ public:
 	// called on level start
 	void	LevelInit(const char *pMapName);
 
+	void	GameFrame();
+
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( edict_t *pEdict );
 
@@ -68,20 +70,14 @@ public:
 
 	void	SS_TournamentMatchEnded();
 
-	void	SS_PreRoundFreeze( bool bTournamentMode );
+	void	SS_PreRoundFreeze();
 
-	void	SS_RoundStarted( bool bTournamentMode );
+	void	SS_RoundStarted();
 
-	void	SS_RoundEnded( bool bTournamentMode );
+	void	SS_RoundEnded();
 
 	//	displays the stats for use at the end of a round
 	void	SS_DisplayStats( SS_PlayerData &PlayerData );
-
-	//	print the player index
-	void	SS_PrintIndex();
-
-	//	fix for the cappers' score and caps from the win panel event
-	void	SS_CheckFixEndOfRoundCappers( int capper );
 
 	//	called when the round ends
 	void	SS_EndOfRound();
@@ -102,20 +98,8 @@ public:
 
 	void	SS_ShowHtmlStats( int entindex );
 
-	void	SS_GameOver();
-
 	//	gets the prop offest
 	void	GetPropOffsets();
-
-	float	SS_GetTimeOfLastCap() const
-	{
-		return m_flTimeOfLastCap;
-	}
-
-	void	SS_SetTimeOfLastCap( float time )
-	{
-		m_flTimeOfLastCap = time;
-	}
 
 	extradata_t **getEntIndexToExtraData()
 	{
@@ -127,7 +111,6 @@ private:
 	unsigned int	m_PlayerFlagsOffset;
 	unsigned int	m_TeamRoundsWonOffset;
 	unsigned int	m_PlayerClassOffset;
-	float			m_flTimeOfLastCap;
 
 	int				m_nCurrentPlayers;
 	int				m_nCurrentRound;
@@ -152,6 +135,8 @@ private:
 	hostInfo_t m_hostInfo;
 	double m_flRoundDuration;
 	double m_flMatchDuration;
+	bool m_bShowStats;
+	bool m_bTournamentMatchRunning;
 };
 
 #endif // SIZZLING_STATS_H

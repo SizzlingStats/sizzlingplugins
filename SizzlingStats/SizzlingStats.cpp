@@ -41,7 +41,7 @@ static ConVar ftp_server("sizz_stats_ftp_hostname", "ftp.myserver.com", FCVAR_DO
 static ConVar ftp_port("sizz_stats_ftp_port", "21", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP port to use when using web stats.");
 ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "Hostname of the external public directory of the FTP server.");
 
-static ConVar show_msg("sizz_stats_show_chat_messages", 0, FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
+static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
 
 #endif
 
@@ -51,7 +51,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_PlayerFlagsOffset(0), 
 								m_TeamRoundsWonOffset(0),
 								m_PlayerClassOffset(0), // what am i using this for yet??
-								m_flTimeOfLastCap(0.0f), // the stupid hack is back
 								m_nCurrentPlayers(0),
 								m_nCurrentRound(0),
 								m_playerDataArchive(),
@@ -66,7 +65,9 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_refRedTeamName("mp_tournament_redteamname", true),
 								m_hostInfo(),
 								m_flRoundDuration(0),
-								m_flMatchDuration(0)
+								m_flMatchDuration(0),
+								m_bShowStats(false),
+								m_bTournamentMatchRunning(false)
 {
 	m_playerDataArchive.Init(32);
 
@@ -111,6 +112,15 @@ void SizzlingStats::Unload()
 
 void SizzlingStats::LevelInit(const char *pMapName)
 {
+}
+
+void SizzlingStats::GameFrame()
+{
+	if (m_bShowStats)
+	{
+		SS_EndOfRound();
+		m_bShowStats = false;
+	}
 }
 
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
@@ -277,32 +287,38 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 void SizzlingStats::SS_TournamentMatchStarted()
 {
 	Msg( "tournament match started\n" );
+	m_bTournamentMatchRunning = true;
 	m_flMatchDuration = Plat_FloatTime();
 }
 
 void SizzlingStats::SS_TournamentMatchEnded()
 {
 	Msg( "tournament match ended\n" );
+	m_bTournamentMatchRunning = false;
 	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
 	m_pWebStatsHandler->SendGameOverEvent(m_flMatchDuration);
 	SetTeamScores(0, 0);
 }
 
-void SizzlingStats::SS_PreRoundFreeze( bool bTournamentMode )
+void SizzlingStats::SS_PreRoundFreeze()
 {
 	Msg( "pre-round started\n" );
 	m_flRoundDuration = Plat_FloatTime();
 }
 
-void SizzlingStats::SS_RoundStarted( bool bTournamentMode )
+void SizzlingStats::SS_RoundStarted()
 {
 	Msg( "round started\n" );
+	SS_ResetData();
+	SS_AllUserChatMessage( "Stats Recording Started\n" );
 }
 
 // this is called after the endround func
-void SizzlingStats::SS_RoundEnded( bool bTournamentMode )
+void SizzlingStats::SS_RoundEnded()
 {
 	Msg( "round ended\n" );
+	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
+	m_bShowStats = true;
 	//m_flRoundDuration = Plat_FloatTime();
 }
 
@@ -397,35 +413,8 @@ void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 	SS_SingleUserChatMessage( pEntity, pText );
 }
 
-void SizzlingStats::SS_PrintIndex()
-{
-	//FOR_EACH_MAP_FAST( m_SteamidToPlayerDataMap, itMapData )
-	//{
-	//	PlayerData *pData = m_SteamidToPlayerDataMap.Element( itMapData );
-	//	Msg( "name: %s, index: %i\n", pEngine->IndexOfEdict( pServerEnts->BaseEntityToEdict( pData->GetBaseEntity() ) ) );
-	//}
-}
-
-// capper is an ent index
-void SizzlingStats::SS_CheckFixEndOfRoundCappers( int capper )
-{
-	if (m_pPlayerData[capper])
-	{
-		m_pPlayerData[capper]->SetDoFixTrue();
-	}
-}
-
 void SizzlingStats::SS_EndOfRound()
 {
-	m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
-#ifndef PUBLIC_RELEASE
-	V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
-	V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
-	V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
-	V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
-#endif
-	m_pWebStatsHandler->SetHostData(m_hostInfo);
-
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		playerAndExtra data = {m_pPlayerData[i], m_pEntIndexToExtraData[i]};
@@ -436,21 +425,32 @@ void SizzlingStats::SS_EndOfRound()
 
 			if (data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex() > 1)
 			{
-				playerWebStats_t stats;
-#ifndef PUBLIC_RELEASE
-				stats.m_scoreData = data.m_pPlayerData->GetScoreData(m_nCurrentRound);
-				V_strncpy(stats.m_playerInfo.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
-				V_strncpy(stats.m_playerInfo.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
-				stats.m_playerInfo.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
-#endif
-				m_pWebStatsHandler->EnqueuePlayerStats(stats);
+				if (m_bTournamentMatchRunning)
+				{
+					playerWebStats_t stats;
+					stats.m_scoreData = data.m_pPlayerData->GetScoreData(m_nCurrentRound);
+					V_strncpy(stats.m_playerInfo.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
+					V_strncpy(stats.m_playerInfo.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
+					stats.m_playerInfo.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
+					m_pWebStatsHandler->EnqueuePlayerStats(stats);
+				}
 				SS_DisplayStats( *data.m_pPlayerData );
 			}
 			data.m_pPlayerData->UpdateTotalData( m_nCurrentRound );
 			data.m_pPlayerData->ResetExtraData( m_nCurrentRound );
 		}
 	}
-	m_pWebStatsHandler->SendStatsToWeb();
+
+	if (m_bTournamentMatchRunning)
+	{
+		m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
+		V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
+		V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
+		V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
+		V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
+		m_pWebStatsHandler->SetHostData(m_hostInfo);
+		m_pWebStatsHandler->SendStatsToWeb();
+	}
 }
 
 void SizzlingStats::SS_ResetData()
@@ -573,10 +573,6 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 }
 
 #endif
-
-void SizzlingStats::SS_GameOver()
-{
-}
 
 void SizzlingStats::GetPropOffsets()
 {
