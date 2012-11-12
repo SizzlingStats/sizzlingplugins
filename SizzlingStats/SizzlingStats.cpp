@@ -66,7 +66,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_hostInfo(),
 								m_flRoundDuration(0),
 								m_flMatchDuration(0),
-								m_bShowStats(false),
 								m_bTournamentMatchRunning(false)
 {
 	m_playerDataArchive.Init(32);
@@ -116,11 +115,6 @@ void SizzlingStats::LevelInit(const char *pMapName)
 
 void SizzlingStats::GameFrame()
 {
-	if (m_bShowStats)
-	{
-		SS_EndOfRound();
-		m_bShowStats = false;
-	}
 }
 
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
@@ -318,16 +312,13 @@ void SizzlingStats::SS_RoundEnded()
 {
 	Msg( "round ended\n" );
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
-	m_bShowStats = true;
-	//m_flRoundDuration = Plat_FloatTime();
+	m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
+	SS_EndOfRound();
 }
 
 void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 {
 	char pText[64] = {};
-	//SS_PlayerData &playerData = *pPlayerData;
-	//ScoreData *pData = pPlayerData->
-	//unsigned int size = sizeof(pText);
 	int kills = playerData.GetStat(m_nCurrentRound, Kills);
 	int assists = playerData.GetStat(m_nCurrentRound, KillAssists);
 	int deaths = playerData.GetStat(m_nCurrentRound, Deaths);
@@ -443,7 +434,6 @@ void SizzlingStats::SS_EndOfRound()
 
 	if (m_bTournamentMatchRunning)
 	{
-		m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
 		V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
 		V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
 		V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);

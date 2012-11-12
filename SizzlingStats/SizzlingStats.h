@@ -135,7 +135,6 @@ private:
 	hostInfo_t m_hostInfo;
 	double m_flRoundDuration;
 	double m_flMatchDuration;
-	bool m_bShowStats;
 	bool m_bTournamentMatchRunning;
 };
 

@@ -85,7 +85,6 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 		CJsonObject outer(buff);
 		{
 			CJsonObject temp(buff, "stats");
-			//temp.InsertKV("sessionid", sessionId);
 			temp.InsertKV("map", host.m_mapname);
 			temp.InsertKV("hostname", host.m_hostname);
 			temp.InsertKV("bluname", host.m_bluname);

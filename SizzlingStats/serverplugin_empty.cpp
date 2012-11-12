@@ -405,6 +405,7 @@ private:
 	int m_iClientCommandIndex;
 	bool m_bShouldRecord;
 	bool m_bTournamentMatchStarted;
+	bool m_bRoundEnded;
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
@@ -436,7 +437,8 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	//m_bAwaitingReadyRestart(NULL),
 	m_iClientCommandIndex(0),
 	m_bShouldRecord(false),
-	m_bTournamentMatchStarted(false)
+	m_bTournamentMatchStarted(false),
+	m_bRoundEnded(false)
 {
 }
 
@@ -654,7 +656,6 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	m_pAutoUpdater->StartThread();
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	
-	
 	m_SizzlingStats.LevelInit(pMapName);
 }
 
@@ -677,8 +678,12 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 	g_pTSCallQueue->callQueueGameFrame();
 
 	m_SizzlingStats.GameFrame();
+	if (m_bRoundEnded)
+	{
+		m_SizzlingStats.SS_RoundEnded();
+	}
 
-	if (m_iRoundState && m_bInWaitingForPlayers /*&& m_bInSetup && m_bAwaitingReadyRestart*/)
+	if (m_iRoundState && m_bInWaitingForPlayers)
 	{
 		bool bWaitingForPlayers = *m_bInWaitingForPlayers;
 		static bool oldWaitingForPlayers = true;
@@ -703,7 +708,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			}
 			else
 			{
-				if (bTournamentMode && !m_bTournamentMatchStarted/* && IsValidState((gamerules_roundstate_t)roundstate)*/)
+				if (bTournamentMode && !m_bTournamentMatchStarted)
 				{
 					m_SizzlingStats.SS_TournamentMatchStarted();
 					m_bTournamentMatchStarted = true;
@@ -729,7 +734,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			case GR_STATE_TEAM_WIN:
 			case GR_STATE_RESTART:
 			case GR_STATE_STALEMATE:
-				m_SizzlingStats.SS_RoundEnded();
+				m_bRoundEnded = true;
 				break;
 			default:
 				break;
