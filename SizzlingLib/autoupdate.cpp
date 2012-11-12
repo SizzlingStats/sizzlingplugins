@@ -35,7 +35,7 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 	const char *pluginNameNoExtension = pUpdateInfo[k_ePluginNameNoExtension];
 	const char *pluginExtension = pUpdateInfo[k_ePluginExtension];
 
-	char oldPluginPath[512];
+	char oldPluginPath[512] = {};
 	V_snprintf(oldPluginPath, 512, "%s%s_old%s", pluginPath, pluginNameNoExtension, pluginExtension);
 	RemoveFile(oldPluginPath);
 
@@ -44,7 +44,7 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 		return;
 
 	const char *pluginName = pUpdateInfo[k_ePluginName];
-	char currentPluginPath[512];
+	char currentPluginPath[512] = {};
 	V_snprintf(currentPluginPath, 512, "%s%s", pluginPath, pluginName);
 
 	Msg( "[SS]: Downloading update.\n" );
@@ -65,10 +65,10 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 
 			const char *pluginDescriptionPart = pUpdateInfo[k_ePluginDescriptionPart];
 			int index = SCHelpers::GetThisPluginIndex(pluginDescriptionPart);
-			static char temp[256] = {};
+			static char temp[576] = {};
 
 			// unload the old plugin, load the new plugin
-			V_snprintf( temp, 256, "plugin_unload %i; plugin_load %s\n", index, currentPluginPath);
+			V_snprintf( temp, 576, "plugin_unload %i; plugin_load %s\n", index, currentPluginPath);
 
 			CLateBoundPtr<IVEngineServer> ppEngine(&pEngine);
 			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(ppEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
