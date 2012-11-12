@@ -56,7 +56,7 @@ void CWebStatsHandler::SendStatsToWeb()
 
 void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 {
-	//m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
+	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
 }
 
 size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
@@ -144,7 +144,7 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 {
 	if (m_responseInfo.HasSessionId())
 	{
-		CCurlConnection connection;
+		/*CCurlConnection connection;
 		if (connection.Initialize())
 		{
 			connection.SetHttpSendType(CCurlConnection::POST);
@@ -173,7 +173,7 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 
 			connection.Perform();
 			connection.Close();
-		}
+		}*/
 		m_responseInfo.ResetSessionId();
 	}
 }
