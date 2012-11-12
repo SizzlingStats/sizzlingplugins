@@ -111,7 +111,8 @@ SIZZLINGLIB_OBJS = \
 
 SIZZLINGSTATS_OBJS = \
 	$(PLUGIN_OBJ_DIR)/serverplugin_empty.o \
-	$(PLUGIN_OBJ_DIR)/SizzlingStats.o
+	$(PLUGIN_OBJ_DIR)/SizzlingStats.o \
+	$(PLUGIN_OBJ_DIR)/WebStatsHandler.o
 
 TIER0_OBJS = \
 	$(TIER0_OBJ_DIR)/memoverride.o \
