@@ -33,6 +33,7 @@ void CWebStatsHandler::SetHostData(hostInfo_t const &info)
 	V_strncpy(m_hostInfo.m_mapname, info.m_mapname, 64);
 	V_strncpy(m_hostInfo.m_bluname, info.m_bluname, 32);
 	V_strncpy(m_hostInfo.m_redname, info.m_redname, 32);
+	m_hostInfo.m_roundduration = info.m_roundduration;
 	m_hostInfo.m_bluscore = info.m_bluscore;
 	m_hostInfo.m_redscore = info.m_redscore;
 
@@ -152,7 +153,7 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 
 			{
 				char lengthHeader[64] = {};
-				V_snprintf( lengthHeader, 64, "matchduration: %.0f", flMatchDuration );
+				V_snprintf( lengthHeader, 64, "matchduration: %.0f", flMatchDuration+0.5 );
 				connection.AddHeader(lengthHeader);
 			}
 

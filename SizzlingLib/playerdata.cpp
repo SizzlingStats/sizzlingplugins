@@ -129,6 +129,16 @@ void SS_PlayerData::ResetExtraData( int CurrentRound )
 	//*(data+SumTimeCharging) = 0.0;
 }
 
+CPlayerClassTracker *SS_PlayerData::GetClassTracker()
+{
+	return &m_classTracker;
+}
+
+int	SS_PlayerData::GetClass(unsigned int playerClassOffset)
+{
+	return *((unsigned int *)(((unsigned char *)m_BasePlayerData.GetBaseEntity()) + playerClassOffset));
+}
+
 int	SS_PlayerData::GetDataFromOffset( int PropName, const unsigned int pPropOffsets[] )
 {
 	return *((unsigned int *)(((unsigned char *)m_BasePlayerData.GetBaseEntity()) + pPropOffsets[PropName]));

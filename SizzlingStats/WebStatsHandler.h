@@ -41,6 +41,7 @@ typedef struct hostInfo_s
 		m_mapname(),
 		m_bluname(),
 		m_redname(),
+		m_roundduration(0.0),
 		m_bluscore(0),
 		m_redscore(0)
 	{
@@ -51,8 +52,10 @@ typedef struct hostInfo_s
 			const char *mapname,
 			const char *bluname,
 			const char *redname,
+			double roundduration,
 			unsigned int bluscore,
 			unsigned int redscore):
+		m_roundduration(roundduration),
 		m_bluscore(bluscore),
 		m_redscore(redscore)
 	{
@@ -66,6 +69,7 @@ typedef struct hostInfo_s
 	char m_mapname[64];
 	char m_bluname[32];
 	char m_redname[32];
+	double m_roundduration;
 	unsigned char m_bluscore;
 	unsigned char m_redscore;
 } hostInfo_t;
@@ -91,6 +95,7 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 			temp.InsertKV("redname", host.m_redname);
 			temp.InsertKV("bluscore", host.m_bluscore);
 			temp.InsertKV("redscore", host.m_redscore);
+			temp.InsertKV("roundduration", static_cast<uint64>(host.m_roundduration + 0.5));
 			buff.PutString(",");
 			{
 				CJsonArray temp2(buff, "players");

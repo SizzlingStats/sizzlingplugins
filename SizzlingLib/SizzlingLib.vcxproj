@@ -18,6 +18,7 @@
     <ClCompile Include="HtmlGenerator.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
     <ClCompile Include="MRecipientFilter.cpp" />
+    <ClCompile Include="PlayerClassTracker.cpp" />
     <ClCompile Include="playerdata.cpp" />
     <ClCompile Include=".\StaticSizeVector.cpp" />
     <ClCompile Include="PlayerMessage.cpp" />
@@ -39,6 +40,7 @@
     <ClInclude Include="include\JsonUtils.h" />
     <ClInclude Include="include\MRecipientFilter.h" />
     <ClInclude Include="include\NetPropUtils.h" />
+    <ClInclude Include="include\PlayerClassTracker.h" />
     <ClInclude Include="include\playerdata.h" />
     <ClInclude Include="include\PlayerDataManager.h" />
     <ClInclude Include=".\include\StaticSizeVector.h" />

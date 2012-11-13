@@ -297,13 +297,23 @@ void SizzlingStats::SS_TournamentMatchEnded()
 void SizzlingStats::SS_PreRoundFreeze()
 {
 	Msg( "pre-round started\n" );
+	SS_ResetData();
 	m_flRoundDuration = Plat_FloatTime();
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (m_pPlayerData[i])
+		{
+			SS_PlayerData *pData = m_pPlayerData[i];
+			CPlayerClassTracker *pTracker = pData->GetClassTracker();
+			EPlayerClass player_class = static_cast<EPlayerClass>(pData->GetClass(m_PlayerClassOffset));
+			pTracker->StartRecording(player_class, Plat_FloatTime());
+		}
+	}
 }
 
 void SizzlingStats::SS_RoundStarted()
 {
 	Msg( "round started\n" );
-	SS_ResetData();
 	SS_AllUserChatMessage( "Stats Recording Started\n" );
 }
 
@@ -311,6 +321,14 @@ void SizzlingStats::SS_RoundEnded()
 {
 	Msg( "round ended\n" );
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (m_pPlayerData[i])
+		{
+			SS_PlayerData *pData = m_pPlayerData[i];
+			pData->GetClassTracker()->StopRecording(Plat_FloatTime());
+		}
+	}
 	m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
 	SS_EndOfRound();
 }
@@ -428,7 +446,7 @@ void SizzlingStats::SS_EndOfRound()
 				SS_DisplayStats( *data.m_pPlayerData );
 			}
 			data.m_pPlayerData->UpdateTotalData( m_nCurrentRound );
-			data.m_pPlayerData->ResetExtraData( m_nCurrentRound );
+			//data.m_pPlayerData->ResetExtraData( m_nCurrentRound ); // this happens in pre-round, so test commenting this
 		}
 	}
 
@@ -438,6 +456,7 @@ void SizzlingStats::SS_EndOfRound()
 		V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
 		V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
 		V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
+		m_hostInfo.m_roundduration = m_flRoundDuration;
 		m_pWebStatsHandler->SetHostData(m_hostInfo);
 		m_pWebStatsHandler->SendStatsToWeb();
 	}

@@ -39,6 +39,7 @@ enum stats
 // INCLUDES //
 //////////////
 #include "tier1/utlvector.h"
+#include "PlayerClassTracker.h"
 
 class CBaseEntity;
 class IPlayerInfo;
@@ -209,6 +210,9 @@ public:
 
 	void		ResetExtraData( int CurrentRound );
 
+	CPlayerClassTracker	*GetClassTracker();
+	int			GetClass(unsigned int playerClassOffset);
+
 private:
 	int			GetDataFromOffset( int PropName, const unsigned int pPropOffsets[]);
 
@@ -217,6 +221,7 @@ private:
 
 	CUtlVector<ScoreData> m_aRoundScoreData;	//[Round Number][Data Number]
 	ScoreData m_aTotalScoreData;		//[data number]
+	CPlayerClassTracker m_classTracker;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
