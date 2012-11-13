@@ -168,7 +168,7 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 			connection.SetOption(CURLOPT_POSTFIELDS, const_cast<char*>(""));
 			connection.SetUrl(GAMEOVER_URL);
 
-			CURLcode res = connection.Perform();
+			connection.Perform();
 			connection.Close();
 		}
 		m_responseInfo.ResetSessionId();

@@ -537,12 +537,16 @@ void SizzlingStats::SS_UploadStats()
 
 void SizzlingStats::SS_ShowHtmlStats( int entindex )
 {
-	char temp[128] = {};
 	//V_snprintf(temp, 256, "%s/sizzlingstats/asdf.html", web_hostname.GetString());
 	if (m_pWebStatsHandler->HasMatchUrl())
 	{
+		char temp[128] = {};
 		m_pWebStatsHandler->GetMatchUrl(temp, 128);
 		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp );
+	}
+	else
+	{
+		CPlayerMessage::SingleUserChatMessage( entindex, "\x03No match stats to view.\n" );
 	}
 }
 
