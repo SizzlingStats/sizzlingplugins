@@ -42,7 +42,7 @@ public:
 
 	EPlayerClass GetMostPlayedClass();
 	uint16 GetPlayedClasses();
-
+	/*
 	bool PlayedScout() const	{ return (m_classflags & PLAYED_SCOUT); }
 	bool PlayedSoldier() const	{ return (m_classflags & PLAYED_SOLDIER); }
 	bool PlayedPyro() const		{ return (m_classflags & PLAYED_PYRO); }
@@ -52,7 +52,7 @@ public:
 	bool PlayedMedic() const	{ return (m_classflags & PLAYED_MEDIC); }
 	bool PlayedSniper() const	{ return (m_classflags & PLAYED_SNIPER); }
 	bool PlayedSpy() const		{ return (m_classflags & PLAYED_SPY); }
-
+	*/
 private:
 	void ResetInfo( double curtime );
 

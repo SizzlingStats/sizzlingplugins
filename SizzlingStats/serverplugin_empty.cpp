@@ -1270,7 +1270,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	{
 		int userid = event->GetInt( "userid" );
 		int entindex = g_pUserIdTracker->GetEntIndex( userid );
-		EPlayerClass player_class = event->GetInt("class");
+		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
 		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
 	}
 	else if ( FStrEq( name, "teamplay_round_win" ) || FStrEq( name, "teamplay_round_stalemate" ) )

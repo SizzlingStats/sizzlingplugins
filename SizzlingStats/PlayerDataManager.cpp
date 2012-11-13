@@ -7,6 +7,8 @@
 #include "strtools.h"
 #include "steam/steamclientpublic.h" // for a log using accountid
 
+#pragma warning( push )
+#pragma warning( disable : 4351 )
 CPlayerDataManager::CPlayerDataManager():
 	m_pPlayerData(),
 	m_pEntIndexToExtraData(),
@@ -15,6 +17,7 @@ CPlayerDataManager::CPlayerDataManager():
 	m_nPlayers(0)
 {
 }
+#pragma warning( pop )
 
 CPlayerDataManager::~CPlayerDataManager()
 {
@@ -64,7 +67,7 @@ void CPlayerDataManager::RemovePlayer( engineContext_t &context, edict_t *pEdict
 	{
 		// TODO: verify that this can happen
 		PD_Msg("error: client not authenticated with steam, aborting delete\n");
-		return false;
+		return;
 	}
 	
 	int entIndex = context.pEngine->IndexOfEdict(pEdict);
@@ -78,7 +81,6 @@ void CPlayerDataManager::RemovePlayer( engineContext_t &context, edict_t *pEdict
 	PD_Msg( "size before delete: %i\n", m_nPlayers );
 	m_nPlayers -= 1;
 	PD_Msg( "size after delete: %i\n", m_nPlayers );
-	return true;
 }
 
 void CPlayerDataManager::RemoveAllPlayers( engineContext_t &context )
@@ -104,9 +106,10 @@ playerAndExtra_t CPlayerDataManager::GetPlayerData( int entindex )
 {
 	if (entindex >= 0 && entindex < MAX_PLAYERS)
 	{
-		return {m_pPlayerData[entindex], m_pEntIndexToExtraData[entindex]};
+		playerAndExtra_t temp = {m_pPlayerData[entindex], m_pEntIndexToExtraData[entindex]};
+		return temp;
 	}
-	return {};
+	return playerAndExtra_t();
 }
 
 int CPlayerDataManager::GetNumPlayers() const

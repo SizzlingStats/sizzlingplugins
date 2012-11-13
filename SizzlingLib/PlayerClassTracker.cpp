@@ -1,11 +1,14 @@
 
 #include "PlayerClassTracker.h"
 
+#pragma warning( push )
+#pragma warning( disable : 4351 )
 CPlayerClassTracker::CPlayerClassTracker():
 	m_timeplayed(),
 	m_classflags(0)
 {
 }
+#pragma warning( pop )
 
 CPlayerClassTracker::~CPlayerClassTracker()
 {
