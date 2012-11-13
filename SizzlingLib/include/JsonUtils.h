@@ -14,6 +14,7 @@ public:
 
 	void InsertKV( const char *key, const char *value );
 	void InsertKV( const char *key, int value );
+	void InsertKV( const char *key, unsigned int value );
 	void InsertKV( const char *key, uint64 value );
 
 private:

@@ -51,6 +51,11 @@ EPlayerClass CPlayerClassTracker::GetMostPlayedClass()
 	return static_cast<EPlayerClass>(m_mostPlayedClass);
 }
 
+uint16 CPlayerClassTracker::GetPlayedClasses()
+{
+	return m_classflags;
+}
+
 void CPlayerClassTracker::ResetInfo( double curtime )
 {
 	// reset all the data

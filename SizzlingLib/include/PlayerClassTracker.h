@@ -41,6 +41,7 @@ public:
 	void PlayerChangedClass( EPlayerClass player_class, double curtime );
 
 	EPlayerClass GetMostPlayedClass();
+	uint16 GetPlayedClasses();
 
 	bool PlayedScout() const	{ return (m_classflags & PLAYED_SCOUT); }
 	bool PlayedSoldier() const	{ return (m_classflags & PLAYED_SOLDIER); }

@@ -23,15 +23,6 @@
 //extern CTSCallQueue		*g_pTSCallQueue;
 //extern IVEngineServer	*pEngine;
 
-// don't conflict with player_info_t from cdll_int.h
-typedef struct playerInfo_s
-{
-	char m_name[32];
-	//uint64 m_steamid;
-	char m_steamid[32];
-	unsigned char m_teamid;
-} playerInfo_t;
-
 typedef struct hostInfo_s
 {
 	#pragma warning( push )
@@ -74,6 +65,17 @@ typedef struct hostInfo_s
 	unsigned char m_redscore;
 } hostInfo_t;
 
+// don't conflict with player_info_t from cdll_int.h
+typedef struct playerInfo_s
+{
+	char m_name[32];
+	//uint64 m_steamid;
+	char m_steamid[32];
+	uint16 m_mostPlayedClass;
+	uint16 m_playedClasses;
+	unsigned char m_teamid;
+} playerInfo_t;
+
 typedef struct playerWebStats_s
 {
 	playerInfo_t	m_playerInfo;
@@ -106,9 +108,12 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 						buff.PutString(",");
 					}
 					CJsonObject temp3(buff);
-					temp3.InsertKV("steamid", data[i].m_playerInfo.m_steamid);
-					temp3.InsertKV("team", data[i].m_playerInfo.m_teamid);
-					temp3.InsertKV("name", data[i].m_playerInfo.m_name);
+					const playerInfo_t *pInfo = &data[i].m_playerInfo;
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("team", pInfo->m_teamid);
+					temp3.InsertKV("name", pInfo->m_name);
+					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
+					temp3.InsertKV("playedclasses", pInfo->m_playedClasses);
 
 					const ScoreData *pScores = &data[i].m_scoreData;
 					temp3.InsertKV("kills", pScores->getStat(Kills));

@@ -45,6 +45,12 @@ void CJsonObject::InsertKV( const char *key, int value )
 	m_buff.PutInt(value);
 }
 
+void CJsonObject::InsertKV( const char *key, unsigned int value )
+{
+	InsertKey(key);
+	m_buff.PutUnsignedInt(value);
+}
+
 void CJsonObject::InsertKV( const char *key, uint64 value )
 {
 	InsertKey(key);

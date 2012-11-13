@@ -460,6 +460,9 @@ void SizzlingStats::SS_EndOfRound()
 					V_strncpy(stats.m_playerInfo.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
 					V_strncpy(stats.m_playerInfo.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
 					stats.m_playerInfo.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
+					CPlayerClassTracker *pTracker = data.m_pPlayerData->GetClassTracker();
+					stats.m_playerInfo.m_mostPlayedClass = pTracker->GetMostPlayedClass();
+					stats.m_playerInfo.m_playedClasses = pTracker->GetPlayedClasses();
 					m_pWebStatsHandler->EnqueuePlayerStats(stats);
 				}
 				SS_DisplayStats( *data.m_pPlayerData );
