@@ -102,7 +102,7 @@ void CPlayerDataManager::RemoveAllPlayers( engineContext_t &context )
 
 playerAndExtra_t CPlayerDataManager::GetPlayerData( int entindex )
 {
-	if (entindex >= 0 && entindex <= MAX_PLAYERS)
+	if (entindex >= 0 && entindex < MAX_PLAYERS)
 	{
 		return {m_pPlayerData[entindex], m_pEntIndexToExtraData[entindex]};
 	}
