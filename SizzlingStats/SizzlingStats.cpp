@@ -51,14 +51,10 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_PlayerFlagsOffset(0), 
 								m_TeamRoundsWonOffset(0),
 								m_PlayerClassOffset(0), // what am i using this for yet??
-								m_nCurrentPlayers(0),
 								m_nCurrentRound(0),
 								m_playerDataArchive(),
 								//m_playerDataArchiveVec(0, 32),
-								m_PlayerDataMemPool(MAX_PLAYERS),	// think about increasing this to
-								m_ExtraDataMemPool(MAX_PLAYERS),	// avoid the slowdown from people joining
-								m_pPlayerData(),
-								m_pEntIndexToExtraData(),
+								m_PlayerDataManager(),
 								m_pWebStatsHandler(NULL),
 								m_refHostname("hostname", true),
 								m_refBlueTeamName("mp_tournament_blueteamname", true),
@@ -87,8 +83,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 
 SizzlingStats::~SizzlingStats()
 {
-	m_PlayerDataMemPool.Clear();
-	m_ExtraDataMemPool.Clear();
 }
 
 void SizzlingStats::Load()
@@ -117,8 +111,36 @@ void SizzlingStats::GameFrame()
 {
 }
 
+void SizzlingStats::PlayerHealed( int entindex, int amount )
+{
+	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(entindex);
+	data.m_pExtraData->healsrecv += amount;
+}
+
+void SizzlingStats::MedPick( int entindex )
+{
+	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(entindex);
+	data.m_pExtraData->medpicks += 1;
+}
+
+void SizzlingStats::UberDropped( int entindex )
+{
+	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(entindex);
+	data.m_pExtraData->ubersdropped += 1;
+}
+
+void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class )
+{
+	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, Plat_FloatTime() );
+}
+
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 {
+	Msg( "SS_InsertPlayer\n" );
+	engineContext_t context = { playerinfomanager, pEngine };
+	return m_PlayerDataManager.InsertPlayer(context, pEdict);
+	
+/*
 	PROFILE_SCOPE( new_insert_player );
 	Msg( "SS_InsertPlayer\n" );
 	if ( !pEdict || pEdict->IsFree() )
@@ -181,11 +203,16 @@ bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 		m_pEntIndexToExtraData[entIndex] = data.m_pExtraData;
 	}
 	return true;
+*/
 }
 
-bool SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
+void SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
 {
 	Msg( "SS_DeletePlayer\n" );
+	engineContext_t context = { playerinfomanager, pEngine };
+	m_PlayerDataManager.RemovePlayer(context, pEdict);
+	
+/*
 	if ( !pEdict || pEdict->IsFree() )
 	{
 		SS_Msg("error: invalid edict, aborting delete\n");
@@ -215,11 +242,16 @@ bool SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
 	m_nCurrentPlayers -= 1;
 	SS_Msg( "size after delete: %i\n", m_nCurrentPlayers );
 	return true;
+*/
 }
 
-bool SizzlingStats::SS_DeleteAllPlayerData()
+void SizzlingStats::SS_DeleteAllPlayerData()
 {
 	SS_Msg( "deleting all data\n" );
+	engineContext_t context = { playerinfomanager, pEngine };
+	m_PlayerDataManager.RemoveAllPlayers(context);
+	
+/*
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (m_pPlayerData[i])
@@ -247,6 +279,7 @@ bool SizzlingStats::SS_DeleteAllPlayerData()
 	SS_Msg( "all data successfully cleared\n" );
 
 	return true;
+*/
 }
 
 void SizzlingStats::SS_Msg( const char *pMsg, ... )
@@ -298,17 +331,9 @@ void SizzlingStats::SS_PreRoundFreeze()
 {
 	Msg( "pre-round started\n" );
 	SS_ResetData();
-	m_flRoundDuration = Plat_FloatTime();
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (m_pPlayerData[i])
-		{
-			SS_PlayerData *pData = m_pPlayerData[i];
-			CPlayerClassTracker *pTracker = pData->GetClassTracker();
-			EPlayerClass player_class = static_cast<EPlayerClass>(pData->GetClass(m_PlayerClassOffset));
-			pTracker->StartRecording(player_class, Plat_FloatTime());
-		}
-	}
+	double curtime = Plat_FloatTime();
+	m_flRoundDuration = curtime;
+	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, curtime);
 }
 
 void SizzlingStats::SS_RoundStarted()
@@ -320,16 +345,10 @@ void SizzlingStats::SS_RoundStarted()
 void SizzlingStats::SS_RoundEnded()
 {
 	Msg( "round ended\n" );
+	double curtime = Plat_FloatTime();
+	m_flRoundDuration = curtime - m_flRoundDuration;
+	m_PlayerDataManager.StopClassTracking(curtime);
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (m_pPlayerData[i])
-		{
-			SS_PlayerData *pData = m_pPlayerData[i];
-			pData->GetClassTracker()->StopRecording(Plat_FloatTime());
-		}
-	}
-	m_flRoundDuration = Plat_FloatTime() - m_flRoundDuration;
 	SS_EndOfRound();
 }
 
@@ -365,7 +384,7 @@ void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 
 	memset( pText, 0, sizeof(pText) );
 	//Msg( "class: %i\n", *((int *)(((unsigned char *)playerData.GetBaseEntity()) + m_PlayerClassOffset)) );
-	if ( *((int *)(((unsigned char *)playerData.GetBaseEntity()) + m_PlayerClassOffset)) - 5 != 0 ) // if the player isn't a medic
+	if ( (playerData.GetClass(m_PlayerClassOffset) - 5) != 0 ) // if the player isn't a medic
 	{
 		V_snprintf( pText, 64, "Damage Done: %i, Heals Received (not incl. buffs): %i\n", damagedone, healsrecv );
 	}
@@ -425,7 +444,7 @@ void SizzlingStats::SS_EndOfRound()
 {
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		playerAndExtra data = {m_pPlayerData[i], m_pEntIndexToExtraData[i]};
+		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
 		{
 			// UpdateRoundData needs to be before the UpdateExtraData or crash cause no vector
@@ -466,10 +485,11 @@ void SizzlingStats::SS_ResetData()
 {
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		if (m_pPlayerData[i])
+		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
+		if (data.m_pPlayerData)
 		{
-			m_pPlayerData[i]->ResetExtraData(m_nCurrentRound);
-			m_pEntIndexToExtraData[i]->operator=(0);
+			data.m_pPlayerData->ResetExtraData(m_nCurrentRound);
+			data.m_pExtraData->operator=(0);
 		}
 	}
 }

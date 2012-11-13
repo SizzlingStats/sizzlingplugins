@@ -543,6 +543,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	gameeventmanager->AddListener( this, "tf_game_over", true );		// happens when mp_timelimit is met
 	gameeventmanager->AddListener( this, "medic_death", true );			// when a medic dies
 	gameeventmanager->AddListener( this, "player_say", true );
+	gameeventmanager->AddListener( this, "player_changeclass", true );
 	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
 
@@ -1237,14 +1238,13 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 
 	if ( m_bShouldRecord && FStrEq( name, "player_healed" ) )
 	{
-		IGameEvent &gameevent = *event;
-		int patient = gameevent.GetInt( "patient" );
-		if ( patient != gameevent.GetInt( "healer" ) )
+		int patient = event->GetInt( "patient" );
+		if ( patient != event->GetInt( "healer" ) )
 		{
 			int patientIndex = g_pUserIdTracker->GetEntIndex( patient );
 			if (patientIndex > 0)
 			{
-				m_SizzlingStats.getEntIndexToExtraData()[patientIndex]->healsrecv += gameevent.GetInt( "amount" );
+				m_SizzlingStats.PlayerHealed( patientIndex, event->GetInt("amount") );
 			}
 		}
 	}
@@ -1256,13 +1256,22 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 
 		if ( killerIndex > 0 && killerIndex != victimIndex )
 		{
-			m_SizzlingStats.getEntIndexToExtraData()[killerIndex]->medpicks += 1;
+			m_SizzlingStats.MedPick( killerIndex );
+			//m_SizzlingStats.getEntIndexToExtraData()[killerIndex]->medpicks += 1;
 		}
 
 		if ( charged && victimIndex > 0 )
 		{
-			m_SizzlingStats.getEntIndexToExtraData()[victimIndex]->ubersdropped += 1;
+			m_SizzlingStats.UberDropped( victimIndex );
+			//m_SizzlingStats.getEntIndexToExtraData()[victimIndex]->ubersdropped += 1;
 		}
+	}
+	else if ( FStrEq( name, "player_changeclass" ) )
+	{
+		int userid = event->GetInt( "userid" );
+		int entindex = g_pUserIdTracker->GetEntIndex( userid );
+		EPlayerClass player_class = event->GetInt("class");
+		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
 	}
 	else if ( FStrEq( name, "teamplay_round_win" ) || FStrEq( name, "teamplay_round_stalemate" ) )
 	{
