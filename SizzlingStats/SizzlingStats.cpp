@@ -477,11 +477,13 @@ void SizzlingStats::SS_ResetData()
 void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 {
 	char version[32];
-	V_snprintf( version, 32, "SizzlingStats v%s\n", pszVersion );
+	V_snprintf( version, 32, "\x03SizzlingStats v%s\n", pszVersion );
+	CPlayerMessage::SingleUserChatMessage( entindex, "========================\n" );
 	CPlayerMessage::SingleUserChatMessage( entindex, version );
-	CPlayerMessage::SingleUserChatMessage( entindex, "By:\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "SizzlingCalamari\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "Technosex\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "\x03\x42y:\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "\x03\tSizzlingCalamari\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "\x03\tTechnosex\n" );
+	CPlayerMessage::SingleUserChatMessage( entindex, "========================\n" );
 }
 
 #ifndef PUBLIC_RELEASE
