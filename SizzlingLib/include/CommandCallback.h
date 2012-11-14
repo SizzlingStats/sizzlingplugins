@@ -11,6 +11,148 @@ static ConVar mode( "sizz_protect_mode", "0", FCVAR_NOTIFY | FCVAR_ARCHIVE, "If 
 static bool isExploit( const CCommand &args, int ClientCommandIndex );
 static bool validString( const char **pChar );
 
+class ICommandHookCallback
+{
+private:
+	virtual bool CommandPreExecute( const CCommand &args ) = 0;
+	virtual void CommandPostExecute( const CCommand &args, bool bWasCommandExecuted ) = 0;
+};
+
+class CConCommandHook: public ICommandCallback
+{
+public:
+	CConCommandHook():
+		m_pCommand(NULL),
+		m_pCallback(NULL)
+	{
+	}
+	
+	~CConCommandHook();
+	
+	bool Hook( ICommandHookCallback *pThis, ICvar *pCvar, const char *pszCommandToHook )
+	{
+		// if the cvar pointer and the string are valid
+		// and a command isn't already hooked
+		if (pCvar && pszCommandToHook && !m_pCommand)
+		{
+			// find the current registered concommand that you want to hook
+			m_pCommand = pCvar->FindCommand( pszCommandToHook );
+			// if it was valid, return true. else false
+			if (m_pCommand)
+			{
+				if (m_pCommand->m_bUsingCommandCallbackInterface)
+				{
+					m_pCommandCallback = m_pCommand->m_pCallback;
+					m_bUsingCommandCallbackInterface = true;
+					m_bUsingNewCommandCallback = false;
+				}
+				else
+				{
+					m_bUsingCommandCallbackInterface = false;
+					if (m_pCommand->m_bUsingNewCommandCallback)
+					{
+						m_fnCommandCallback = m_pCommand->m_fnCommandCallback;
+						m_bUsingNewCommandCallback = true;
+					}
+					else
+					{
+						m_fnCommandCallbackV1 = m_pCommand->m_fnCommandCallbackV1;
+						m_bUsingNewCommandCallback = false;
+					}
+				}
+				
+				m_pCommand->m_bUsingCommandCallbackInterface = true;
+				m_pCommand->m_bUsingNewCommandCallback = false;
+				m_pCommand->m_pCommandCallback = this;
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	void Unhook()
+	{
+		m_pCommand->m_bUsingCommandCallbackInterface = m_bUsingCommandCallbackInterface;
+		m_pCommand->m_bUsingNewCommandCallback = m_bUsingNewCommandCallback;
+		if (m_pCommand->m_bUsingCommandCallbackInterface)
+		{
+			m_pCommand->m_pCommandCallback = m_pCallback;
+		}
+		else
+		{
+			if (m_pCommand->m_bUsingNewCommandCallback)
+			{
+				m_pCommand->m_fnCommandCallback = m_fnCommandCallback;
+			}
+			else
+			{
+				m_pCommand->m_fnCommandCallbackV1 = m_fnCommandCallbackV1;
+			}
+		}
+		m_pCommand = NULL;
+		m_pCallback = NULL;
+	}
+	
+	virtual void CommandCallback( const CCommand &command )
+	{
+		bool bDispatch = m_pCallback->CommandPreExecute( command );
+		if ( m_bUsingNewCommandCallback )
+		{
+			if ( m_fnCommandCallback )
+			{
+				if (bDispatch)
+				{
+					( *m_fnCommandCallback )( command );
+				}
+				m_pCallback->CommandPostExecute( command, bDispatch );
+				return;
+			}
+		}
+		else if ( m_bUsingCommandCallbackInterface )
+		{
+			if ( m_pCommandCallback )
+			{
+				if (bDispatch)
+				{
+					m_pCommandCallback->CommandCallback( command );
+				}
+				m_pCallback->CommandPostExecute( command, bDispatch );
+				return;
+			}
+		}
+		else
+		{
+			if ( m_fnCommandCallbackV1 )
+			{
+				if (bDispatch)
+				{
+					( *m_fnCommandCallbackV1 )();
+				}
+				m_pCallback->CommandPostExecute( command, bDispatch );
+				return;
+			}
+		}
+
+		// Command without callback!!!
+		AssertMsg( 0, ( "Encountered ConCommand without a callback!\n" ) );
+	}
+	
+private:
+	ConCommand *m_pCommand;
+	// only support the class based callback for now
+	ICommandHookCallback *m_pCallback;
+	
+	// data that we need to preserve before changing
+	union
+	{
+		FnCommandCallbackV1_t m_fnCommandCallbackV1;
+		FnCommandCallback_t m_fnCommandCallback;
+		ICommandCallback *m_pCommandCallback; 
+	};
+	bool m_bUsingNewCommandCallback : 1;
+	bool m_bUsingCommandCallbackInterface : 1;
+};
+
 class CConCommandHook: public ICommandCallback
 {
 public:
