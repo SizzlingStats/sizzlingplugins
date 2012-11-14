@@ -3,7 +3,7 @@
 
 CWebStatsHandler::CWebStatsHandler()
 {
-	m_dataListMutex.Unlock();
+	m_dataListAndChatMutex.Unlock();
 	m_hostInfoMutex.Unlock();
 }
 
@@ -13,16 +13,16 @@ CWebStatsHandler::~CWebStatsHandler()
 
 void CWebStatsHandler::ClearPlayerStats()
 {
-	m_dataListMutex.Lock();
+	m_dataListAndChatMutex.Lock();
 	m_webStats.RemoveAll();
-	m_dataListMutex.Unlock();
+	m_dataListAndChatMutex.Unlock();
 }
 
 void CWebStatsHandler::EnqueuePlayerStats(playerWebStats_t const &item)
 {
-	m_dataListMutex.Lock();
+	m_dataListAndChatMutex.Lock();
 	m_webStats.AddToTail(item);
-	m_dataListMutex.Unlock();
+	m_dataListAndChatMutex.Unlock();
 }
 
 void CWebStatsHandler::SetHostData(hostInfo_t const &info)
@@ -48,6 +48,13 @@ void CWebStatsHandler::GetMatchUrl( char *str, int maxlen )
 bool CWebStatsHandler::HasMatchUrl()
 {
 	return m_responseInfo.HasMatchUrl();
+}
+
+void CWebStatsHandler::PlayerChatEvent( chatInfo_t const &info )
+{
+	m_dataListAndChatMutex.Lock();
+	m_chatLog.AddToTail(info);
+	m_dataListAndChatMutex.Unlock();
 }
 
 void CWebStatsHandler::SendStatsToWeb()
@@ -108,9 +115,9 @@ void CWebStatsHandler::SendStatsToWebInternal()
 	hostInfo_t tempInfo(m_hostInfo);
 	m_hostInfoMutex.Unlock();
 
-	m_dataListMutex.Lock();
-	producePostString( tempInfo, m_webStats, sessionId, postString );
-	m_dataListMutex.Unlock();
+	m_dataListAndChatMutex.Lock();
+	producePostString( tempInfo, m_webStats, m_chatLog, sessionId, postString );
+	m_dataListAndChatMutex.Unlock();
 
 	ClearPlayerStats();
 

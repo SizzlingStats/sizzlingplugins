@@ -40,6 +40,7 @@ public:
 	void	MedPick( int entindex );
 	void	UberDropped( int entindex );
 	void	PlayerChangedClass( int entindex, EPlayerClass player_class );
+	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
 
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( edict_t *pEdict );

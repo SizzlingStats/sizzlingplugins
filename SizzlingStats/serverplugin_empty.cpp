@@ -1297,10 +1297,12 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	else if ( FStrEq( name, "player_say" ) )
 	{
 		const char *text = event->GetString( "text" );
+
 		if ( FStrEq( text, ".ss_credits" ) )
 		{
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
+			// don't try to send messages to worldspawn
 			if ( entindex != 0 )
 			{
 				m_SizzlingStats.SS_Credits( entindex, PLUGIN_VERSION );

@@ -23,6 +23,14 @@
 //extern CTSCallQueue		*g_pTSCallQueue;
 //extern IVEngineServer	*pEngine;
 
+typedef struct chatInfo_s
+{
+	uint64 m_timestamp;
+	char m_steamid[32];
+	CUtlBuffer m_message;
+	bool m_bTeamChat;
+} chatInfo_t;
+
 typedef struct hostInfo_s
 {
 	#pragma warning( push )
@@ -82,7 +90,7 @@ typedef struct playerWebStats_s
 	ScoreData		m_scoreData;
 } playerWebStats_t;
 
-static void producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const char *sessionId, CUtlBuffer &buff)
+static void producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const CUtlVector<chatInfo_t> &chatInfo, const char *sessionId, CUtlBuffer &buff)
 {
 	buff.SetBufferType(true, true);
 	
@@ -139,6 +147,24 @@ static void producePostString(const hostInfo_t &host, const CUtlVector<playerWeb
 					temp3.InsertKV("healsreceived", pScores->getStat(HealsReceived));
 					temp3.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
 					temp3.InsertKV("medpicks", pScores->getStat(MedPicks));
+				}
+			}
+			buff.PutString(",");
+			{
+				CJsonArray temp2(buff, "chats");
+				for (int i = 0; i < chatInfo.Count(); ++i)
+				{
+					if (i > 0)
+					{
+						buff.PutString(",");
+					}
+					CJsonObject temp3(buff);
+					const chatInfo_t *pInfo = &chatInfo[i];
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
+					temp3.InsertKV("time", pInfo->m_timestamp);
+					const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
+					temp3.InsertKV("message", pMessage);
 				}
 			}
 		}
@@ -243,6 +269,8 @@ public:
 	void GetMatchUrl( char *str, int maxlen );
 	bool HasMatchUrl();
 
+	void PlayerChatEvent( chatInfo_t const &info );
+
 	void SendStatsToWeb();
 	void SendGameOverEvent(double flMatchDuration);
 
@@ -259,8 +287,9 @@ private:
 
 private:
 	CFuncQueueThread m_queue;
-	CThreadMutexPthread				m_dataListMutex;
+	CThreadMutexPthread				m_dataListAndChatMutex;
 	CThreadMutexPthread				m_hostInfoMutex;
+	CUtlVector<chatInfo_t>			m_chatLog;
 	CUtlVector<playerWebStats_t>	m_webStats;
 	hostInfo_t						m_hostInfo;
 	responseInfo					m_responseInfo;

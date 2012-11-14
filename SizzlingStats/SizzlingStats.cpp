@@ -134,6 +134,16 @@ void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class 
 	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, Plat_FloatTime() );
 }
 
+void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
+{
+	chatInfo_t info;
+	info.m_bTeamChat = bTeamChat;
+	const char *pSteamId = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData->GetPlayerInfo()->GetNetworkIDString();
+	V_snprintf( info.m_steamid, 32, "%s", pSteamId );
+	info.m_timestamp = Plat_MSTime();
+	m_pWebStatsHandler->PlayerChatEvent(info);
+}
+
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 {
 	Msg( "SS_InsertPlayer\n" );
