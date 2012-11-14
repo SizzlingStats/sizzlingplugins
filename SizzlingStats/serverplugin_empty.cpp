@@ -529,13 +529,13 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	GetPropOffsets();
 	//HookProps();
 
-	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
-	gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
-	gameeventmanager->AddListener( this, "arena_round_start", true );
-	gameeventmanager->AddListener( this, "teamplay_round_win", true );			// end round
+	//gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
+	//gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
+	//gameeventmanager->AddListener( this, "arena_round_start", true );
+	//gameeventmanager->AddListener( this, "teamplay_round_win", true );			// end round
 	//gameeventmanager->AddListener( this, "teamplay_point_captured", true );		// point captured
 	gameeventmanager->AddListener( this, "arena_win_panel", true );
-	gameeventmanager->AddListener( this, "teamplay_win_panel", true );			//fix for incorrect round points
+	gameeventmanager->AddListener( this, "teamplay_win_panel", true );			// for team scores
 	//gameeventmanager->AddListener( this, "player_chat", true );			// player types in chat
 	//gameeventmanager->AddListener( this, "player_changename", true );	// player changes name
 	gameeventmanager->AddListener( this, "player_healed", true );		// player healed (not incl buffs)
@@ -684,6 +684,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 	{
 		// call the endgame event since a frame passed 
 		// from when it happened
+		m_bShouldRecord = false; // stop extra stats recording
 		m_SizzlingStats.SS_RoundEnded();
 		m_bRoundEnded = false;
 	}
@@ -731,18 +732,25 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			switch (roundstate)
 			{
 			case GR_STATE_PREROUND:
-				m_SizzlingStats.SS_PreRoundFreeze();
+				{
+					m_bShouldRecord = true; // start extra stats recording
+					m_SizzlingStats.SS_PreRoundFreeze();
+				}
 				break;
 			case GR_STATE_RND_RUNNING:
-				m_SizzlingStats.SS_RoundStarted();
+				{
+					m_SizzlingStats.SS_RoundStarted();
+				}
 				break;
 			case GR_STATE_TEAM_WIN:
 			case GR_STATE_RESTART:
 			case GR_STATE_STALEMATE:
-				// need to wait until the next frame to call endround 
-				// since the cap point stats won't be updated in the 
-				// game yet.
-				m_bRoundEnded = true;
+				{
+					// need to wait until the next frame to call endround 
+					// since the cap point stats won't be updated in the 
+					// game yet.
+					m_bRoundEnded = true;
+				}
 				break;
 			default:
 				break;
@@ -1272,14 +1280,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		int entindex = g_pUserIdTracker->GetEntIndex( userid );
 		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
 		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
-	}
-	else if ( FStrEq( name, "teamplay_round_win" ) || FStrEq( name, "teamplay_round_stalemate" ) )
-	{
-		m_bShouldRecord = false;
-	}
-	else if ( FStrEq( name, "teamplay_round_active" ) || FStrEq( name, "arena_round_start" ) )
-	{
-		m_bShouldRecord = true;
 	}
 	else if ( FStrEq( name, "teamplay_win_panel" ) || FStrEq( name, "arena_win_panel" ) )
 	{
