@@ -1,29 +1,8 @@
 
 #include "WebStatsHandler.h"
 
-CWebStatsHandler::CWebStatsHandler()
-{
-	m_dataListAndChatMutex.Unlock();
-	m_hostInfoMutex.Unlock();
-}
-
-CWebStatsHandler::~CWebStatsHandler()
-{
-}
-
-void CWebStatsHandler::ClearPlayerStats()
-{
-	m_dataListAndChatMutex.Lock();
-	m_webStats.RemoveAll();
-	m_dataListAndChatMutex.Unlock();
-}
-
-void CWebStatsHandler::EnqueuePlayerStats(playerWebStats_t const &item)
-{
-	m_dataListAndChatMutex.Lock();
-	m_webStats.AddToTail(item);
-	m_dataListAndChatMutex.Unlock();
-}
+#include "curlconnection.h"
+#include "JsonUtils.h"
 
 void CWebStatsHandler::SetHostData(hostInfo_t const &info)
 {
@@ -38,71 +17,6 @@ void CWebStatsHandler::SetHostData(hostInfo_t const &info)
 	m_hostInfo.m_redscore = info.m_redscore;
 
 	m_hostInfoMutex.Unlock();
-}
-
-void CWebStatsHandler::GetMatchUrl( char *str, int maxlen )
-{
-	m_responseInfo.GetMatchUrl(str, maxlen);
-}
-
-bool CWebStatsHandler::HasMatchUrl()
-{
-	return m_responseInfo.HasMatchUrl();
-}
-
-void CWebStatsHandler::PlayerChatEvent( chatInfo_t const &info )
-{
-	m_dataListAndChatMutex.Lock();
-	m_chatLog.AddToTail(info);
-	m_dataListAndChatMutex.Unlock();
-}
-
-void CWebStatsHandler::SendStatsToWeb()
-{
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendStatsToWebInternal));
-}
-
-void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
-{
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
-}
-
-size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
-	const int maxSize = size*nmemb;
-	if ( pBuffer->GetBytesRemaining() >= maxSize )
-	{
-		pBuffer->Get( ptr, maxSize );
-		return maxSize;
-	}
-	else
-	{
-		const int bytesRemaining = pBuffer->GetBytesRemaining();
-		pBuffer->Get( ptr, bytesRemaining );
-		return bytesRemaining;
-	}
-}
-
-size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
-{
-	const int maxSize = size*nmemb;
-	char *data = (char*)ptr;
-
-	if ( V_strstr( data, "sessionid: " ) )
-	{
-		responseInfo *pInfo = static_cast<responseInfo*>(userdata);
-		const char *pStart = V_strstr(data, " ") + 1;
-		pInfo->SetSessionId(pStart, V_strlen(pStart)-1);
-	}
-	else if ( V_strstr( data, "matchurl: " ) )
-	{
-		responseInfo *pInfo = static_cast<responseInfo*>(userdata);
-		const char *pStart = V_strstr(data, " ") + 1;
-		pInfo->SetMatchUrl(pStart, V_strlen(pStart)-1);
-	}
-		
-	return maxSize;
 }
 
 void CWebStatsHandler::SendStatsToWebInternal()
@@ -182,3 +96,123 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 		m_responseInfo.ResetSessionId();
 	}
 }
+
+size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
+	const int maxSize = size*nmemb;
+	if ( pBuffer->GetBytesRemaining() >= maxSize )
+	{
+		pBuffer->Get( ptr, maxSize );
+		return maxSize;
+	}
+	else
+	{
+		const int bytesRemaining = pBuffer->GetBytesRemaining();
+		pBuffer->Get( ptr, bytesRemaining );
+		return bytesRemaining;
+	}
+}
+
+size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
+{
+	const int maxSize = size*nmemb;
+	char *data = (char*)ptr;
+
+	if ( V_strstr( data, "sessionid: " ) )
+	{
+		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
+		const char *pStart = V_strstr(data, " ") + 1;
+		pInfo->SetSessionId(pStart, V_strlen(pStart)-1);
+	}
+	else if ( V_strstr( data, "matchurl: " ) )
+	{
+		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
+		const char *pStart = V_strstr(data, " ") + 1;
+		pInfo->SetMatchUrl(pStart, V_strlen(pStart)-1);
+	}
+		
+	return maxSize;
+}
+
+void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const CUtlVector<chatInfo_t> &chatInfo, const char *sessionId, CUtlBuffer &buff)
+{
+	buff.SetBufferType(true, true);
+	
+	// need to rewrite the json stuff recursively
+	{
+		CJsonObject outer(buff);
+		{
+			CJsonObject temp(buff, "stats");
+			temp.InsertKV("map", host.m_mapname);
+			temp.InsertKV("hostname", host.m_hostname);
+			temp.InsertKV("bluname", host.m_bluname);
+			temp.InsertKV("redname", host.m_redname);
+			temp.InsertKV("bluscore", host.m_bluscore);
+			temp.InsertKV("redscore", host.m_redscore);
+			temp.InsertKV("roundduration", static_cast<uint64>(host.m_roundduration + 0.5));
+			buff.PutString(",");
+			{
+				CJsonArray temp2(buff, "players");
+				for (int i = 0; i < data.Count(); ++i)
+				{
+					if (i > 0)
+					{
+						buff.PutString(",");
+					}
+					CJsonObject temp3(buff);
+					const playerInfo_t *pInfo = &data[i].m_playerInfo;
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("team", pInfo->m_teamid);
+					temp3.InsertKV("name", pInfo->m_name);
+					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
+					temp3.InsertKV("playedclasses", pInfo->m_playedClasses);
+
+					const ScoreData *pScores = &data[i].m_scoreData;
+					temp3.InsertKV("kills", pScores->getStat(Kills));
+					temp3.InsertKV("killassists", pScores->getStat(KillAssists));
+					temp3.InsertKV("deaths", pScores->getStat(Deaths));
+					temp3.InsertKV("captures", pScores->getStat(Captures));
+					temp3.InsertKV("defenses", pScores->getStat(Defenses));
+					temp3.InsertKV("suicides", pScores->getStat(Suicides));
+					temp3.InsertKV("dominations", pScores->getStat(Dominations));
+					temp3.InsertKV("revenge", pScores->getStat(Revenge));
+					temp3.InsertKV("buildingsbuilt", pScores->getStat(BuildingsBuilt));
+					temp3.InsertKV("buildingsdestroyed", pScores->getStat(BuildingsDestroyed));
+					temp3.InsertKV("headshots", pScores->getStat(Headshots));
+					temp3.InsertKV("backstabs", pScores->getStat(Backstabs));
+					temp3.InsertKV("healpoints", pScores->getStat(HealPoints));
+					temp3.InsertKV("invulns", pScores->getStat(Invulns));
+					temp3.InsertKV("teleports", pScores->getStat(Teleports));
+					temp3.InsertKV("damagedone", pScores->getStat(DamageDone));
+					temp3.InsertKV("crits", pScores->getStat(Crits));
+					temp3.InsertKV("resupplypoints", pScores->getStat(ResupplyPoints));
+					temp3.InsertKV("bonuspoints", pScores->getStat(BonusPoints));
+					temp3.InsertKV("points", pScores->getStat(Points));
+					temp3.InsertKV("healsreceived", pScores->getStat(HealsReceived));
+					temp3.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
+					temp3.InsertKV("medpicks", pScores->getStat(MedPicks));
+				}
+			}
+			buff.PutString(",");
+			{
+				CJsonArray temp2(buff, "chats");
+				for (int i = 0; i < chatInfo.Count(); ++i)
+				{
+					if (i > 0)
+					{
+						buff.PutString(",");
+					}
+					CJsonObject temp3(buff);
+					const chatInfo_t *pInfo = &chatInfo[i];
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
+					temp3.InsertKV("time", pInfo->m_timestamp);
+					const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
+					temp3.InsertKV("message", pMessage);
+				}
+			}
+		}
+	}
+}
+

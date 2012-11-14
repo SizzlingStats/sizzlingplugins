@@ -5,26 +5,22 @@
 #define WEB_STATS_HANDLER_H
 
 #include "queuethread.h"
-#include "JsonUtils.h"
 #include "utlbuffer.h"
-
-//#include "ThreadCallQueue.h"
-#include "playerdata.h"
-//#include "eiface.h"
-
-#include "curlconnection.h"
-
 #include "funcqueuethread.h"
+#include "playerdata.h"
 
 #define WEB_SERVER_IP "sizzlingstats.com/api/stats"
 #define GAMEOVER_URL "sizzlingstats.com/api/stats/gameover"
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.1"
 
-//extern CTSCallQueue		*g_pTSCallQueue;
-//extern IVEngineServer	*pEngine;
-
 typedef struct chatInfo_s
 {
+	chatInfo_s();
+	chatInfo_s(uint64 timestamp,
+			const char *steamid,
+			const char *message,
+			bool bTeamChat);
+	
 	uint64 m_timestamp;
 	char m_steamid[32];
 	CUtlBuffer m_message;
@@ -33,36 +29,14 @@ typedef struct chatInfo_s
 
 typedef struct hostInfo_s
 {
-	#pragma warning( push )
-	#pragma warning( disable : 4351 )
-	hostInfo_s():
-		m_hostname(),
-		m_mapname(),
-		m_bluname(),
-		m_redname(),
-		m_roundduration(0.0),
-		m_bluscore(0),
-		m_redscore(0)
-	{
-	}
-	#pragma warning( pop )
-
+	hostInfo_s();
 	hostInfo_s(const char *hostname,
 			const char *mapname,
 			const char *bluname,
 			const char *redname,
 			double roundduration,
 			unsigned int bluscore,
-			unsigned int redscore):
-		m_roundduration(roundduration),
-		m_bluscore(bluscore),
-		m_redscore(redscore)
-	{
-		V_strncpy(m_hostname, hostname, 64);
-		V_strncpy(m_mapname, mapname, 64);
-		V_strncpy(m_bluname, bluname, 32);
-		V_strncpy(m_redname, redname, 32);
-	}
+			unsigned int redscore);
 
 	char m_hostname[64];
 	char m_mapname[64];
@@ -90,170 +64,25 @@ typedef struct playerWebStats_s
 	ScoreData		m_scoreData;
 } playerWebStats_t;
 
-static void producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const CUtlVector<chatInfo_t> &chatInfo, const char *sessionId, CUtlBuffer &buff)
+typedef struct responseInfo_s
 {
-	buff.SetBufferType(true, true);
-	
-	// need to rewrite the json stuff recursively
-	{
-		CJsonObject outer(buff);
-		{
-			CJsonObject temp(buff, "stats");
-			temp.InsertKV("map", host.m_mapname);
-			temp.InsertKV("hostname", host.m_hostname);
-			temp.InsertKV("bluname", host.m_bluname);
-			temp.InsertKV("redname", host.m_redname);
-			temp.InsertKV("bluscore", host.m_bluscore);
-			temp.InsertKV("redscore", host.m_redscore);
-			temp.InsertKV("roundduration", static_cast<uint64>(host.m_roundduration + 0.5));
-			buff.PutString(",");
-			{
-				CJsonArray temp2(buff, "players");
-				for (int i = 0; i < data.Count(); ++i)
-				{
-					if (i > 0)
-					{
-						buff.PutString(",");
-					}
-					CJsonObject temp3(buff);
-					const playerInfo_t *pInfo = &data[i].m_playerInfo;
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("team", pInfo->m_teamid);
-					temp3.InsertKV("name", pInfo->m_name);
-					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
-					temp3.InsertKV("playedclasses", pInfo->m_playedClasses);
+	responseInfo_s();
 
-					const ScoreData *pScores = &data[i].m_scoreData;
-					temp3.InsertKV("kills", pScores->getStat(Kills));
-					temp3.InsertKV("killassists", pScores->getStat(KillAssists));
-					temp3.InsertKV("deaths", pScores->getStat(Deaths));
-					temp3.InsertKV("captures", pScores->getStat(Captures));
-					temp3.InsertKV("defenses", pScores->getStat(Defenses));
-					temp3.InsertKV("suicides", pScores->getStat(Suicides));
-					temp3.InsertKV("dominations", pScores->getStat(Dominations));
-					temp3.InsertKV("revenge", pScores->getStat(Revenge));
-					temp3.InsertKV("buildingsbuilt", pScores->getStat(BuildingsBuilt));
-					temp3.InsertKV("buildingsdestroyed", pScores->getStat(BuildingsDestroyed));
-					temp3.InsertKV("headshots", pScores->getStat(Headshots));
-					temp3.InsertKV("backstabs", pScores->getStat(Backstabs));
-					temp3.InsertKV("healpoints", pScores->getStat(HealPoints));
-					temp3.InsertKV("invulns", pScores->getStat(Invulns));
-					temp3.InsertKV("teleports", pScores->getStat(Teleports));
-					temp3.InsertKV("damagedone", pScores->getStat(DamageDone));
-					temp3.InsertKV("crits", pScores->getStat(Crits));
-					temp3.InsertKV("resupplypoints", pScores->getStat(ResupplyPoints));
-					temp3.InsertKV("bonuspoints", pScores->getStat(BonusPoints));
-					temp3.InsertKV("points", pScores->getStat(Points));
-					temp3.InsertKV("healsreceived", pScores->getStat(HealsReceived));
-					temp3.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
-					temp3.InsertKV("medpicks", pScores->getStat(MedPicks));
-				}
-			}
-			buff.PutString(",");
-			{
-				CJsonArray temp2(buff, "chats");
-				for (int i = 0; i < chatInfo.Count(); ++i)
-				{
-					if (i > 0)
-					{
-						buff.PutString(",");
-					}
-					CJsonObject temp3(buff);
-					const chatInfo_t *pInfo = &chatInfo[i];
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
-					temp3.InsertKV("time", pInfo->m_timestamp);
-					const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
-					temp3.InsertKV("message", pMessage);
-				}
-			}
-		}
-	}
-}
-
-struct responseInfo
-{
-	#pragma warning( push )
-	#pragma warning( disable : 4351 )
-	responseInfo(): matchUrl(), sessionId()
-	{
-		matchUrlMutex.Unlock();
-		sessionIdMutex.Unlock();
-	}
-	#pragma warning( pop )
-
-	void SetSessionId( const char *id, int lengthToCopy )
-	{
-		int size = lengthToCopy > 64 ? 64 : lengthToCopy;
-		sessionIdMutex.Lock();
-		V_strncpy(sessionId, id, size);
-		sessionIdMutex.Unlock();
-	}
-
-	void GetSessionId( char *str, int maxlen )
-	{
-		if (str)
-		{
-			sessionIdMutex.Lock();
-			V_strncpy(str, sessionId, maxlen);
-			sessionIdMutex.Unlock();
-		}
-	}
-
-	void ResetSessionId()
-	{
-		sessionIdMutex.Lock();
-		sessionId[0] = '\0';
-		sessionIdMutex.Unlock();
-	}
-
-	bool HasSessionId()
-	{
-		sessionIdMutex.Lock();
-		bool result = sessionId[0] == '\0' ? false : true;
-		sessionIdMutex.Unlock();
-		return result;
-	}
-
-	bool HasMatchUrl()
-	{
-		matchUrlMutex.Lock();
-		bool result = matchUrl[0] == '\0' ? false : true;
-		matchUrlMutex.Unlock();
-		return result;
-	}
-
-	void SetMatchUrl( const char *url, int lengthToCopy )
-	{
-		int size = lengthToCopy > 128 ? 128 : lengthToCopy;
-		matchUrlMutex.Lock();
-		V_strncpy(matchUrl, url, size);
-		matchUrlMutex.Unlock();
-	}
-
-	void GetMatchUrl( char *str, int maxlen )
-	{
-		if (str)
-		{
-			matchUrlMutex.Lock();
-			V_strncpy(str, matchUrl, maxlen);
-			matchUrlMutex.Unlock();
-		}
-	}
-
-	void ResetMatchUrl()
-	{
-		matchUrlMutex.Lock();
-		matchUrl[0] = '\0';
-		matchUrlMutex.Unlock();
-	}
+	void SetSessionId( const char *id, int lengthToCopy );
+	void GetSessionId( char *str, int maxlen );
+	void ResetSessionId();
+	bool HasSessionId();
+	bool HasMatchUrl();
+	void SetMatchUrl( const char *url, int lengthToCopy );
+	void GetMatchUrl( char *str, int maxlen );
+	void ResetMatchUrl();
 
 private:
 	CThreadMutexPthread		matchUrlMutex;
 	CThreadMutexPthread		sessionIdMutex;
 	char					matchUrl[128];
 	char					sessionId[64];
-};
+} responseInfo_t;
 
 class CWebStatsHandler
 {
@@ -284,6 +113,8 @@ private:
 
 	// used for grabbing the sessionid and matchurl
 	static size_t header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata);
+	
+	static void producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const CUtlVector<chatInfo_t> &chatInfo, const char *sessionId, CUtlBuffer &buff);
 
 private:
 	CFuncQueueThread m_queue;
@@ -292,7 +123,7 @@ private:
 	CUtlVector<chatInfo_t>			m_chatLog;
 	CUtlVector<playerWebStats_t>	m_webStats;
 	hostInfo_t						m_hostInfo;
-	responseInfo					m_responseInfo;
+	responseInfo_t					m_responseInfo;
 };
 
 class CNullWebStatsHandler
@@ -313,4 +144,183 @@ public:
 	void SendGameOverEvent(double flMatchDuration) {}
 };
 
+#pragma warning( push )
+#pragma warning( disable : 4351 ) // arrays will be default initialized
+
+inline chatInfo_s::chatInfo_s():
+	m_timestamp(0),
+	m_steamid(),
+	m_message(0, 0, CUtlBuffer::TEXT_BUFFER|CUtlBuffer::CONTAINS_CRLF),
+	m_bTeamChat(false)
+{
+}
+
+inline chatInfo_s::chatInfo_s(uint64 timestamp,
+		const char *steamid,
+		const char *message,
+		bool bTeamChat):
+	m_timestamp(timestamp),
+	m_message(0, 0, CUtlBuffer::TEXT_BUFFER|CUtlBuffer::CONTAINS_CRLF),
+	m_bTeamChat(bTeamChat)
+{
+	V_strncpy(m_steamid, steamid, 32);
+	m_message.PutString(message);
+}
+
+inline hostInfo_s::hostInfo_s():
+	m_hostname(),
+	m_mapname(),
+	m_bluname(),
+	m_redname(),
+	m_roundduration(0.0),
+	m_bluscore(0),
+	m_redscore(0)
+{
+}
+
+inline hostInfo_s::hostInfo_s(const char *hostname,
+		const char *mapname,
+		const char *bluname,
+		const char *redname,
+		double roundduration,
+		unsigned int bluscore,
+		unsigned int redscore):
+	m_roundduration(roundduration),
+	m_bluscore(bluscore),
+	m_redscore(redscore)
+{
+	V_strncpy(m_hostname, hostname, 64);
+	V_strncpy(m_mapname, mapname, 64);
+	V_strncpy(m_bluname, bluname, 32);
+	V_strncpy(m_redname, redname, 32);
+}
+
+inline responseInfo_s::responseInfo_s():
+	matchUrl(),
+	sessionId()
+{
+	matchUrlMutex.Unlock();
+	sessionIdMutex.Unlock();
+}
+
+#pragma warning( pop )
+
+inline void responseInfo_s::SetSessionId( const char *id, int lengthToCopy )
+{
+	int size = lengthToCopy > 64 ? 64 : lengthToCopy;
+	sessionIdMutex.Lock();
+	V_strncpy(sessionId, id, size);
+	sessionIdMutex.Unlock();
+}
+
+inline void responseInfo_s::GetSessionId( char *str, int maxlen )
+{
+	if (str)
+	{
+		sessionIdMutex.Lock();
+		V_strncpy(str, sessionId, maxlen);
+		sessionIdMutex.Unlock();
+	}
+}
+
+inline void responseInfo_s::ResetSessionId()
+{
+	sessionIdMutex.Lock();
+	sessionId[0] = '\0';
+	sessionIdMutex.Unlock();
+}
+
+inline bool responseInfo_s::HasSessionId()
+{
+	sessionIdMutex.Lock();
+	bool result = sessionId[0] == '\0' ? false : true;
+	sessionIdMutex.Unlock();
+	return result;
+}
+
+inline bool responseInfo_s::HasMatchUrl()
+{
+	matchUrlMutex.Lock();
+	bool result = matchUrl[0] == '\0' ? false : true;
+	matchUrlMutex.Unlock();
+	return result;
+}
+
+inline void responseInfo_s::SetMatchUrl( const char *url, int lengthToCopy )
+{
+	int size = lengthToCopy > 128 ? 128 : lengthToCopy;
+	matchUrlMutex.Lock();
+	V_strncpy(matchUrl, url, size);
+	matchUrlMutex.Unlock();
+}
+
+inline void responseInfo_s::GetMatchUrl( char *str, int maxlen )
+{
+	if (str)
+	{
+		matchUrlMutex.Lock();
+		V_strncpy(str, matchUrl, maxlen);
+		matchUrlMutex.Unlock();
+	}
+}
+
+inline void responseInfo_s::ResetMatchUrl()
+{
+	matchUrlMutex.Lock();
+	matchUrl[0] = '\0';
+	matchUrlMutex.Unlock();
+}
+
+inline CWebStatsHandler::CWebStatsHandler()
+{
+	m_dataListAndChatMutex.Unlock();
+	m_hostInfoMutex.Unlock();
+}
+
+inline CWebStatsHandler::~CWebStatsHandler()
+{
+}
+
+inline void CWebStatsHandler::ClearPlayerStats()
+{
+	m_dataListAndChatMutex.Lock();
+	m_webStats.RemoveAll();
+	m_dataListAndChatMutex.Unlock();
+}
+
+inline void CWebStatsHandler::EnqueuePlayerStats(playerWebStats_t const &item)
+{
+	m_dataListAndChatMutex.Lock();
+	m_webStats.AddToTail(item);
+	m_dataListAndChatMutex.Unlock();
+}
+
+inline void CWebStatsHandler::GetMatchUrl( char *str, int maxlen )
+{
+	m_responseInfo.GetMatchUrl(str, maxlen);
+}
+
+inline bool CWebStatsHandler::HasMatchUrl()
+{
+	return m_responseInfo.HasMatchUrl();
+}
+
+inline void CWebStatsHandler::PlayerChatEvent( chatInfo_t const &info )
+{
+	m_dataListAndChatMutex.Lock();
+	m_chatLog.AddToTail(info);
+	m_dataListAndChatMutex.Unlock();
+}
+
+inline void CWebStatsHandler::SendStatsToWeb()
+{
+	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendStatsToWebInternal));
+}
+
+inline void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
+{
+	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
+}
+
 #endif // WEB_STATS_HANDLER_H
+

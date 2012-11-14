@@ -9,7 +9,7 @@
 
 # this is the only option that you need to set
 # it should point to the dir that contains sizzlingplugins and hl2sdk-ob-valve
-BASE_DIR = FILL_THIS_IN
+BASE_DIR = ../..
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
 LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux
@@ -100,6 +100,7 @@ SIZZLINGLIB_OBJS = \
 	$(SIZZLIB_OBJ_DIR)/JsonUtils.o \
 	$(SIZZLIB_OBJ_DIR)/MRecipientFilter.o \
 	$(SIZZLIB_OBJ_DIR)/playerdata.o \
+	$(SIZZLIB_OBJ_DIR)/PlayerClassTracker.o \
 	$(SIZZLIB_OBJ_DIR)/PlayerMessage.o \
 	$(SIZZLIB_OBJ_DIR)/SC_helpers.o \
 	$(SIZZLIB_OBJ_DIR)/ServerPluginHandler.o \
