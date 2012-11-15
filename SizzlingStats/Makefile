@@ -93,6 +93,7 @@ DO_CC=nice -n 20 $(CPLUS) $(INCLUDEDIRS) -w $(CFLAGS) -DARCH=$(ARCH) -o $@ -c $<
 
 SIZZLINGLIB_OBJS = \
 	$(SIZZLIB_OBJ_DIR)/autoupdate.o \
+	$(SIZZLIB_OBJ_DIR)/ConCommandHook.o \
 	$(SIZZLIB_OBJ_DIR)/curlconnection.o \
 	$(SIZZLIB_OBJ_DIR)/downloader.o \
 	$(SIZZLIB_OBJ_DIR)/FtpUploader.o \

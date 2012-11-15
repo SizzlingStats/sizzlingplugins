@@ -137,8 +137,9 @@ void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class 
 void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 {
 	const char *pSteamId = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData->GetPlayerInfo()->GetNetworkIDString();
-
-	m_pWebStatsHandler->PlayerChatEvent(Plat_MSTime(), pSteamId, pText, bTeamChat);
+	// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
+	// so subtracting gets the time since the match started
+	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
 }
 
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )

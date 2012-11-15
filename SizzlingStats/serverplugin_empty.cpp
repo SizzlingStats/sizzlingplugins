@@ -59,7 +59,7 @@
 	#include "client_class.h"
 #endif
 
-#include "CommandCallback.h"
+#include "ConCommandHook.h"
 #include "teamplay_gamerule_states.h"
 #include "NetPropUtils.h"
 

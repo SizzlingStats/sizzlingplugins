@@ -21,7 +21,7 @@ typedef struct chatInfo_s
 			const char *message,
 			bool bTeamChat);
 	
-	uint64 m_timestamp;
+	double m_timestamp;
 	char m_steamid[32];
 	CUtlBuffer m_message;
 	bool m_bTeamChat;
@@ -98,7 +98,7 @@ public:
 	void GetMatchUrl( char *str, int maxlen );
 	bool HasMatchUrl();
 
-	void PlayerChatEvent( uint64 timestamp, const char *szSteamId, const char *szText, bool bTeamChat );
+	void PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat );
 
 	void SendStatsToWeb();
 	void SendGameOverEvent(double flMatchDuration);
@@ -309,7 +309,7 @@ inline bool CWebStatsHandler::HasMatchUrl()
 	return m_responseInfo.HasMatchUrl();
 }
 
-inline void CWebStatsHandler::PlayerChatEvent( uint64 timestamp, const char *szSteamId, const char *szText, bool bTeamChat )
+inline void CWebStatsHandler::PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat )
 {
 	m_dataListAndChatMutex.Lock();
 	int elem = m_chatLog.AddToTail();

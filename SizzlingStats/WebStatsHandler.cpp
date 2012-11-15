@@ -219,7 +219,7 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 					const chatInfo_t *pInfo = &chatInfo[i];
 					temp3.InsertKV("steamid", pInfo->m_steamid);
 					temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
-					temp3.InsertKV("time", pInfo->m_timestamp);
+					temp3.InsertKV("time", static_cast<uint64>(pInfo->m_timestamp + 0.5));
 					const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
 					temp3.InsertKV("message", pMessage);
 				}
@@ -244,7 +244,7 @@ void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUt
 				const chatInfo_t *pInfo = &chatInfo[i];
 				temp3.InsertKV("steamid", pInfo->m_steamid);
 				temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
-				temp3.InsertKV("time", pInfo->m_timestamp);
+				temp3.InsertKV("time", static_cast<uint64>(pInfo->m_timestamp + 0.5));
 				const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
 				temp3.InsertKV("message", pMessage);
 			}

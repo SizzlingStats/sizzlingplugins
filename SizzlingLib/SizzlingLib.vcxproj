@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="autoupdate.cpp" />
+    <ClCompile Include="ConCommandHook.cpp" />
     <ClCompile Include="curlconnection.cpp" />
     <ClCompile Include="downloader.cpp" />
     <ClCompile Include="FtpUploader.cpp" />
@@ -31,7 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\autoupdate.h" />
-    <ClInclude Include="include\CommandCallback.h" />
+    <ClInclude Include="include\ConCommandHook.h" />
     <ClInclude Include="include\curlconnection.h" />
     <ClInclude Include="include\downloader.h" />
     <ClInclude Include="include\FtpUploader.h" />
