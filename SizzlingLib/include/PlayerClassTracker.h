@@ -35,10 +35,10 @@ public:
 	CPlayerClassTracker();
 	~CPlayerClassTracker();
 
-	void StartRecording( EPlayerClass player_class, double curtime );
-	void StopRecording( double curtime );
+	void StartRecording( EPlayerClass player_class, uint64 curtime );
+	void StopRecording( uint64 curtime );
 
-	void PlayerChangedClass( EPlayerClass player_class, double curtime );
+	void PlayerChangedClass( EPlayerClass player_class, uint64 curtime );
 
 	EPlayerClass GetMostPlayedClass();
 	uint16 GetPlayedClasses();
@@ -54,10 +54,19 @@ public:
 	bool PlayedSpy() const		{ return (m_classflags & PLAYED_SPY); }
 	*/
 private:
-	void ResetInfo( double curtime );
+	
+	void UpdateTimes( uint64 curtime );
+	void UpdateMostPlayedClass( uint64 curtime );
+
+	void FlagClassAsPlayed( EPlayerClass player_class );
+	void ResetFlags( EPlayerClass player_class );
+	void ResetInfo( EPlayerClass current_class, uint64 curtime );
+
+	static bool IsTFClass( uint16 player_class );
 
 private:
-	double m_timeplayed[9]; // index is EPlayerClasses
+	uint64 m_timeplayed[10]; // index is EPlayerClasses
+	uint64 m_lastUpdate;
 	uint16 m_classflags;
 	uint16 m_currentClass;
 	uint16 m_mostPlayedClass;

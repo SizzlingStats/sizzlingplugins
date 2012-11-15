@@ -129,7 +129,7 @@ void CPlayerDataManager::PD_Msg( const char *pMsg, ... )
 	va_end( argList );
 }
 
-void CPlayerDataManager::ResetAndStartClassTracking(unsigned int playerClassOffset, double curtime)
+void CPlayerDataManager::ResetAndStartClassTracking(unsigned int playerClassOffset, uint64 curtime)
 {
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -143,7 +143,7 @@ void CPlayerDataManager::ResetAndStartClassTracking(unsigned int playerClassOffs
 	}
 }
 
-void CPlayerDataManager::StopClassTracking( double curtime )
+void CPlayerDataManager::StopClassTracking( uint64 curtime )
 {
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -156,7 +156,7 @@ void CPlayerDataManager::StopClassTracking( double curtime )
 	}
 }
 
-void CPlayerDataManager::PlayerChangedClass( int entindex, EPlayerClass player_class, double curtime )
+void CPlayerDataManager::PlayerChangedClass( int entindex, EPlayerClass player_class, uint64 curtime )
 {
 	SS_PlayerData *pData = GetPlayerData(entindex).m_pPlayerData;
 	if (pData)

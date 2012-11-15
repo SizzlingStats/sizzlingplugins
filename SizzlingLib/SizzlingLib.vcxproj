@@ -43,7 +43,6 @@
     <ClInclude Include="include\NetPropUtils.h" />
     <ClInclude Include="include\PlayerClassTracker.h" />
     <ClInclude Include="include\playerdata.h" />
-    <ClInclude Include="include\PlayerDataManager.h" />
     <ClInclude Include=".\include\StaticSizeVector.h" />
     <ClInclude Include="include\PlayerMessage.h" />
     <ClInclude Include="include\PlayerPostData.h" />

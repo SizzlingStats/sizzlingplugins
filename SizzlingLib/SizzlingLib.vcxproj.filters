@@ -92,9 +92,6 @@
     <ClInclude Include="include\playerdata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\PlayerDataManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\PlayerMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>

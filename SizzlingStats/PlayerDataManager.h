@@ -42,9 +42,9 @@ public:
 	playerAndExtra_t GetPlayerData( int entindex );
 	int GetNumPlayers() const;
 	
-	void ResetAndStartClassTracking( unsigned int playerClassOffset, double curtime );
-	void StopClassTracking( double curtime );
-	void PlayerChangedClass( int entindex, EPlayerClass player_class, double curtime );
+	void ResetAndStartClassTracking( unsigned int playerClassOffset, uint64 curtime );
+	void StopClassTracking( uint64 curtime );
+	void PlayerChangedClass( int entindex, EPlayerClass player_class, uint64 curtime );
 	
 private:
 	void PD_Msg( const char *pMsg, ... );

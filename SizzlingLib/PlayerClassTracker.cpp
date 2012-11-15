@@ -5,7 +5,10 @@
 #pragma warning( disable : 4351 )
 CPlayerClassTracker::CPlayerClassTracker():
 	m_timeplayed(),
-	m_classflags(0)
+	m_lastUpdate(0),
+	m_classflags(0),
+	m_currentClass(0),
+	m_mostPlayedClass(0)
 {
 }
 #pragma warning( pop )
@@ -14,39 +17,28 @@ CPlayerClassTracker::~CPlayerClassTracker()
 {
 }
 
-void CPlayerClassTracker::StartRecording( EPlayerClass player_class, double curtime )
+void CPlayerClassTracker::StartRecording( EPlayerClass player_class, uint64 curtime )
 {
-	ResetInfo(curtime);
-	PlayerChangedClass(player_class, curtime);
+	ResetInfo( player_class, curtime );
 }
 
-void CPlayerClassTracker::StopRecording( double curtime )
+void CPlayerClassTracker::StopRecording( uint64 curtime )
 {
-	PlayerChangedClass(k_ePlayerClassUnknown, curtime);
+	UpdateTimes(curtime);
 }
 
-void CPlayerClassTracker::PlayerChangedClass( EPlayerClass player_class, double curtime )
+void CPlayerClassTracker::PlayerChangedClass( EPlayerClass player_class, uint64 curtime )
 {
 	uint16 iPlayerClass = static_cast<uint16>(player_class);
-	
-	// if it isn't an invalid class, and if we aren't receiving double messages
-	if (m_currentClass > 0 && m_currentClass != iPlayerClass)
+	if (m_currentClass != iPlayerClass)
 	{
-		// update the time played for the previous class
-		m_timeplayed[m_currentClass-1] += (curtime - m_timeplayed[m_currentClass-1]);
-
-		// if we've played the previous class more than our current most played, update it
-		if (m_timeplayed[m_currentClass-1] > m_timeplayed[m_mostPlayedClass-1])
+		UpdateTimes(curtime);
+		if (IsTFClass(player_class))
 		{
-			m_mostPlayedClass = m_currentClass;
+			m_currentClass = player_class;
+			m_classflags |= ( 1 << (player_class-1) );
 		}
 	}
-
-	// set the flag to true for the class to say we played it
-	m_classflags |= iPlayerClass;
-
-	// set the current class
-	m_currentClass = iPlayerClass;
 }
 
 EPlayerClass CPlayerClassTracker::GetMostPlayedClass()
@@ -59,19 +51,72 @@ uint16 CPlayerClassTracker::GetPlayedClasses()
 	return m_classflags;
 }
 
-void CPlayerClassTracker::ResetInfo( double curtime )
+void CPlayerClassTracker::UpdateTimes( uint64 curtime )
+{
+	if (IsTFClass(m_currentClass))
+	{
+		m_timeplayed[m_currentClass] += (curtime - m_lastUpdate);
+		m_lastUpdate = curtime;
+		UpdateMostPlayedClass(curtime);
+	}
+}
+
+void CPlayerClassTracker::UpdateMostPlayedClass( uint64 curtime )
+{
+	if (IsTFClass(m_mostPlayedClass))
+	{
+		if (m_timeplayed[m_currentClass] >= m_timeplayed[m_mostPlayedClass])
+		{
+			m_mostPlayedClass = m_currentClass;
+		}
+	}
+	else
+	{
+		m_mostPlayedClass = m_currentClass;
+	}
+}
+
+void CPlayerClassTracker::FlagClassAsPlayed( EPlayerClass player_class )
+{
+	if (IsTFClass(player_class))
+	{
+		m_classflags |= ( 1 << (player_class-1) );
+	}
+}
+
+void CPlayerClassTracker::ResetFlags( EPlayerClass player_class )
+{
+	m_classflags = 0;
+	FlagClassAsPlayed(player_class);
+}
+
+void CPlayerClassTracker::ResetInfo( EPlayerClass current_class, uint64 curtime )
 {
 	// reset all the data
-	m_timeplayed[0] = curtime;
-	m_timeplayed[1] = curtime;
-	m_timeplayed[2] = curtime;
-	m_timeplayed[3] = curtime;
-	m_timeplayed[4] = curtime;
-	m_timeplayed[5] = curtime;
-	m_timeplayed[6] = curtime;
-	m_timeplayed[7] = curtime;
-	m_timeplayed[8] = curtime;
-	m_classflags = 0;
-	m_currentClass = 0;
+	m_timeplayed[0] = 0;
+	m_timeplayed[1] = 0;
+	m_timeplayed[2] = 0;
+	m_timeplayed[3] = 0;
+	m_timeplayed[4] = 0;
+	m_timeplayed[5] = 0;
+	m_timeplayed[6] = 0;
+	m_timeplayed[7] = 0;
+	m_timeplayed[8] = 0;
+	m_timeplayed[9] = 0;
+	m_lastUpdate = curtime;
+	m_currentClass = current_class;
 	m_mostPlayedClass = 0;
+	ResetFlags(current_class);
+}
+
+bool CPlayerClassTracker::IsTFClass( uint16 player_class )
+{
+	if (player_class > k_ePlayerClassUnknown && player_class < k_eNumPlayerClasses)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }

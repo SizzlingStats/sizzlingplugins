@@ -131,7 +131,7 @@ void SizzlingStats::UberDropped( int entindex )
 
 void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class )
 {
-	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, Plat_FloatTime() );
+	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, static_cast<uint64>(Plat_FloatTime()+0.5) );
 }
 
 void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
@@ -341,7 +341,7 @@ void SizzlingStats::SS_PreRoundFreeze()
 	SS_ResetData();
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime;
-	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, curtime);
+	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, static_cast<uint64>(curtime+0.5));
 }
 
 void SizzlingStats::SS_RoundStarted()
@@ -355,7 +355,7 @@ void SizzlingStats::SS_RoundEnded()
 	Msg( "round ended\n" );
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime - m_flRoundDuration;
-	m_PlayerDataManager.StopClassTracking(curtime);
+	m_PlayerDataManager.StopClassTracking(static_cast<uint64>(curtime+0.5));
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
 	SS_EndOfRound();
 }
