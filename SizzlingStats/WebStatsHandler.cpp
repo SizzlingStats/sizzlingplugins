@@ -3,6 +3,7 @@
 
 #include "curlconnection.h"
 #include "JsonUtils.h"
+#include "SC_helpers.h"
 
 void CWebStatsHandler::SetHostData(hostInfo_t const &info)
 {
@@ -162,7 +163,7 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 			temp.InsertKV("redname", host.m_redname);
 			temp.InsertKV("bluscore", host.m_bluscore);
 			temp.InsertKV("redscore", host.m_redscore);
-			temp.InsertKV("roundduration", static_cast<uint64>(host.m_roundduration + 0.5));
+			temp.InsertKV("roundduration", SCHelpers::RoundDBL(host.m_roundduration));
 			buff.PutString(",");
 			{
 				CJsonArray temp2(buff, "players");
@@ -218,8 +219,8 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 					CJsonObject temp3(buff);
 					const chatInfo_t *pInfo = &chatInfo[i];
 					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
-					temp3.InsertKV("time", static_cast<uint64>(pInfo->m_timestamp + 0.5));
+					temp3.InsertKV("isTeam", pInfo->m_bTeamChat);
+					temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
 					const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
 					temp3.InsertKV("message", pMessage);
 				}
@@ -243,8 +244,8 @@ void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUt
 				CJsonObject temp3(buff);
 				const chatInfo_t *pInfo = &chatInfo[i];
 				temp3.InsertKV("steamid", pInfo->m_steamid);
-				temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
-				temp3.InsertKV("time", static_cast<uint64>(pInfo->m_timestamp + 0.5));
+				temp3.InsertKV("isTeam", pInfo->m_bTeamChat);
+				temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
 				const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
 				temp3.InsertKV("message", pMessage);
 			}

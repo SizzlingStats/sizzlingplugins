@@ -131,7 +131,7 @@ void SizzlingStats::UberDropped( int entindex )
 
 void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class )
 {
-	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, static_cast<uint64>(Plat_FloatTime()+0.5) );
+	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, SCHelpers::RoundDBL(Plat_FloatTime()) );
 }
 
 void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )

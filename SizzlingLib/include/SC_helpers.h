@@ -36,6 +36,11 @@ namespace SCHelpers
 	{
 		return(Q_stricmp(sz1, sz2) == 0);
 	}
+	
+	inline uint64 RoundDBL( double num )
+	{
+		return static_cast<uint64>(num + 0.5);
+	}
 
 	edict_t *UserIDToEdict( int userid );
 	

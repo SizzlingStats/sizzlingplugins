@@ -60,16 +60,59 @@ private:
 
 	void FlagClassAsPlayed( EPlayerClass player_class );
 	void ResetFlags( EPlayerClass player_class );
-	void ResetInfo( EPlayerClass current_class, uint64 curtime );
 
 	static bool IsTFClass( uint16 player_class );
 
 private:
-	uint64 m_timeplayed[10]; // index is EPlayerClasses
+	// index is EPlayerClasses-1
+	// undefined class isn't counted
+	uint64 m_timeplayed[9];
 	uint64 m_lastUpdate;
 	uint16 m_classflags;
 	uint16 m_currentClass;
 	uint16 m_mostPlayedClass;
 };
+
+#pragma warning( push )
+#pragma warning( disable : 4351 )
+inline CPlayerClassTracker::CPlayerClassTracker():
+	m_timeplayed(),
+	m_lastUpdate(0),
+	m_classflags(0),
+	m_currentClass(0),
+	m_mostPlayedClass(0)
+{
+}
+#pragma warning( pop )
+
+inline CPlayerClassTracker::~CPlayerClassTracker()
+{
+}
+
+inline void CPlayerClassTracker::StopRecording( uint64 curtime )
+{
+	UpdateTimes(curtime);
+}
+
+inline EPlayerClass CPlayerClassTracker::GetMostPlayedClass()
+{
+	return static_cast<EPlayerClass>(m_mostPlayedClass);
+}
+
+inline uint16 CPlayerClassTracker::GetPlayedClasses()
+{
+	return m_classflags;
+}
+
+inline void CPlayerClassTracker::ResetFlags( EPlayerClass player_class )
+{
+	m_classflags = 0;
+	FlagClassAsPlayed(player_class);
+}
+
+inline bool CPlayerClassTracker::IsTFClass( uint16 player_class )
+{
+	return ((player_class > k_ePlayerClassUnknown) && (player_class < k_eNumPlayerClasses));
+}
 
 #endif // PLAYER_CLASS_TRACKER_H

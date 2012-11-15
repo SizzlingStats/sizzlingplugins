@@ -537,16 +537,32 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//gameeventmanager->AddListener( this, "arena_round_start", true );
 	//gameeventmanager->AddListener( this, "teamplay_round_win", true );			// end round
 	//gameeventmanager->AddListener( this, "teamplay_point_captured", true );		// point captured
+	
+	// for team scores
 	gameeventmanager->AddListener( this, "arena_win_panel", true );
-	gameeventmanager->AddListener( this, "teamplay_win_panel", true );			// for team scores
-	//gameeventmanager->AddListener( this, "player_chat", true );			// player types in chat
-	//gameeventmanager->AddListener( this, "player_changename", true );	// player changes name
-	gameeventmanager->AddListener( this, "player_healed", true );		// player healed (not incl buffs)
-	gameeventmanager->AddListener( this, "teamplay_game_over", true );	// happens when mp_winlimit is met
-	gameeventmanager->AddListener( this, "tf_game_over", true );		// happens when mp_timelimit is met
-	gameeventmanager->AddListener( this, "medic_death", true );			// when a medic dies
+	gameeventmanager->AddListener( this, "teamplay_win_panel", true );
+	
+	// player changes name
+	//gameeventmanager->AddListener( this, "player_changename", true );
+	
+	// player healed (not incl buffs)
+	gameeventmanager->AddListener( this, "player_healed", true );
+	
+	// happens when mp_winlimit or mp_timelimit is met or something i don't know, i forget
+	gameeventmanager->AddListener( this, "teamplay_game_over", true );
+	gameeventmanager->AddListener( this, "tf_game_over", true );
+	
+	// when a medic dies
+	gameeventmanager->AddListener( this, "medic_death", true );
+	
+	// when a player types in chat (doesn't include data to differentiate say and say_team)
 	gameeventmanager->AddListener( this, "player_say", true );
+	
+	// to track times for classes
 	gameeventmanager->AddListener( this, "player_changeclass", true );
+	gameeventmanager->AddListener( this, "player_team", true );
+	
+	
 	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
 
@@ -1237,10 +1253,10 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 {
 	using namespace SCHelpers;
 	const char *szCommand = args[0];
-			
-	if (m_iClientCommandIndex > 0)
+
+	if (m_bTournamentMatchStarted)
 	{
-		if (m_bTournamentMatchStarted)
+		if (m_iClientCommandIndex > 0)
 		{
 			if ( FStrEq( szCommand, "say" ) )
 			{
@@ -1294,13 +1310,11 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		if ( killerIndex > 0 && killerIndex != victimIndex )
 		{
 			m_SizzlingStats.MedPick( killerIndex );
-			//m_SizzlingStats.getEntIndexToExtraData()[killerIndex]->medpicks += 1;
 		}
 
 		if ( charged && victimIndex > 0 )
 		{
 			m_SizzlingStats.UberDropped( victimIndex );
-			//m_SizzlingStats.getEntIndexToExtraData()[victimIndex]->ubersdropped += 1;
 		}
 	}
 	else if ( FStrEq( name, "player_changeclass" ) )
@@ -1309,6 +1323,21 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		int entindex = g_pUserIdTracker->GetEntIndex( userid );
 		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
 		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
+	}
+	else if ( FStrEq( name, "player_team" ) )
+	{
+		bool bDisconnect = event->GetBool("disconnect");
+		if (!bDisconnect)
+		{
+			int teamid = event->GetInt("team");
+			// if they are switching to spec
+			if (teamid == 1) //TODO: verify that 1 is spec
+			{
+				int userid = event->GetInt( "userid" );
+				int entindex = g_pUserIdTracker->GetEntIndex( userid );
+				m_SizzlingStats.PlayerChangedClass(entindex, k_ePlayerClassUnknown);
+			}
+		}
 	}
 	else if ( FStrEq( name, "teamplay_win_panel" ) || FStrEq( name, "arena_win_panel" ) )
 	{

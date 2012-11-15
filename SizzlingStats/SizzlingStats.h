@@ -39,7 +39,11 @@ public:
 	void	PlayerHealed( int entindex, int amount );
 	void	MedPick( int entindex );
 	void	UberDropped( int entindex );
+	
+	// this needs to be called whenever the player switches classes or goes to spec
+	// set player_class to k_ePlayerClassUndefined if switching to spec
 	void	PlayerChangedClass( int entindex, EPlayerClass player_class );
+	
 	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
 
 	// insert and player and add them to the map
