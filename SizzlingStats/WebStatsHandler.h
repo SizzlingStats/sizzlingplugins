@@ -114,7 +114,11 @@ private:
 	// used for grabbing the sessionid and matchurl
 	static size_t header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata);
 	
+	// adds the stats and chat to the buff in json form
 	static void producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const CUtlVector<chatInfo_t> &chatInfo, const char *sessionId, CUtlBuffer &buff);
+
+	// adds the chat to the buff in json form
+	static void addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUtlBuffer &buff);
 
 private:
 	CFuncQueueThread m_queue;

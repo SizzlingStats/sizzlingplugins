@@ -1240,13 +1240,16 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			
 	if (m_iClientCommandIndex > 0)
 	{
-		if ( FStrEq( szCommand, "say" ) )
+		if (m_bTournamentMatchStarted)
 		{
-			m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), false );
-		}
-		else if ( FStrEq( szCommand, "say_team" ) )
-		{
-			m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), true );
+			if ( FStrEq( szCommand, "say" ) )
+			{
+				m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), false );
+			}
+			else if ( FStrEq( szCommand, "say_team" ) )
+			{
+				m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), true );
+			}
 		}
 	}
 

@@ -31,10 +31,11 @@ void CWebStatsHandler::SendStatsToWebInternal()
 
 	m_dataListAndChatMutex.Lock();
 	producePostString( tempInfo, m_webStats, m_chatLog, sessionId, postString );
+	m_chatLog.RemoveAll();
 	m_dataListAndChatMutex.Unlock();
 
 	ClearPlayerStats();
-
+	
 	CCurlConnection connection;
 	if (connection.Initialize())
 	{
@@ -70,6 +71,9 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 		if (connection.Initialize())
 		{
 			connection.SetHttpSendType(CCurlConnection::POST);
+			connection.AddHeader("Transfer-Encoding: chunked");
+			connection.AddHeader("Content-type: application/json");
+			connection.AddHeader("Expect:");
 			connection.AddHeader(HEADER_SIZZSTATS_VERSION);
 
 			{
@@ -87,8 +91,16 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 				connection.AddHeader(temp);
 			}
 
-			connection.SetOption(CURLOPT_POSTFIELDS, const_cast<char*>(""));
 			connection.SetUrl(GAMEOVER_URL);
+			connection.SetBodyReadFunction(read_callback);
+
+			CUtlBuffer postString;
+			m_dataListAndChatMutex.Lock();
+			addChatToBuff( m_chatLog, postString );
+			m_chatLog.RemoveAll();
+			m_dataListAndChatMutex.Unlock();
+
+			connection.SetBodyReadUserdata(&postString);
 
 			connection.Perform();
 			connection.Close();
@@ -216,3 +228,26 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 	}
 }
 
+void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUtlBuffer &buff)
+{
+	{
+		CJsonObject outer(buff);
+		{
+			CJsonArray temp2(buff, "chats");
+			for (int i = 0; i < chatInfo.Count(); ++i)
+			{
+				if (i > 0)
+				{
+					buff.PutString(",");
+				}
+				CJsonObject temp3(buff);
+				const chatInfo_t *pInfo = &chatInfo[i];
+				temp3.InsertKV("steamid", pInfo->m_steamid);
+				temp3.InsertKV("isTeam", pInfo->m_bTeamChat); // performance warning? bool to int cast
+				temp3.InsertKV("time", pInfo->m_timestamp);
+				const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
+				temp3.InsertKV("message", pMessage);
+			}
+		}
+	}
+}
