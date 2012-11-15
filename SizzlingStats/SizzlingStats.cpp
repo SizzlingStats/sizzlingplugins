@@ -341,7 +341,7 @@ void SizzlingStats::SS_PreRoundFreeze()
 	SS_ResetData();
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime;
-	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, static_cast<uint64>(curtime+0.5));
+	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, SCHelpers::RoundDBL(curtime));
 }
 
 void SizzlingStats::SS_RoundStarted()
@@ -355,7 +355,7 @@ void SizzlingStats::SS_RoundEnded()
 	Msg( "round ended\n" );
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime - m_flRoundDuration;
-	m_PlayerDataManager.StopClassTracking(static_cast<uint64>(curtime+0.5));
+	m_PlayerDataManager.StopClassTracking(SCHelpers::RoundDBL(curtime));
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
 	SS_EndOfRound();
 }
@@ -507,7 +507,7 @@ void SizzlingStats::SS_ResetData()
 
 void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 {
-	char version[32];
+	char version[32] = {};
 	V_snprintf( version, 32, "\x03SizzlingStats v%s\n", pszVersion );
 	CPlayerMessage::SingleUserChatMessage( entindex, "========================\n" );
 	CPlayerMessage::SingleUserChatMessage( entindex, version );
