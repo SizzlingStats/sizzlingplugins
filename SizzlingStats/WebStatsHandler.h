@@ -98,7 +98,7 @@ public:
 	void GetMatchUrl( char *str, int maxlen );
 	bool HasMatchUrl();
 
-	void PlayerChatEvent( chatInfo_t const &info );
+	void PlayerChatEvent( uint64 timestamp, const char *szSteamId, const char *szText, bool bTeamChat );
 
 	void SendStatsToWeb();
 	void SendGameOverEvent(double flMatchDuration);
@@ -305,10 +305,11 @@ inline bool CWebStatsHandler::HasMatchUrl()
 	return m_responseInfo.HasMatchUrl();
 }
 
-inline void CWebStatsHandler::PlayerChatEvent( chatInfo_t const &info )
+inline void CWebStatsHandler::PlayerChatEvent( uint64 timestamp, const char *szSteamId, const char *szText, bool bTeamChat )
 {
 	m_dataListAndChatMutex.Lock();
-	m_chatLog.AddToTail(info);
+	int elem = m_chatLog.AddToTail();
+	::new( &m_chatLog.Element(elem) ) chatInfo_t(timestamp, szSteamId, szText, bTeamChat);
 	m_dataListAndChatMutex.Unlock();
 }
 

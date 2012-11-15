@@ -228,7 +228,7 @@ static char *UTIL_VarArgs( char *format, ... )
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
-class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandCallback//, public IPropHookCallback
+class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandCallback, public ICommandHookCallback//, public IPropHookCallback
 {
 public:
 	CEmptyServerPlugin();
@@ -268,6 +268,9 @@ public:
 			m_SizzlingStats.SS_EndOfRound();
 		}
 	}
+
+	virtual bool CommandPreExecute( const CCommand &args );
+	virtual void CommandPostExecute( const CCommand &args, bool bWasCommandExecuted );
 
 	// IGameEventListener Interface
 	virtual void FireGameEvent( IGameEvent *event );
@@ -391,8 +394,8 @@ private:
 
 private:
 	SizzlingStats m_SizzlingStats;
-	//CSayHook m_SayHook;
-	//CSayTeamHook m_SayTeamHook;
+	CConCommandHook m_SayHook;
+	CConCommandHook m_SayTeamHook;
 	//CSendPropHook	m_iRoundStateHook;
 	//CSendPropHook	m_bInWaitingForPlayersHook;
 	ConVarRef m_refTournamentMode;
@@ -424,8 +427,8 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
-	//m_SayHook(),
-	//m_SayTeamHook(),
+	m_SayHook(),
+	m_SayTeamHook(),
 	//m_iRoundStateHook(),
 	//m_bInWaitingForPlayersHook(),
 	m_refTournamentMode("mp_tournament"),
@@ -568,8 +571,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//short 	userid 	chatting player
 	//string 	text 	chat text 
 
-	//m_SayHook.Hook(cvar, "say");
-	//m_SayTeamHook.Hook(cvar, "say_team");
+	m_SayHook.Hook(this, cvar, "say");
+	m_SayTeamHook.Hook(this, cvar, "say_team");
 
 	m_refTournamentMode.Init("mp_tournament", false);
 
@@ -583,8 +586,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::Unload( void )
 {
-	//m_SayHook.Unhook(cvar);
-	//m_SayTeamHook.Unhook(cvar);
+	m_SayHook.Unhook();
+	m_SayTeamHook.Unhook();
 	if (pEngine)
 	{
 		pEngine->LogPrint("Unload\n");
@@ -838,8 +841,6 @@ void CEmptyServerPlugin::SetCommandClient( int index )
 {
 	++index;
 	m_iClientCommandIndex = index;
-	//m_SayHook.SetCommandClient(index);
-	//m_SayTeamHook.SetCommandClient(index);
 }
 
 //---------------------------------------------------------------------------------
@@ -1231,6 +1232,31 @@ CON_COMMAND ( printservertables, "prints the server tables ya" )
 // 
 //   return; // et voilà
 //}
+
+bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
+{
+	using namespace SCHelpers;
+	const char *szCommand = args[0];
+			
+	if (m_iClientCommandIndex > 0)
+	{
+		if ( FStrEq( szCommand, "say" ) )
+		{
+			m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), false );
+		}
+		else if ( FStrEq( szCommand, "say_team" ) )
+		{
+			m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), true );
+		}
+	}
+
+	// dispatch the command
+	return true;
+}
+
+void CEmptyServerPlugin::CommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
+{
+}
 
 //---------------------------------------------------------------------------------
 // Purpose: called when an event is fired

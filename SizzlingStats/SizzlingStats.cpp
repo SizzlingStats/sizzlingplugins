@@ -138,8 +138,7 @@ void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 {
 	const char *pSteamId = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData->GetPlayerInfo()->GetNetworkIDString();
 
-	chatInfo_t info(Plat_MSTime(), pSteamId, pText, bTeamChat);
-	m_pWebStatsHandler->PlayerChatEvent(info);
+	m_pWebStatsHandler->PlayerChatEvent(Plat_MSTime(), pSteamId, pText, bTeamChat);
 }
 
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
