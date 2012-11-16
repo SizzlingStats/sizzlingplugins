@@ -20,14 +20,14 @@ enum EPlayerClass
 };
 
 #define PLAYED_SCOUT	( 1 << 0 )
-#define PLAYED_SOLDIER	( 1 << 1 )
-#define PLAYED_PYRO		( 1 << 2 )
+#define PLAYED_SNIPER	( 1 << 1 )
+#define PLAYED_SOLDIER	( 1 << 2 )
 #define PLAYED_DEMOMAN	( 1 << 3 )
-#define PLAYED_HEAVY	( 1 << 4 )
-#define PLAYED_ENGINEER ( 1 << 5 )
-#define PLAYED_MEDIC	( 1 << 6 )
-#define PLAYED_SNIPER	( 1 << 7 )
-#define PLAYED_SPY		( 1 << 8 )
+#define PLAYED_MEDIC	( 1 << 4 )
+#define PLAYED_HEAVY	( 1 << 5 )
+#define PLAYED_PYRO		( 1 << 6 )
+#define PLAYED_SPY		( 1 << 7 )
+#define PLAYED_ENGINEER	( 1 << 8 )
 
 class CPlayerClassTracker
 {
