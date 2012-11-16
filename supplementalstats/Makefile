@@ -9,7 +9,7 @@
 
 # this is the only option that you need to set
 # it should point to the dir that contains sizzlingplugins and hl2sdk-ob-valve
-BASE_DIR = FILL_THIS_IN
+BASE_DIR = ../..
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
 LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux
@@ -53,13 +53,14 @@ endif
 
 ARCH=i486
 ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32 \
-            -fdata-sections -ffunction-sections -fno-rtti
+            -fdata-sections -ffunction-sections -fno-rtti -fvisibility=hidden \
+            -fvisibility-inlines-hidden
 
 # -fpermissive is so gcc 3.4.x doesn't complain about some template stuff
 BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DNO_MALLOC_OVERRIDE=1
 SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
-SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections,--strip-all
+SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections -Wl,--strip-all
 
 CFLAGS=$(USER_CFLAGS) $(DEFINES) $(ARCH_CFLAGS) $(BASE_CFLAGS) -Usprintf=use_Q_snprintf_instead_of_sprintf -Ustrncpy=use_Q_strncpy_instead -UPROTECTED_THINGS_ENABLE
 
