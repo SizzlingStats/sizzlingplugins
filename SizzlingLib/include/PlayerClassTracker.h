@@ -58,8 +58,8 @@ private:
 	void UpdateTimes( uint64 curtime );
 	void UpdateMostPlayedClass( uint64 curtime );
 
-	void FlagClassAsPlayed( EPlayerClass player_class );
-	void ResetFlags( EPlayerClass player_class );
+	void FlagClassAsPlayed( uint16 player_class );
+	void ResetFlags( uint16 player_class );
 
 	static bool IsTFClass( uint16 player_class );
 
@@ -104,7 +104,7 @@ inline uint16 CPlayerClassTracker::GetPlayedClasses()
 	return m_classflags;
 }
 
-inline void CPlayerClassTracker::ResetFlags( EPlayerClass player_class )
+inline void CPlayerClassTracker::ResetFlags( uint16 player_class )
 {
 	m_classflags = 0;
 	FlagClassAsPlayed(player_class);
