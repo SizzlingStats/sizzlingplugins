@@ -46,6 +46,8 @@ public:
 	
 	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
 
+	void	CheckPlayerDropped( int victimIndex, int medIndex );
+
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( edict_t *pEdict );
 
@@ -102,6 +104,10 @@ private:
 	unsigned int	m_PlayerFlagsOffset;
 	unsigned int	m_TeamRoundsWonOffset;
 	unsigned int	m_PlayerClassOffset;
+	uint32			m_iWeaponsOffset;
+	uint32			m_iChargeLevelOffset;
+	uint32			m_iOriginOffset;
+	uint32			m_iChargeReleaseOffset;
 
 	int				m_nCurrentRound;
 

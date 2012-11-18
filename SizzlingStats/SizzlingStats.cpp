@@ -14,7 +14,12 @@
 #include "ThreadCallQueue.h"
 #include "curl/curl.h"
 
+#include "mathlib\vector.h"
+
 #include "fasttimer.h"
+
+#define GAME_DLL 1
+#include "networkvar.h"
 
 #include "eiface.h"
 //#include "engine/iserverplugin.h"
@@ -30,6 +35,8 @@ extern CGlobalVars		*gpGlobals;
 extern IVEngineServer	*pEngine;
 extern IPlayerInfoManager *playerinfomanager;
 extern CTSCallQueue		*g_pTSCallQueue;
+
+extern IServerGameEnts			*pServerEnts;
 
 JOB_INTERFACE IThreadPool *g_pThreadPool;
 
@@ -140,6 +147,33 @@ void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 	// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
 	// so subtracting gets the time since the match started
 	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
+}
+
+void SizzlingStats::CheckPlayerDropped( int victimIndex, int medIndex )
+{
+	SS_PlayerData *pMedData = m_PlayerDataManager.GetPlayerData(medIndex).m_pPlayerData;
+	SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
+	if ( pMedData->GetPlayerInfo()->GetTeamIndex() == pVictimData->GetPlayerInfo()->GetTeamIndex() )
+	{
+		CBaseEntity *pMedigun = SCHelpers::GetEntityByClassname( "CTFWeaponBaseGun" );
+
+		float flChargeLevel = *(float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
+		uint32 charge = static_cast<uint32>(flChargeLevel);
+
+		bool bReleasingCharge = *(bool *)((unsigned char *)pMedigun + m_iChargeReleaseOffset);
+
+		if (charge == 100 || bReleasingCharge)
+		{
+			Vector *victimPos = (Vector *)((unsigned char *)pVictimData->GetBaseEntity() + m_iOriginOffset);
+			Vector *medPos = (Vector *)((unsigned char *)pMedData->GetBaseEntity() + m_iOriginOffset);
+		
+			if (victimPos->DistToSqr( *medPos ) < 10000)
+			{
+				
+				SS_AllUserChatMessage( "player dropped" );
+			}
+		}
+	}
 }
 
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
@@ -657,6 +691,10 @@ void SizzlingStats::GetPropOffsets()
 	m_PlayerClassOffset = GetPropOffsetFromTable( "DT_TFPlayer", "m_PlayerClass", bError ) + GetPropOffsetFromTable( "DT_TFPlayerClassShared", "m_iClass", bError );
 	m_PlayerFlagsOffset = GetPropOffsetFromTable( "DT_BasePlayer", "m_fFlags", bError );
 	m_TeamRoundsWonOffset = GetPropOffsetFromTable( "DT_Team", "m_iRoundsWon", bError ); 
+	m_iWeaponsOffset = GetPropOffsetFromTable( "DT_BaseCombatCharacter", "m_hActiveWeapon", bError ); // should get the 0 offsets before it incase something changes
+	m_iChargeLevelOffset = GetPropOffsetFromTable( "DT_LocalTFWeaponMedigunData", "m_flChargeLevel", bError ); // should get the 0 offsets before it incase something changes
+	m_iOriginOffset = GetPropOffsetFromTable( "DT_BaseEntity", "m_vecOrigin", bError );
+	m_iChargeReleaseOffset = GetPropOffsetFromTable( "DT_WeaponMedigun", "m_bChargeRelease", bError );
 
 	//oKills = m_PlayerFlagsOffset;
 

@@ -562,6 +562,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	gameeventmanager->AddListener( this, "player_changeclass", true );
 	gameeventmanager->AddListener( this, "player_team", true );
 	
+	gameeventmanager->AddListener( this, "player_death", true );
 	
 	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
@@ -1286,6 +1287,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	CTimeAdder Timer( &m_CycleCount );
 #endif
 	using namespace SCHelpers;
+	static CUtlVector<char> s_medics; //ent index of medics
 
 	const char * name = event->GetName();
 
@@ -1300,6 +1302,15 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 				m_SizzlingStats.PlayerHealed( patientIndex, event->GetInt("amount") );
 			}
 		}
+	}
+	else if ( m_bShouldRecord && FStrEq( name, "player_death" ) )
+	{
+		/*int victim = event->GetInt( "victim_entindex" );
+		for (int i = 0; i < s_medics.Count(); ++i)
+		{
+			int med = s_medics[i];
+			m_SizzlingStats.CheckPlayerDropped( victim, med );
+		}*/
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{
@@ -1322,6 +1333,14 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		int userid = event->GetInt( "userid" );
 		int entindex = g_pUserIdTracker->GetEntIndex( userid );
 		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
+		if (player_class != k_ePlayerClassMedic)
+		{
+			s_medics.FindAndRemove(entindex);
+		}
+		else
+		{
+			s_medics.AddToTail(entindex);
+		}
 		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
 	}
 	else if ( FStrEq( name, "player_team" ) )
