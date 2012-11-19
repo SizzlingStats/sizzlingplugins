@@ -46,7 +46,9 @@ public:
 	
 	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
 
-	void	CheckPlayerDropped( int victimIndex, int medIndex );
+	// checks to see if any of the medics with uber on the same team 
+	// as the player that died dropped him
+	void	CheckPlayerDropped( int victimIndex );
 
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( edict_t *pEdict );
@@ -110,7 +112,7 @@ private:
 	uint32			m_iChargeReleaseOffset;
 
 	int				m_nCurrentRound;
-
+	CUtlVector<char> m_vecMedics; //ent index of medics
 	CUtlHashFast<playerAndExtra_t>	m_playerDataArchive;
 	// the vector is for freeing all of the mempool memory in the archive when we destruct
 	//CUtlVector<CUtlReference<playerAndExtra_t>>		m_playerDataArchiveVec;

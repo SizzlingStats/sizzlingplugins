@@ -138,6 +138,15 @@ void SizzlingStats::UberDropped( int entindex )
 
 void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class )
 {
+	if (player_class != k_ePlayerClassMedic)
+	{
+		m_vecMedics.FindAndRemove(entindex);
+	}
+	else
+	{
+		m_vecMedics.AddToTail(entindex);
+	}
+
 	m_PlayerDataManager.PlayerChangedClass( entindex, player_class, SCHelpers::RoundDBL(Plat_FloatTime()) );
 }
 
@@ -149,28 +158,34 @@ void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
 }
 
-void SizzlingStats::CheckPlayerDropped( int victimIndex, int medIndex )
+void SizzlingStats::CheckPlayerDropped( int victimIndex )
 {
-	SS_PlayerData *pMedData = m_PlayerDataManager.GetPlayerData(medIndex).m_pPlayerData;
-	SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
-	if ( pMedData->GetPlayerInfo()->GetTeamIndex() == pVictimData->GetPlayerInfo()->GetTeamIndex() )
+	for (int medIndex = 0; medIndex < m_vecMedics.Count(); ++medIndex)
 	{
-		CBaseEntity *pMedigun = SCHelpers::GetEntityByClassname( "CTFWeaponBaseGun" );
-
-		float flChargeLevel = *(float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
-		uint32 charge = static_cast<uint32>(flChargeLevel);
-
-		bool bReleasingCharge = *(bool *)((unsigned char *)pMedigun + m_iChargeReleaseOffset);
-
-		if (charge == 100 || bReleasingCharge)
+		SS_PlayerData *pMedData = m_PlayerDataManager.GetPlayerData(medIndex).m_pPlayerData;
+		SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
+		if ( pMedData->GetPlayerInfo()->GetTeamIndex() == pVictimData->GetPlayerInfo()->GetTeamIndex() )
 		{
-			Vector *victimPos = (Vector *)((unsigned char *)pVictimData->GetBaseEntity() + m_iOriginOffset);
-			Vector *medPos = (Vector *)((unsigned char *)pMedData->GetBaseEntity() + m_iOriginOffset);
-		
-			if (victimPos->DistToSqr( *medPos ) < 10000)
+			CBaseHandle *hMedigun = (CBaseHandle*)((unsigned char *)(pMedData->GetBaseEntity()) + m_iWeaponsOffset + 4); // +4 because we want the medigun slot
+			int entindex = hMedigun->GetEntryIndex();
+			CBaseEntity *pMedigun = pServerEnts->EdictToBaseEntity(pEngine->PEntityOfEntIndex(entindex));
+
+			float flChargeLevel = *(float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
+			uint32 charge = static_cast<uint32>(flChargeLevel);
+
+			bool bReleasingCharge = *(bool *)((unsigned char *)pMedigun + m_iChargeReleaseOffset);
+
+			if (charge == 1 || bReleasingCharge)
 			{
-				
-				SS_AllUserChatMessage( "player dropped" );
+				Vector *victimPos = (Vector *)((unsigned char *)pVictimData->GetBaseEntity() + m_iOriginOffset);
+				Vector *medPos = (Vector *)((unsigned char *)pMedData->GetBaseEntity() + m_iOriginOffset);
+		
+				vec_t distance = victimPos->DistToSqr( *medPos );
+				Msg( "distance: %.2f\n", distance );
+				if (static_cast<uint32>(distance) <= 230400) // ~480 units is max target distance for medigun
+				{
+					Msg( "player dropped\n" );
+				}
 			}
 		}
 	}
@@ -251,6 +266,8 @@ bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 void SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
 {
 	Msg( "SS_DeletePlayer\n" );
+	int entindex = pEngine->IndexOfEdict(pEdict);
+	m_vecMedics.FindAndRemove(entindex);
 	engineContext_t context = { playerinfomanager, pEngine };
 	m_PlayerDataManager.RemovePlayer(context, pEdict);
 	
@@ -290,6 +307,7 @@ void SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
 void SizzlingStats::SS_DeleteAllPlayerData()
 {
 	SS_Msg( "deleting all data\n" );
+	m_vecMedics.RemoveAll();
 	engineContext_t context = { playerinfomanager, pEngine };
 	m_PlayerDataManager.RemoveAllPlayers(context);
 	
@@ -691,7 +709,7 @@ void SizzlingStats::GetPropOffsets()
 	m_PlayerClassOffset = GetPropOffsetFromTable( "DT_TFPlayer", "m_PlayerClass", bError ) + GetPropOffsetFromTable( "DT_TFPlayerClassShared", "m_iClass", bError );
 	m_PlayerFlagsOffset = GetPropOffsetFromTable( "DT_BasePlayer", "m_fFlags", bError );
 	m_TeamRoundsWonOffset = GetPropOffsetFromTable( "DT_Team", "m_iRoundsWon", bError ); 
-	m_iWeaponsOffset = GetPropOffsetFromTable( "DT_BaseCombatCharacter", "m_hActiveWeapon", bError ); // should get the 0 offsets before it incase something changes
+	m_iWeaponsOffset = GetPropOffsetFromTable( "DT_BaseCombatCharacter", "m_hMyWeapons", bError ); // should get the 0 offsets before it incase something changes
 	m_iChargeLevelOffset = GetPropOffsetFromTable( "DT_LocalTFWeaponMedigunData", "m_flChargeLevel", bError ); // should get the 0 offsets before it incase something changes
 	m_iOriginOffset = GetPropOffsetFromTable( "DT_BaseEntity", "m_vecOrigin", bError );
 	m_iChargeReleaseOffset = GetPropOffsetFromTable( "DT_WeaponMedigun", "m_bChargeRelease", bError );
