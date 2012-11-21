@@ -53,11 +53,30 @@ void CWebStatsHandler::SendStatsToWebInternal()
 			connection.AddHeader(temp);
 		}
 
-		connection.SetUrl(WEB_SERVER_IP);
+		connection.SetUrl(STATS_UPDATE_URL);
 		connection.SetBodyReadFunction(read_callback);
 		connection.SetBodyReadUserdata(&postString);
 		connection.SetHeaderReadFunction(header_read_callback);
 		connection.SetHeaderReadUserdata(&m_responseInfo);
+
+		connection.Perform();
+		connection.Close();
+	}
+}
+
+void CWebStatsHandler::SendGameStartEventInternal()
+{
+	CCurlConnection connection;
+	if (connection.Initialize())
+	{
+		connection.SetHttpSendType(CCurlConnection::POST);
+		//connection.AddHeader("Transfer-Encoding: chunked");
+		//connection.AddHeader("Content-type: application/json");
+		//connection.AddHeader("Expect:");
+		connection.AddHeader(HEADER_SIZZSTATS_VERSION);
+
+		connection.SetUrl(GAME_START_URL);
+		connection.SetOption( CURLOPT_POSTFIELDS, "" );
 
 		connection.Perform();
 		connection.Close();

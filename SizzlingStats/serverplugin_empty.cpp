@@ -1163,7 +1163,8 @@ CON_COMMAND ( printclienttables, "prints the client tables ya" )
 void RecurseServerTable( SendTable *pTable, int &spacing )
 {
 	SendTable *pSendTable = pTable;
-	if (pSendTable == NULL){
+	if (pSendTable == NULL)
+	{
 		spacing--;
 		return;
 	}
@@ -1182,12 +1183,40 @@ void RecurseServerTable( SendTable *pTable, int &spacing )
 	for (int i = 0; i < num; i++)
 	{
 		SendProp *pProp = pSendTable->GetProp(i);
+		SendPropType PropType = pProp->m_Type;
+		char type[10];
+		switch( PropType )
+		{
+			case 0: 
+				Q_strncpy( type, "int", 10 );
+				break;
+			case 1: 
+				Q_strncpy( type, "float", 10 );
+				break;
+			case 2: 
+				Q_strncpy( type, "vector", 10 );
+				break;
+			case 3: 
+				Q_strncpy( type, "vectorxy", 10 );
+				break;
+			case 4: 
+				Q_strncpy( type, "string", 10 );
+				break;
+			case 5: 
+				Q_strncpy( type, "array", 10 );
+				break;
+			case 6: 
+				Q_strncpy( type, "datatable", 10 );
+				break;
+			default:
+				break;
+		}
 
 		memset( TableName, 0, sizeof(TableName) );
 		for (int j = 0; j < spacing; j++)
 			V_strcat( TableName, "  |", size );
 		V_strcat( TableName, pProp->GetName(), size );
-		Msg( "%s, Offset: %i\n", TableName, pProp->GetOffset() );
+		Msg( "%s, Offset: %i ( type: %s, size: %i bits )\n", TableName, pProp->GetOffset(), type, pProp->m_nBits );
 
 		RecurseServerTable( pProp->GetDataTable(), ++spacing );
 	}

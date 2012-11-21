@@ -14,8 +14,9 @@ void CPlayerClassTracker::StartRecording( EPlayerClass player_class, uint64 curt
 	m_timeplayed[7] = 0;
 	m_timeplayed[8] = 0;
 	m_lastUpdate = curtime;
-	m_mostPlayedClass = 0;
-	ResetFlags(m_currentClass);
+	m_currentClass = player_class;
+	m_mostPlayedClass = player_class;
+	ResetFlags(player_class);
 }
 
 void CPlayerClassTracker::PlayerChangedClass( EPlayerClass player_class, uint64 curtime )
@@ -42,9 +43,16 @@ void CPlayerClassTracker::UpdateTimes( uint64 curtime )
 
 void CPlayerClassTracker::UpdateMostPlayedClass( uint64 curtime )
 {
-	if (IsTFClass(m_mostPlayedClass) && (m_mostPlayedClass != m_currentClass))
+	if (m_mostPlayedClass != m_currentClass)
 	{
-		if (m_timeplayed[m_currentClass-1] >= m_timeplayed[m_mostPlayedClass-1])
+		if (IsTFClass(m_mostPlayedClass))
+		{
+			if (m_timeplayed[m_currentClass-1] >= m_timeplayed[m_mostPlayedClass-1])
+			{
+				m_mostPlayedClass = m_currentClass;
+			}
+		}
+		else
 		{
 			m_mostPlayedClass = m_currentClass;
 		}

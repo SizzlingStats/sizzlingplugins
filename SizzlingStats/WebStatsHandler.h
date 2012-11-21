@@ -9,7 +9,8 @@
 #include "funcqueuethread.h"
 #include "playerdata.h"
 
-#define WEB_SERVER_IP "sizzlingstats.com/api/stats"
+#define STATS_UPDATE_URL "sizzlingstats.com/api/stats/update"
+#define GAME_START_URL "sizzlingstats.com/api/stats/new"
 #define GAMEOVER_URL "sizzlingstats.com/api/stats/gameover"
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.1"
 
@@ -101,10 +102,12 @@ public:
 	void PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat );
 
 	void SendStatsToWeb();
+	void SendGameStartEvent();
 	void SendGameOverEvent(double flMatchDuration);
 
 protected:
 	void SendStatsToWebInternal();
+	void SendGameStartEventInternal();
 	void SendGameOverEventInternal(double flMatchDuration);
 
 private:
@@ -320,6 +323,11 @@ inline void CWebStatsHandler::PlayerChatEvent( double timestamp, const char *szS
 inline void CWebStatsHandler::SendStatsToWeb()
 {
 	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendStatsToWebInternal));
+}
+
+inline void CWebStatsHandler::SendGameStartEvent()
+{
+	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameStartEventInternal));
 }
 
 inline void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
