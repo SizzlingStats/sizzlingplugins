@@ -44,6 +44,7 @@ void CWebStatsHandler::SendStatsToWebInternal()
 		connection.AddHeader("Transfer-Encoding: chunked");
 		connection.AddHeader("Content-type: application/json");
 		connection.AddHeader("Expect:");
+		connection.AddHeader("endofround: true");
 		connection.AddHeader(HEADER_SIZZSTATS_VERSION);
 
 		if (sessionId[0] != '\0')
@@ -70,15 +71,27 @@ void CWebStatsHandler::SendGameStartEventInternal()
 	if (connection.Initialize())
 	{
 		connection.SetHttpSendType(CCurlConnection::POST);
-		//connection.AddHeader("Transfer-Encoding: chunked");
-		//connection.AddHeader("Content-type: application/json");
-		//connection.AddHeader("Expect:");
+		connection.AddHeader("Transfer-Encoding: chunked");
+		connection.AddHeader("Content-type: application/json");
+		connection.AddHeader("Expect:");
 		connection.AddHeader(HEADER_SIZZSTATS_VERSION);
 
 		connection.SetUrl(GAME_START_URL);
-		connection.SetOption( CURLOPT_POSTFIELDS, "" );
 
-		connection.Perform();
+		connection.SetBodyReadFunction(read_callback);
+
+		CUtlBuffer postString;
+		createMatchPlayerInfo(postString);
+
+		m_playerInfoMutex.Lock();
+		m_playerInfo.RemoveAll();
+		m_playerInfoMutex.Unlock();
+
+		connection.SetBodyReadUserdata(&postString);
+		connection.SetHeaderReadFunction(header_read_callback);
+		connection.SetHeaderReadUserdata(&m_responseInfo);
+
+		CURLcode code = connection.Perform();
 		connection.Close();
 	}
 }
@@ -250,6 +263,8 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 
 void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUtlBuffer &buff)
 {
+	buff.SetBufferType(true, true);
+
 	{
 		CJsonObject outer(buff);
 		{
@@ -267,6 +282,47 @@ void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUt
 				temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
 				const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
 				temp3.InsertKV("message", pMessage);
+			}
+		}
+	}
+}
+
+void CWebStatsHandler::createMatchPlayerInfo(CUtlBuffer &buff)
+{
+	buff.SetBufferType(true, true);
+	
+	// need to rewrite the json stuff recursively
+	{
+		CJsonObject outer(buff);
+		{
+			CJsonObject temp(buff, "stats");
+
+			m_hostInfoMutex.Lock();
+			temp.InsertKV("hostname", m_hostInfo.m_hostname);
+			temp.InsertKV("map", m_hostInfo.m_mapname);
+			temp.InsertKV("bluname", m_hostInfo.m_bluname);
+			temp.InsertKV("redname", m_hostInfo.m_redname);
+			m_hostInfoMutex.Unlock();
+
+			buff.PutString(",");
+			{
+				CJsonArray temp2(buff, "players");
+				
+				m_playerInfoMutex.Lock();
+				for (int i = 0; i < m_playerInfo.Count(); ++i)
+				{
+					if (i > 0)
+					{
+						buff.PutString(",");
+					}
+					CJsonObject temp3(buff);
+					const playerInfo_t *pInfo = &m_playerInfo[i];
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("team", pInfo->m_teamid);
+					temp3.InsertKV("name", pInfo->m_name);
+					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
+				}
+				m_playerInfoMutex.Unlock();
 			}
 		}
 	}

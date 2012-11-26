@@ -376,6 +376,29 @@ void SizzlingStats::SS_TournamentMatchStarted()
 	Msg( "tournament match started\n" );
 	m_bTournamentMatchRunning = true;
 	m_flMatchDuration = Plat_FloatTime();
+
+	V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
+	V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
+	V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
+	V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
+	m_hostInfo.m_roundduration = m_flRoundDuration;
+	m_pWebStatsHandler->SetHostData(m_hostInfo);
+
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
+		if (data.m_pPlayerData)
+		{
+			playerInfo_t info;
+			V_strncpy(info.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
+			V_strncpy(info.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
+			info.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
+			info.m_mostPlayedClass = data.m_pPlayerData->GetClass(m_PlayerClassOffset);
+			m_pWebStatsHandler->EnqueuePlayerInfo(info);
+		}
+	}
+
+	m_pWebStatsHandler->SendGameStartEvent();
 }
 
 void SizzlingStats::SS_TournamentMatchEnded()

@@ -93,6 +93,7 @@ public:
 
 	void ClearPlayerStats();
 	void EnqueuePlayerStats(playerWebStats_t const &item);
+	void EnqueuePlayerInfo(playerInfo_t const &info);
 
 	void SetHostData(hostInfo_t const &info);
 
@@ -123,12 +124,16 @@ private:
 	// adds the chat to the buff in json form
 	static void addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUtlBuffer &buff);
 
+	void createMatchPlayerInfo(CUtlBuffer &buff);
+
 private:
 	CFuncQueueThread m_queue;
 	CThreadMutexPthread				m_dataListAndChatMutex;
 	CThreadMutexPthread				m_hostInfoMutex;
+	CThreadMutexPthread				m_playerInfoMutex;
 	CUtlVector<chatInfo_t>			m_chatLog;
 	CUtlVector<playerWebStats_t>	m_webStats;
+	CUtlVector<playerInfo_t>		m_playerInfo;
 	hostInfo_t						m_hostInfo;
 	responseInfo_t					m_responseInfo;
 };
@@ -282,6 +287,7 @@ inline CWebStatsHandler::CWebStatsHandler()
 {
 	m_dataListAndChatMutex.Unlock();
 	m_hostInfoMutex.Unlock();
+	m_playerInfoMutex.Unlock();
 }
 
 inline CWebStatsHandler::~CWebStatsHandler()
@@ -300,6 +306,13 @@ inline void CWebStatsHandler::EnqueuePlayerStats(playerWebStats_t const &item)
 	m_dataListAndChatMutex.Lock();
 	m_webStats.AddToTail(item);
 	m_dataListAndChatMutex.Unlock();
+}
+
+inline void CWebStatsHandler::EnqueuePlayerInfo(playerInfo_t const &info)
+{
+	m_playerInfoMutex.Lock();
+	m_playerInfo.AddToTail(info);
+	m_playerInfoMutex.Unlock();
 }
 
 inline void CWebStatsHandler::GetMatchUrl( char *str, int maxlen )
