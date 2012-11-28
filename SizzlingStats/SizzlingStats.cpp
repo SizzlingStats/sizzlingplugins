@@ -196,7 +196,7 @@ void SizzlingStats::CapFix( const char *cappers, int length )
 	for (int i = 0; i < length; ++i)
 	{
 		int index = cappers[i];
-		
+		m_PlayerDataManager.SetCapFix(index);
 	}
 }
 

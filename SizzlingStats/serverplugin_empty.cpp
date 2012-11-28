@@ -757,14 +757,14 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 					m_SizzlingStats.SS_RoundStarted();
 				}
 				break;
-			case GR_STATE_TEAM_WIN:
+			/*case GR_STATE_TEAM_WIN:
 			case GR_STATE_RESTART:
 			case GR_STATE_STALEMATE:
 				{
 					m_bShouldRecord = false; // stop extra stats recording
 					m_SizzlingStats.SS_RoundEnded();
 				}
-				break;
+				break;*/
 			default:
 				break;
 			}
@@ -1385,6 +1385,9 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 				m_SizzlingStats.CapFix( cappers, length );
 			}
 		}
+
+		m_bShouldRecord = false; // stop extra stats recording
+		m_SizzlingStats.SS_RoundEnded();
 	}
 	else if ( /*FStrEq( name, "teamplay_game_over" ) ||*/ FStrEq( name, "tf_game_over" ) )
 	{

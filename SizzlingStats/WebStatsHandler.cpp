@@ -91,7 +91,7 @@ void CWebStatsHandler::SendGameStartEventInternal()
 		connection.SetHeaderReadFunction(header_read_callback);
 		connection.SetHeaderReadUserdata(&m_responseInfo);
 
-		CURLcode code = connection.Perform();
+		connection.Perform();
 		connection.Close();
 	}
 }
