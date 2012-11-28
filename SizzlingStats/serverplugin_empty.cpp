@@ -679,6 +679,9 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	
 	m_SizzlingStats.LevelInit(pMapName);
+
+	pEngine->ServerCommand( "log on\n" );
+	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
 }
 
 //---------------------------------------------------------------------------------
