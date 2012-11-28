@@ -14,7 +14,7 @@
 #include "ThreadCallQueue.h"
 #include "curl/curl.h"
 
-#include "mathlib\vector.h"
+#include "mathlib/vector.h"
 
 #include "fasttimer.h"
 

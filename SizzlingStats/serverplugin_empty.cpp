@@ -1377,8 +1377,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 
 		if ( m_iLastCapTick == gpGlobals->tickcount )
 		{
-			using namespace Teamplay_GameRule_States;
-			if ( event->GetInt("winreason") == gamerules_winreason::WINREASON_ALL_POINTS_CAPTURED )
+			if ( event->GetInt("winreason") == Teamplay_GameRule_States::WINREASON_ALL_POINTS_CAPTURED )
 			{
 				const char *cappers = event->GetString("cappers");
 				int length = V_strlen(cappers);
