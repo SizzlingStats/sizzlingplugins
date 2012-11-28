@@ -191,6 +191,15 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 	}
 }
 
+void SizzlingStats::CapFix( const char *cappers, int length )
+{
+	for (int i = 0; i < length; ++i)
+	{
+		int index = cappers[i];
+		
+	}
+}
+
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 {
 	Msg( "SS_InsertPlayer\n" );

@@ -51,7 +51,8 @@ SS_PlayerData::SS_PlayerData():
 }
 
 SS_PlayerData::SS_PlayerData( edict_t *pEdict, IPlayerInfo *pInfo ):
-	m_BasePlayerData( pEdict, pInfo )
+	m_BasePlayerData( pEdict, pInfo ),
+	m_bCapFix(false)
 {
 }
 
@@ -65,6 +66,13 @@ void SS_PlayerData::UpdateRoundData( int CurrentRound, const unsigned int pPropO
 	for (int i = 0; i < 20; i++)
 	{
 		scoreData.data[i] = GetDataFromOffset(i, pPropOffsets);
+	}
+
+	if (m_bCapFix)
+	{
+		scoreData.data[Captures] += 1;
+		scoreData.data[Points] += 2;
+		m_bCapFix = false;
 	}
 
 	if ( !m_aRoundScoreData.IsValidIndex( CurrentRound ) )

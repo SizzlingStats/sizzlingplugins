@@ -5,6 +5,18 @@
 namespace Teamplay_GameRule_States
 {
 
+	enum gamerules_winreason
+	{
+		WINREASON_NONE =0,
+		WINREASON_ALL_POINTS_CAPTURED,
+		WINREASON_OPPONENTS_DEAD,
+		WINREASON_FLAG_CAPTURE_LIMIT,
+		WINREASON_DEFEND_UNTIL_TIME_LIMIT,
+		WINREASON_STALEMATE,
+		WINREASON_TIMELIMIT,
+		WINREASON_WINLIMIT,
+	};
+
 	//-----------------------------------------------------------------------------
 	// Round states
 	//-----------------------------------------------------------------------------

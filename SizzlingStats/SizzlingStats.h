@@ -50,6 +50,8 @@ public:
 	// as the player that died dropped him
 	void	CheckPlayerDropped( int victimIndex );
 
+	void	CapFix( const char *cappers, int length );
+
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( edict_t *pEdict );
 

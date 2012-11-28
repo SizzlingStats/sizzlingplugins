@@ -117,6 +117,15 @@ int CPlayerDataManager::GetNumPlayers() const
 	return m_nPlayers;
 }
 
+void CPlayerDataManager::SetCapFix( int entindex )
+{
+	playerAndExtra_t data = GetPlayerData(entindex);
+	if (data.m_pPlayerData)
+	{
+		data.m_pPlayerData->TriggerCapFix();
+	}
+}
+
 void CPlayerDataManager::PD_Msg( const char *pMsg, ... )
 {
 	va_list argList;

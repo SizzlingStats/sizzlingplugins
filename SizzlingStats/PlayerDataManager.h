@@ -45,6 +45,8 @@ public:
 	void ResetAndStartClassTracking( unsigned int playerClassOffset, uint64 curtime );
 	void StopClassTracking( uint64 curtime );
 	void PlayerChangedClass( int entindex, EPlayerClass player_class, uint64 curtime );
+
+	void SetCapFix( int entindex );
 	
 private:
 	void PD_Msg( const char *pMsg, ... );

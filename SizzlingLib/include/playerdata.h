@@ -213,6 +213,11 @@ public:
 	CPlayerClassTracker	*GetClassTracker();
 	int			GetClass(unsigned int playerClassOffset);
 
+	void TriggerCapFix()
+	{
+		m_bCapFix = true;
+	}
+
 private:
 	int			GetDataFromOffset( int PropName, const unsigned int pPropOffsets[]);
 
@@ -222,6 +227,7 @@ private:
 	CUtlVector<ScoreData> m_aRoundScoreData;	//[Round Number][Data Number]
 	ScoreData m_aTotalScoreData;		//[data number]
 	CPlayerClassTracker m_classTracker;
+	bool m_bCapFix;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

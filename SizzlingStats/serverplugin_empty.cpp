@@ -406,6 +406,7 @@ private:
 	//bool *m_bInSetup;
 	//bool *m_bAwaitingReadyRestart;
 	int m_iClientCommandIndex;
+	int m_iLastCapTick;
 	bool m_bShouldRecord;
 	bool m_bTournamentMatchStarted;
 	bool m_bRoundEnded;
@@ -439,9 +440,9 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	//m_bInSetup(NULL),
 	//m_bAwaitingReadyRestart(NULL),
 	m_iClientCommandIndex(0),
+	m_iLastCapTick(0),
 	m_bShouldRecord(false),
-	m_bTournamentMatchStarted(false),
-	m_bRoundEnded(false)
+	m_bTournamentMatchStarted(false)
 {
 }
 
@@ -536,7 +537,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//gameeventmanager->AddListener( this, "teamplay_round_active", true );		// 9:54
 	//gameeventmanager->AddListener( this, "arena_round_start", true );
 	//gameeventmanager->AddListener( this, "teamplay_round_win", true );			// end round
-	//gameeventmanager->AddListener( this, "teamplay_point_captured", true );		// point captured
+	gameeventmanager->AddListener( this, "teamplay_point_captured", true );		// point captured
 	
 	// for team scores
 	gameeventmanager->AddListener( this, "arena_win_panel", true );
@@ -699,15 +700,6 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 	g_pTSCallQueue->callQueueGameFrame();
 
 	m_SizzlingStats.GameFrame();
-	
-	if (m_bRoundEnded)
-	{
-		// call the endgame event since a frame passed 
-		// from when it happened
-		m_bShouldRecord = false; // stop extra stats recording
-		m_SizzlingStats.SS_RoundEnded();
-		m_bRoundEnded = false;
-	}
 
 	if (m_iRoundState && m_bInWaitingForPlayers)
 	{
@@ -766,10 +758,8 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			case GR_STATE_RESTART:
 			case GR_STATE_STALEMATE:
 				{
-					// need to wait until the next frame to call endround 
-					// since the cap point stats won't be updated in the 
-					// game yet.
-					m_bRoundEnded = true;
+					m_bShouldRecord = false; // stop extra stats recording
+					m_SizzlingStats.SS_RoundEnded();
 				}
 				break;
 			default:
@@ -1359,6 +1349,10 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
 		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
 	}
+	else if ( FStrEq( name, "teamplay_point_captured" ) )
+	{
+		m_iLastCapTick = gpGlobals->tickcount;
+	}
 	else if ( FStrEq( name, "player_team" ) )
 	{
 		bool bDisconnect = event->GetBool("disconnect");
@@ -1377,6 +1371,17 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	else if ( FStrEq( name, "teamplay_win_panel" ) || FStrEq( name, "arena_win_panel" ) )
 	{
 		m_SizzlingStats.SetTeamScores(event->GetInt("red_score"), event->GetInt("blue_score"));
+
+		if ( m_iLastCapTick == gpGlobals->tickcount )
+		{
+			using namespace Teamplay_GameRule_States;
+			if ( event->GetInt("winreason") == gamerules_winreason::WINREASON_ALL_POINTS_CAPTURED )
+			{
+				const char *cappers = event->GetString("cappers");
+				int length = V_strlen(cappers);
+				m_SizzlingStats.CapFix( cappers, length );
+			}
+		}
 	}
 	else if ( /*FStrEq( name, "teamplay_game_over" ) ||*/ FStrEq( name, "tf_game_over" ) )
 	{
