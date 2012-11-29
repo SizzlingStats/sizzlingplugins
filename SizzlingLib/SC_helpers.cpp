@@ -42,7 +42,63 @@ namespace SCHelpers
 		}
 	}
 
-	CBaseEntity *GetEntityByClassname( const char *pszClassname )	// i'd like to than df's source code and a late night of stripping away bs for this one
+	void PrintSpace( int numspaces )
+	{
+		for (int i = 0; i < numspaces; ++i)
+		{
+			Msg(" ");
+		}
+		Msg("|");
+	}
+
+	void PrintDataMap( datamap_t *pDatamap, int spacing )
+	{
+		if (pDatamap)
+		{
+			int numFields = pDatamap->dataNumFields;
+			for (int i = 0; i < numFields; ++i)
+			{
+				typedescription_t *pTypeDesc = &pDatamap->dataDesc[i];
+				PrintSpace(spacing);
+				Msg( "class name: %s\n", pDatamap->dataClassName );
+				PrintSpace(spacing);
+				Msg( "num fields: %i\n", pDatamap->dataNumFields );
+				PrintTypeDescription(pTypeDesc, spacing+1);
+			}
+		}
+	}
+
+	void PrintTypeDescription( typedescription_t *pDesc, int spacing )
+	{
+		if (pDesc)
+		{
+			if (pDesc->fieldType == FIELD_VOID)
+			{
+				PrintSpace(spacing);
+				Msg( "field type was void\n" );
+			}
+			PrintSpace(spacing);
+			Msg( "field name   : %s\n", pDesc->fieldName );
+			PrintSpace(spacing);
+			Msg( "external name: %s\n", pDesc->externalName );
+			PrintSpace(spacing);
+			Msg( "offset normal: %i\n", pDesc->fieldOffset[0] );
+			PrintSpace(spacing);
+			Msg( "offset packed: %i\n", pDesc->fieldOffset[1] );
+			PrintDataMap( pDesc->td, spacing+1 );
+		}
+	}
+
+	void PrintEntityDatamap( CBaseEntity *pEntity )
+	{
+		if (pEntity)
+		{
+			datamap_t *pDatamap = GetDataDescMap( pEntity );
+			PrintDataMap( pDatamap, 0 );
+		}
+	}
+
+	CBaseEntity *GetEntityByClassname( const char *pszClassname )
 	{
 		for ( int i = gpGlobals->maxClients; i < gpGlobals->maxEntities; ++i )
 		{

@@ -14,6 +14,8 @@ struct edict_t;
 class SendTable;
 class SendProp;
 class CTeamplayRoundBasedRules;
+struct datamap_t;
+struct typedescription_t;
 
 namespace SCHelpers
 {
@@ -45,6 +47,12 @@ namespace SCHelpers
 	edict_t *UserIDToEdict( int userid );
 	
 	unsigned int UserIDToSteamID( int userid );
+
+	void PrintSpace( int numspaces );
+	void PrintDataMap( datamap_t *pDatamap, int spacing );
+	void PrintTypeDescription( typedescription_t *pDesc, int spacing );
+
+	void PrintEntityDatamap( CBaseEntity *pEntity );
 
 	CBaseEntity *GetEntityByClassname( const char *pszClassname );
 
