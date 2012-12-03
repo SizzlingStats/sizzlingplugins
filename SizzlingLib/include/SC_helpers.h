@@ -16,6 +16,7 @@ class SendProp;
 class CTeamplayRoundBasedRules;
 struct datamap_t;
 struct typedescription_t;
+class CBaseHandle;
 
 namespace SCHelpers
 {
@@ -43,6 +44,9 @@ namespace SCHelpers
 	{
 		return static_cast<uint64>(num + 0.5);
 	}
+
+	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle );
+	const char *GetClassname( const CBaseEntity *pEnt );
 
 	edict_t *UserIDToEdict( int userid );
 	

@@ -9,6 +9,8 @@
 #include "steam/steamclientpublic.h"
 #include "UserIdTracker.h"
 
+#include "basehandle.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -21,6 +23,42 @@ extern UserIdTracker 	*g_pUserIdTracker;
 
 namespace SCHelpers
 {
+	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle )
+	{
+		if (pHandle && pHandle->IsValid())
+		{
+			int entindex = pHandle->GetEntryIndex();
+			edict_t *pEdict = pEngine->PEntityOfEntIndex(entindex);
+			if (pEdict && !pEdict->IsFree())
+			{
+				return pServerEnts->EdictToBaseEntity(pEdict);
+			}
+		}
+		
+		return NULL;
+	}
+
+	const char *GetClassname( const CBaseEntity *pEnt )
+	{
+		if (pEnt)
+		{
+			datamap_t *pDatamap = GetDataDescMap( pEnt );
+			if (pDatamap)
+			{
+				const char *name = pDatamap->dataClassName;
+				for (int i = 0; i < pDatamap->dataNumFields; ++i)
+				{
+					typedescription_t *pType = &pDatamap->dataDesc[i];
+					if (pType && FStrEq(pType->fieldName, "m_iClassname"))
+					{
+						return (const char *)((unsigned char *)pEnt + pType->fieldOffset[TD_OFFSET_NORMAL]);
+					}
+				}
+			}
+		}
+		return "";
+	}
+
 	edict_t *UserIDToEdict( int userid )
 	{
 		int index = g_pUserIdTracker->GetEntIndex(userid);

@@ -46,6 +46,8 @@ public:
 	
 	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
 
+	void	GiveUber( int entindex );
+
 	// checks to see if any of the medics with uber on the same team 
 	// as the player that died dropped him
 	void	CheckPlayerDropped( int victimIndex );

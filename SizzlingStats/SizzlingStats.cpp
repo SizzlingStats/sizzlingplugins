@@ -13,7 +13,7 @@
 #include "vstdlib/jobthread.h"
 #include "ThreadCallQueue.h"
 #include "curl/curl.h"
-
+#include "engine/IEngineTrace.h"
 #include "mathlib/vector.h"
 
 #include "fasttimer.h"
@@ -35,6 +35,7 @@ extern CGlobalVars		*gpGlobals;
 extern IVEngineServer	*pEngine;
 extern IPlayerInfoManager *playerinfomanager;
 extern CTSCallQueue		*g_pTSCallQueue;
+extern IEngineTrace		*enginetrace;
 
 extern IServerGameEnts			*pServerEnts;
 
@@ -158,33 +159,102 @@ void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
 }
 
+class CTraceFilterSkipTwo: public ITraceFilter
+{
+public:
+	CTraceFilterSkipTwo( CBaseEntity *pEnt1, CBaseEntity *pEnt2 ):
+		m_pEnt1(pEnt1),
+		m_pEnt2(pEnt2)
+	{
+	}
+
+	virtual bool ShouldHitEntity( IHandleEntity *pServerEntity, int contentsMask )
+	{ 
+		CBaseEntity *pEnt = SCHelpers::BaseHandleToBaseEntity(&pServerEntity->GetRefEHandle());
+		if (pEnt == m_pEnt1 || pEnt == m_pEnt2)
+		{
+			return false;
+		}
+		return true;
+	}
+
+	virtual TraceType_t	GetTraceType() const
+	{
+		return TRACE_EVERYTHING_FILTER_PROPS;
+	}
+
+private:
+	CBaseEntity *m_pEnt1;
+	CBaseEntity *m_pEnt2;
+};
+
+static char *UTIL_VarArgs( char *format, ... )
+{
+    va_list     argptr;
+    static char     string[1024];
+    
+    va_start (argptr, format);
+    Q_vsnprintf(string, sizeof(string), format,argptr);
+    va_end (argptr);
+
+    return string;  
+}
+
+void SizzlingStats::GiveUber( int entindex )
+{
+	SS_PlayerData *pData = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData;
+	if (pData && (pData->GetClass(m_PlayerClassOffset) == 5))
+	{
+		CBaseHandle *hMedigun = (CBaseHandle*)((unsigned char *)(pData->GetBaseEntity()) + m_iWeaponsOffset + 4); // +4 because we want the medigun slot
+		CBaseEntity *pMedigun = SCHelpers::BaseHandleToBaseEntity(hMedigun);
+
+		if (pMedigun)
+		{
+			float *flChargeLevel = (float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
+			*flChargeLevel = 1.0f;
+		}
+	}
+}
+
 void SizzlingStats::CheckPlayerDropped( int victimIndex )
 {
-	for (int medIndex = 0; medIndex < m_vecMedics.Count(); ++medIndex)
+	for (int i = 0; i < m_vecMedics.Count(); ++i)
 	{
+		int medIndex = m_vecMedics[i];
 		SS_PlayerData *pMedData = m_PlayerDataManager.GetPlayerData(medIndex).m_pPlayerData;
 		SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
 		if ( pMedData->GetPlayerInfo()->GetTeamIndex() == pVictimData->GetPlayerInfo()->GetTeamIndex() )
 		{
 			CBaseHandle *hMedigun = (CBaseHandle*)((unsigned char *)(pMedData->GetBaseEntity()) + m_iWeaponsOffset + 4); // +4 because we want the medigun slot
-			int entindex = hMedigun->GetEntryIndex();
-			CBaseEntity *pMedigun = pServerEnts->EdictToBaseEntity(pEngine->PEntityOfEntIndex(entindex));
+			CBaseEntity *pMedigun = SCHelpers::BaseHandleToBaseEntity(hMedigun);
 
-			float flChargeLevel = *(float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
-			uint32 charge = static_cast<uint32>(flChargeLevel);
-
-			bool bReleasingCharge = *(bool *)((unsigned char *)pMedigun + m_iChargeReleaseOffset);
-
-			if (charge == 1 || bReleasingCharge)
+			const char *szWeapon = SCHelpers::GetClassname(pMedigun);
+			//if ( SCHelpers::FStrEq(szWeapon, "tf_weapon_medigun") )
 			{
-				Vector *victimPos = (Vector *)((unsigned char *)pVictimData->GetBaseEntity() + m_iOriginOffset);
-				Vector *medPos = (Vector *)((unsigned char *)pMedData->GetBaseEntity() + m_iOriginOffset);
-		
-				vec_t distance = victimPos->DistToSqr( *medPos );
-				Msg( "distance: %.2f\n", distance );
-				if (static_cast<uint32>(distance) <= 230400) // ~480 units is max target distance for medigun
+				float flChargeLevel = *(float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
+				uint32 charge = static_cast<uint32>(flChargeLevel);
+
+				bool bReleasingCharge = *(bool *)((unsigned char *)pMedigun + m_iChargeReleaseOffset);
+
+				if (charge == 1 || bReleasingCharge)
 				{
-					Msg( "player dropped\n" );
+					Vector *victimPos = (Vector *)((unsigned char *)pVictimData->GetBaseEntity() + m_iOriginOffset);
+					Vector *medPos = (Vector *)((unsigned char *)pMedData->GetBaseEntity() + m_iOriginOffset);
+		
+					vec_t distance = victimPos->DistToSqr( *medPos );
+					SS_AllUserChatMessage( UTIL_VarArgs("distance: %.2f\n", distance) );
+					if (static_cast<uint32>(distance) <= 230400) // ~480 units is max target distance for medigun
+					{
+						Ray_t ray;
+						ray.Init(*medPos, *victimPos);
+						CTraceFilterSkipTwo traceFilter(pMedData->GetBaseEntity(), pMedigun);
+						trace_t trace;
+						enginetrace->TraceRay(ray, MASK_SHOT_HULL, &traceFilter, &trace);
+						if (!trace.DidHit())
+						{
+							SS_AllUserChatMessage( "player dropped\n" );
+						}
+					}
 				}
 			}
 		}

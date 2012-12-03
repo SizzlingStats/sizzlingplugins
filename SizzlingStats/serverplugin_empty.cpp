@@ -74,6 +74,7 @@ IGameEventManager2		*gameeventmanager = NULL; // game events interface
 IPlayerInfoManager		*playerinfomanager = NULL; // game dll interface to interact with players
 //IBotManager			*botmanager = NULL; // game dll interface to interact with bots
 IServerPluginHelpers	*helpers = NULL; // special 3rd party plugin helpers from the engine
+IEngineTrace			*enginetrace = NULL;
 //s_ServerPlugin			*g_pServerPluginHandler = NULL;
 //extern UserIdTracker 	*g_pUserIdTracker;
 extern CTSCallQueue		*g_pTSCallQueue;
@@ -511,6 +512,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	pEngine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 	gameeventmanager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
 	helpers = (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
+	enginetrace = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_SERVER, NULL);
 	g_pServerPluginHandler = (s_ServerPlugin*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 
 	pServerEnts = (IServerGameEnts *)gameServerFactory(INTERFACEVERSION_SERVERGAMEENTS, NULL);
@@ -1048,6 +1050,12 @@ bool CEmptyServerPlugin::ConfirmInterfaces( void )
 		return false;
 	}
 
+	if (!enginetrace)
+	{
+		Warning( "Unable to load enginetrace, aborting load\n" );
+		return false;
+	}
+
 #ifndef SERVER_BUILD
 	if (!pEngineClient){
 		Warning( "Unable to load pEngineClient, aborting load\n" );
@@ -1323,12 +1331,12 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 				m_SizzlingStats.PlayerHealed( patientIndex, event->GetInt("amount") );
 			}
 		}
-	}/*
+	}
 	else if ( m_bShouldRecord && FStrEq( name, "player_death" ) )
 	{
 		int victim = event->GetInt( "victim_entindex" );
 		m_SizzlingStats.CheckPlayerDropped( victim );
-	}*/
+	}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{
 		int killerIndex = g_pUserIdTracker->GetEntIndex( event->GetInt( "attacker" ) );	// med picks
@@ -1452,6 +1460,15 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			if ( entindex != 0 )
 				helpers->CreateMessage( pEngine->PEntityOfEntIndex(entindex), DIALOG_MENU, kv, this );
 			kv->deleteThis();
+		}
+		else if ( FStrEq( text, ".gibuber" ) )
+		{
+			int userid = event->GetInt( "userid" );
+			int entindex = SCHelpers::UserIDToEntIndex( userid );
+			if ( entindex != 0 )
+			{
+				m_SizzlingStats.GiveUber( entindex );
+			}
 		}
 #endif
 	}
