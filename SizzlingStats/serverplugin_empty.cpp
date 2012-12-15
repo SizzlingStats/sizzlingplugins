@@ -1402,7 +1402,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		CPlayerMessage::AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
 		if (m_bTournamentMatchStarted)
 		{
-			CPlayerMessage::AllUserChatMessage( "\x03To view the match stats, type \".ss_showstats\"\n" );
+			CPlayerMessage::AllUserChatMessage( "\x03To view the match stats, type \".sizzlingstats\"\n" );
 		}
 	}
 	else if ( FStrEq( name, "player_say" ) )
@@ -1420,7 +1420,11 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			}
 		}
 #ifndef PUBLIC_RELEASE
-		else if ( FStrEq( text, ".ss_showstats" ) )
+		else if ( FStrEq( text, ".stats" ) || 
+					FStrEq( text, ".showstats" ) || 
+					FStrEq( text, ".sizzlingstats" ) || 
+					FStrEq( text, ".ss_showstats" ) || 
+					FStrEq( text, ".doritos" ) )
 		{
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
