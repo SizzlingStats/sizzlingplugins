@@ -45,6 +45,12 @@ namespace SCHelpers
 		return static_cast<uint64>(num + 0.5);
 	}
 
+	template<typename T, typename U>
+	inline T *ByteOffsetFromPointer( U *pBase, uint32 byte_offset )
+	{
+		return reinterpret_cast<T*>((reinterpret_cast<uint8*>(pBase) + byte_offset));
+	}
+
 	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle );
 	const char *GetClassname( const CBaseEntity *pEnt );
 

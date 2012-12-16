@@ -225,21 +225,22 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 		SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
 		if ( pMedData->GetPlayerInfo()->GetTeamIndex() == pVictimData->GetPlayerInfo()->GetTeamIndex() )
 		{
-			CBaseHandle *hMedigun = (CBaseHandle*)((unsigned char *)(pMedData->GetBaseEntity()) + m_iWeaponsOffset + 4); // +4 because we want the medigun slot
-			CBaseEntity *pMedigun = SCHelpers::BaseHandleToBaseEntity(hMedigun);
+			using namespace SCHelpers;
+			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
+			CBaseEntity *pMedigun = BaseHandleToBaseEntity(hMedigun);
 
 			const char *szWeapon = SCHelpers::GetClassname(pMedigun);
 			//if ( SCHelpers::FStrEq(szWeapon, "tf_weapon_medigun") )
 			{
-				float flChargeLevel = *(float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
+				float flChargeLevel = *ByteOffsetFromPointer<float>(pMedigun, m_iChargeLevelOffset);
 				uint32 charge = static_cast<uint32>(flChargeLevel);
 
-				bool bReleasingCharge = *(bool *)((unsigned char *)pMedigun + m_iChargeReleaseOffset);
+				bool bReleasingCharge = *ByteOffsetFromPointer<bool>(pMedigun, m_iChargeReleaseOffset);
 
 				if (charge == 1 || bReleasingCharge)
 				{
-					Vector *victimPos = (Vector *)((unsigned char *)pVictimData->GetBaseEntity() + m_iOriginOffset);
-					Vector *medPos = (Vector *)((unsigned char *)pMedData->GetBaseEntity() + m_iOriginOffset);
+					Vector *victimPos = ByteOffsetFromPointer<Vector>(pVictimData->GetBaseEntity(), m_iOriginOffset);
+					Vector *medPos = ByteOffsetFromPointer<Vector>(pMedData->GetBaseEntity(), m_iOriginOffset);
 		
 					vec_t distance = victimPos->DistToSqr( *medPos );
 					SS_AllUserChatMessage( UTIL_VarArgs("distance: %.2f\n", distance) );

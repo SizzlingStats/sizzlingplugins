@@ -40,6 +40,12 @@ namespace SCHelpers
 
 	const char *GetClassname( const CBaseEntity *pEnt )
 	{
+		//static uint32 classname_offset = 0xffff;
+		//if (classname_offset == 0xffff)
+		//{
+		//	datamap_t *pDatamap = GetDataDescMap( pEnt );
+		//}
+
 		if (pEnt)
 		{
 			datamap_t *pDatamap = GetDataDescMap( pEnt );
