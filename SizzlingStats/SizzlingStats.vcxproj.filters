@@ -44,5 +44,8 @@
     <ClInclude Include="PlayerDataManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="STVRecorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -100,6 +100,7 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
     <ClInclude Include="PlayerDataManager.h" />
     <ClInclude Include="PluginDefines.h" />
     <ClInclude Include="SizzlingStats.h" />
+    <ClInclude Include="STVRecorder.h" />
     <ClInclude Include="WebStatsHandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

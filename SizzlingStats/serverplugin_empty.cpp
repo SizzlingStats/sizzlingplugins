@@ -433,7 +433,7 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SayTeamHook(),
 	//m_iRoundStateHook(),
 	//m_bInWaitingForPlayersHook(),
-	m_refTournamentMode("mp_tournament"),
+	m_refTournamentMode((IConVar*)NULL),
 	m_pAutoUpdater(NULL),
 	m_pTeamplayRoundBasedRules(NULL),
 	m_iRoundState(NULL),
