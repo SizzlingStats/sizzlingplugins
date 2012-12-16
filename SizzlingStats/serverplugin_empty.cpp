@@ -737,7 +737,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			}
 			else
 			{
-				if (bTournamentMode && !m_bTournamentMatchStarted)
+				if (bTournamentMode && !m_bTournamentMatchStarted && (roundstate != GR_STATE_PREGAME))
 				{
 					m_SizzlingStats.SS_TournamentMatchStarted();
 					m_bTournamentMatchStarted = true;
