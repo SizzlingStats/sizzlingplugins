@@ -1408,7 +1408,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		CPlayerMessage::AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
 		if (m_bTournamentMatchStarted)
 		{
-			CPlayerMessage::AllUserChatMessage( "\x03To view the match stats, type \".sizzlingstats\"\n" );
+			CPlayerMessage::AllUserChatMessage( "\x03To view the match stats, type \".sizzlingstats\" or \".ss\"\n" );
 		}
 	}
 	else if ( FStrEq( name, "player_say" ) )
@@ -1426,7 +1426,8 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			}
 		}
 #ifndef PUBLIC_RELEASE
-		else if ( FStrEq( text, ".stats" ) || 
+		else if ( FStrEq( text, ".ss" ) ||
+					FStrEq( text, ".stats" ) || 
 					FStrEq( text, ".showstats" ) || 
 					FStrEq( text, ".sizzlingstats" ) || 
 					FStrEq( text, ".ss_showstats" ) || 
