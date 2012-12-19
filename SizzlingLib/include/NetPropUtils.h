@@ -2,46 +2,46 @@
 #ifndef NETPROP_UTILS_H
 #define NETPROP_UTILS_H
 
-#include "dt_send.h"
-//#include "dt_recv.h"
+//#include "dt_send.h"
+#include "dt_recv.h"
 
 #include "Thunk.h"
 
-// callback class for classes that hook props
+// callback class for classes that hook client props
 //
 // inherit from this and provide the callback
-class IPropHookCallback
+class IRecvPropHookCallback
 {
 public:
 	// return true to call the default 
 	// game function as well
-	virtual bool SendPropHookCallback( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID ) = 0;
+	virtual bool RecvPropHookCallback( const CRecvProxyData *pData, void *pStruct, void *pOut ) = 0;
 };
 
-class CSendPropHook: private CThunkCDecl<CSendPropHook>
+class CRecvPropHook: private CThunkCDecl<CRecvPropHook>
 {
 public:
-	CSendPropHook():
+	CRecvPropHook():
 		m_pProp(NULL),
 		m_pOldProxyFn(NULL),
 		m_pThis(NULL)
 	{
-		InitThunk(reinterpret_cast<CThunkCDecl<CSendPropHook>::ThunkType>(&CSendPropHook::FnCallback), this);
+		InitThunk(reinterpret_cast<CThunkCDecl<CRecvPropHook>::ThunkType>(&CRecvPropHook::FnCallback), this);
 	}
 
-	~CSendPropHook()
+	~CRecvPropHook()
 	{
 		Unhook();
 	}
 
-	void Hook( SendProp *pProp, IPropHookCallback *pThis )
+	void Hook( RecvProp *pProp, IRecvPropHookCallback *pThis )
 	{
 		// if we haven't hooked already
 		if (!IsHooked() && pProp && pThis)
 		{
 			m_pProp = pProp;
 			m_pOldProxyFn = m_pProp->GetProxyFn();
-			m_pProp->SetProxyFn(GetThunk<SendVarProxyFn>());
+			m_pProp->SetProxyFn(GetThunk<RecvVarProxyFn>());
 			m_pThis = pThis;
 		}
 	}
@@ -57,25 +57,26 @@ public:
 		}
 	}
 
-	// don't cast directly from pointer to bool
 	bool IsHooked()
 	{
+		// don't cast directly from pointer to bool
+		// for returning from functions
 		return !!m_pProp;
 	}
 
 private:
-	void __cdecl FnCallback( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID )
+	void __cdecl FnCallback( const CRecvProxyData *pData, void *pStruct, void *pOut )
 	{
-		if (m_pThis->SendPropHookCallback(pProp, pStructBase, pData, pOut, iElement, objectID))
+		if (m_pThis->RecvPropHookCallback(pData, pStruct, pOut))
 		{
-			m_pOldProxyFn(pProp, pStructBase, pData, pOut, iElement, objectID);
+			m_pOldProxyFn(pData, pStruct, pOut);
 		}
 	}
 
 private:
-	SendProp *m_pProp;
-	SendVarProxyFn m_pOldProxyFn;
-	IPropHookCallback *m_pThis;
+	RecvProp *m_pProp;
+	RecvVarProxyFn m_pOldProxyFn;
+	IRecvPropHookCallback *m_pThis;
 };
 
 #endif // NETPROP_UTILS_H
