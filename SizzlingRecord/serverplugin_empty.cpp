@@ -31,6 +31,8 @@
 
 class CTeamplayRoundBasedRules;
 
+static ConVar enabled("sizz_record_enable", 1, FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
+
 //===========================================================================//
 
 namespace DemoRecorder
@@ -41,25 +43,28 @@ namespace DemoRecorder
 
 void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, const char *szMapName )
 {
-	// get the time as an int64
-	time_t t = time(NULL);
+	if (!!enabled.GetInt())
+	{
+		// get the time as an int64
+		time_t t = time(NULL);
 
-	// convert it to a struct of time values
-	struct tm ltime = *localtime(&t);
+		// convert it to a struct of time values
+		struct tm ltime = *localtime(&t);
 
-	// normalize the year and month
-	uint32 year = ltime.tm_year + 1900;
-	uint32 month = ltime.tm_mon + 1;
+		// normalize the year and month
+		uint32 year = ltime.tm_year + 1900;
+		uint32 month = ltime.tm_mon + 1;
 
-	// create the record string
-	char recordstring[128] = {};
-	V_snprintf(recordstring, 128, "record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
+		// stop recording the current demo if there is one
+		StopRecording(pEngineClient);
+		
+		// create the record string
+		char recordstring[128] = {};
+		V_snprintf(recordstring, 128, "record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 
-	// stop recording the current demo if there is one
-	StopRecording(pEngineClient);
-
-	// start recording our demo
-	pEngineClient->ClientCmd( recordstring );
+		// start recording our demo
+		pEngineClient->ClientCmd( recordstring );
+	}
 }
 
 void DemoRecorder::StopRecording( IVEngineClient *pEngineClient )
