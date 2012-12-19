@@ -53,7 +53,7 @@ void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, const char *sz
 
 	// create the record string
 	char recordstring[128] = {};
-	V_snprintf(recordstring, 128, "record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min );
+	V_snprintf(recordstring, 128, "record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 
 	// stop recording the current demo if there is one
 	StopRecording(pEngineClient);
