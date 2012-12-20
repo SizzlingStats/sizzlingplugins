@@ -38,7 +38,7 @@ ALL_INC = \
 CPLUS=/usr/bin/g++-4.4
 CLINK=/usr/bin/gcc-4.4
 
-LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so libcurl.so.4.2.0
+LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so
 
 BUILD_DIR=$(SIZZLINGRECORD_DIR)
 RELEASE_DIR=./Release
@@ -105,7 +105,6 @@ TIER0_OBJS = \
 all: 
 	$(MAKE) dirs
 	ln -sf $(LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
-	ln -sf $(LIBS_DIR)/libcurl.so.4.2.0 libcurl.so.4.2.0
 	ln -sf $(LIBS_DIR)/libtier0_srv.so libtier0_srv.so
 	$(MAKE) sizzlingrecord_$(ARCH).$(SHLIBEXT)
 
