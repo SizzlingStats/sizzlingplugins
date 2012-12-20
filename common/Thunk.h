@@ -1,4 +1,51 @@
 
+//========================================
+//
+// These are thunks that convert __cdecl 
+// and __stdcall calls into thiscall calls
+//
+//========================================
+
+/*
+
+thiscall functions are weird on different compilers:
+(from http://www.ownedcore.com/forums/world-of-warcraft/world-of-warcraft-bots-programs/wow-memory-editing/281008-gcc-thiscall-calling-convention-linux-win32-mingw.html#post1804011 )
+
+MS Visual C++:
+* Arguments are pushed on the stack in reverse order.
+* The object pointer is passed in ECX.
+* The callee pops arguments when returning.
+* Primitive data types, except floating point values, are returned in EAX or EAX:EDX depending on the size.
+* float and double are returned in fp0, i.e. the first floating point register.
+* Simple data structures with 8 bytes or less in size are returned in EAX:EDX.
+* All classes and structures are returned in memory, regardless of size.
+* When a return is made in memory the caller passes a pointer to the memory location as the first parameter (hidden). The callee populates the memory, and returns the pointer. The callee pops the hidden pointer together with the rest of the arguments.
+* If the method takes variable number of arguments, i.e. is declared with the ... operator, then the calling convention instead becomes that of cdecl. The object pointer is pushed on the stack as the first argument instead of passed in ECX, and all arguments are popped from the stack by the caller when the function returns.
+
+MinGW g++ / Win32:
+* Arguments are pushed on the stack in reverse order.
+* The object pointer is pushed on the stack as the first parameter.
+* The caller pops arguments after return.
+* Primitive data types, except floating point values, are returned in EAX or EAX:EDX depending on the size.
+* float and double are returned in fp0, i.e. the first floating point register.
+* Objects with 8 bytes or less in size are returned in EAX:EDX.
+* Objects larger than 8 bytes are returned in memory.
+* Classes that have a destructor are returned in memory regardless of size.
+* When a return is made in memory the caller passes a pointer to the memory location as the first parameter (hidden). The callee populates the memory, and returns the pointer. The callee pops the hidden pointer from the stack when returning.
+* Classes that have a destructor are always passed by reference, even if the parameter is defined to be by value.
+
+GCC g++ / Linux:
+* Arguments are pushed on the stack in reverse order.
+* The object pointer is pushed on the stack as the first parameter.
+* The caller pops arguments after return.
+* Primitive data types, except floating point values, are returned in EAX or EAX:EDX depending on the size.
+* float and double are returned in fp0, i.e. the first floating point register.
+* All structures and classes are returned in memory regardless of complexity and size.
+* When a return is made in memory the caller passes a pointer to the memory location as the first parameter (hidden). The callee populates the memory, and returns the pointer. The callee pops the hidden pointer from the stack when returning.
+* Classes that have a destructor are always passed by reference, even if the parameter is defined to be by value. 
+
+*/
+
 #ifndef THUNK_H
 #define THUNK_H
 
@@ -49,6 +96,36 @@ inline To union_cast(From fr) throw()
 
 // this class forwards a __stdcall 
 // function call into a thiscall function.
+//
+// __stdcall functions store the params on the 
+// stack from right to left. The callee is 
+// responsible for cleaning up the stack after 
+// the call.
+//
+// This will only work for mvsc thiscall functions 
+// because they are __stdcall by default, while gcc is not.
+// Everything else besides msvc uses __cdecl by default 
+// for thiscall functions.
+//
+// The calls should go like this:
+// 'some function' [call]-> our asm (disguised as __stdcall) [jmp]-> our thiscall hook (can be __cdecl or __stdcall)
+//
+// Since our asm is disguised as an __stdcall, 
+// 'some function' won't clean up the stack for us.
+// In the asm step, we have no clue how many 
+// params that we need to clean up, so we 
+// need to force the thiscall hook to be what 
+// 'some function' expects. (a __stdcall)
+//
+// We want to force __stdcall because we want 
+// the compiler to generate code for the callee 
+// to clean up the stack.
+//
+// TODO: Force __stdcall on the callback and fix the asm
+//
+// TODO: might need to align the stack on 16 bytes in the asm
+//		 or else SSE inside the hook func won't work
+//
 template <class T>
 class CThunkStdCall
 {
@@ -70,7 +147,7 @@ public:
 		*pAsm86.byte++	= 0xB9;			// mov ecx, %pthis
 		*pAsm86.dword++	= (DWORD)pthis;	// dword ptr pthis
 		*pAsm86.byte++	= 0xE9;			// jmp method
-		// when decoding this final instruction of the jump offset, the program counter 
+		// when decoding this jump offset, the program counter 
 		// will be at the instruction after this one, because that's how it works.
 		// so the jump offset is the addr of the function we want to jump to, minus 
 		// the current position of the program counter.
@@ -88,9 +165,7 @@ public:
 		//FlushInstructionCache(GetCurrentProcess(), asm86, sizeof(asm86));
 	}
 
-	// can't declare the function const 
-	// because the compiler complains about 
-	// the cast
+	// get the asm disguised as a __stdcall func
 	template <typename K>
 	K GetThunk()
 	{
@@ -103,6 +178,18 @@ private:
 
 // this class forwards a __cdecl 
 // function call into a thiscall function.
+//
+// in __cdecl, the caller cleans up the stack
+// and arguments are ordered from right to left
+// on the stack
+//
+// there are special cases for __cdecl when 
+// returning structs/classes/large values 
+// with msvc and gcc, but i'm not doing those
+// yet because i don't need them
+//
+// THE CALLBACK METHOD MUST BE __cdecl ELSE CRASH
+//
 template <class T>
 class CThunkCDecl
 {
@@ -128,11 +215,13 @@ public:
 		*pAsm86.dword++	= (DWORD)pthis;	// dword ptr pthis
 		*pAsm86.byte++ = 0x50;			// push eax
 		*pAsm86.byte++ = 0xE8;			// call method
-		// when decoding this final instruction of the jump offset, the program counter 
+		// when decoding this jump offset, the program counter 
 		// will be at the instruction after this one, because that's how it works.
 		// so the jump offset is the addr of the function we want to jump to, minus 
 		// the current position of the program counter.
-		*pAsm86.dword++	= union_cast<DWORD>(method) - (DWORD)(asm86 + sizeof(asm86)); // offset to func
+		//
+		// offset to func ( -4 is for the "add esp, 4; ret;" which is 4 bytes )
+		*pAsm86.dword++	= union_cast<DWORD>(method) - (DWORD)(asm86 + sizeof(asm86) - 4);
 		*pAsm86.byte++ = 0x83; // add esp, 4
 		*pAsm86.byte++ = 0xC4;
 		*pAsm86.byte++ = 0x04;
@@ -150,9 +239,7 @@ public:
 		//FlushInstructionCache(GetCurrentProcess(), asm86, sizeof(asm86));
 	}
 
-	// can't declare the function const 
-	// because the compiler complains about 
-	// the cast
+	// get the asm disguised as a __cdecl func
 	template <typename K>
 	K GetThunk()
 	{
@@ -160,8 +247,8 @@ public:
 	}
 
 private:
-	// i think i need to align this on 16 bytes for gcc-4.5
-	__declspec( align( 16 ) ) BYTE asm86[16];
+	// TODO: i think i need to align this on 16 bytes for gcc-4.5 and SSE
+	BYTE asm86[16];
 };
 
 #endif // THUNK_H
