@@ -25,6 +25,33 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "supplementalstats", "supple
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "new plugin interface", "new plugin interface\new plugin interface.vcxproj", "{4C0B9686-0EBE-4D8C-A02C-B457A9B12503}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{1A5B6E99-C498-4D1B-9BE9-A57C26BDED0B}"
+	ProjectSection(SolutionItems) = preProject
+		common\funcqueuethread.h = common\funcqueuethread.h
+		common\queuethread.h = common\queuethread.h
+		StructPrinter.h = StructPrinter.h
+		common\teamplay_gamerule_states.h = common\teamplay_gamerule_states.h
+		common\Thunk.h = common\Thunk.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{93B5B338-B359-4E64-919C-30F3993E3F18}"
+	ProjectSection(SolutionItems) = preProject
+		common\curl\curl.h = common\curl\curl.h
+		common\curl\curlbuild.h = common\curl\curlbuild.h
+		common\curl\curlrules.h = common\curl\curlrules.h
+		common\curl\curlver.h = common\curl\curlver.h
+		common\curl\easy.h = common\curl\easy.h
+		common\curl\mprintf.h = common\curl\mprintf.h
+		common\curl\multi.h = common\curl\multi.h
+		common\curl\stdcheaders.h = common\curl\stdcheaders.h
+		common\curl\typecheck-gcc.h = common\curl\typecheck-gcc.h
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SizzlingRecord", "SizzlingRecord\SizzlingRecord.vcxproj", "{3E0CDF66-67D2-4B97-A909-0B1C806671C0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{20CD0A53-492F-47F6-9B09-DC747D36DBD7} = {20CD0A53-492F-47F6-9B09-DC747D36DBD7}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -55,8 +82,15 @@ Global
 		{4C0B9686-0EBE-4D8C-A02C-B457A9B12503}.Debug|Win32.Build.0 = Debug|Win32
 		{4C0B9686-0EBE-4D8C-A02C-B457A9B12503}.Release|Win32.ActiveCfg = Release|Win32
 		{4C0B9686-0EBE-4D8C-A02C-B457A9B12503}.Release|Win32.Build.0 = Release|Win32
+		{3E0CDF66-67D2-4B97-A909-0B1C806671C0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3E0CDF66-67D2-4B97-A909-0B1C806671C0}.Debug|Win32.Build.0 = Debug|Win32
+		{3E0CDF66-67D2-4B97-A909-0B1C806671C0}.Release|Win32.ActiveCfg = Release|Win32
+		{3E0CDF66-67D2-4B97-A909-0B1C806671C0}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{93B5B338-B359-4E64-919C-30F3993E3F18} = {1A5B6E99-C498-4D1B-9BE9-A57C26BDED0B}
 	EndGlobalSection
 EndGlobal

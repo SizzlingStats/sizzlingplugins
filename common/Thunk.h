@@ -26,6 +26,13 @@ int VirtualProtect(const void *addr, size_t len, int prot, unsigned int *prev)
 }
 
 
+#elif _WIN32
+
+#define VC_EXTRALEAN 
+#define WIN32_LEAN_AND_MEAN 
+
+#include <windows.h>
+
 #endif
 
 template<typename To, typename From>
@@ -113,18 +120,23 @@ public:
 		uPtr pAsm86;
 		pAsm86.byte = asm86;
 		// for __cdecl, we need to push the 'this' pointer
-		// on the end of the stack before eax,
-		// then jump to our function
+		// on the end of the stack before the return value,
+		// then call our function and clean up the 'this'
+		// pointer on the stack
 		*pAsm86.byte++ = 0x58;			// pop eax
 		*pAsm86.byte++ = 0x68;			// push pThis
 		*pAsm86.dword++	= (DWORD)pthis;	// dword ptr pthis
 		*pAsm86.byte++ = 0x50;			// push eax
-		*pAsm86.byte++ = 0xE9;			// jmp method
+		*pAsm86.byte++ = 0xE8;			// call method
 		// when decoding this final instruction of the jump offset, the program counter 
 		// will be at the instruction after this one, because that's how it works.
 		// so the jump offset is the addr of the function we want to jump to, minus 
 		// the current position of the program counter.
 		*pAsm86.dword++	= union_cast<DWORD>(method) - (DWORD)(asm86 + sizeof(asm86)); // offset to func
+		*pAsm86.byte++ = 0x83; // add esp, 4
+		*pAsm86.byte++ = 0xC4;
+		*pAsm86.byte++ = 0x04;
+		*pAsm86.byte++ = 0xC3; // ret
 
 		// need to enable execution access for this memory or else we will get a seg fault
 		DWORD protect;
@@ -148,7 +160,8 @@ public:
 	}
 
 private:
-	BYTE asm86[12];
+	// i think i need to align this on 16 bytes for gcc-4.5
+	__declspec( align( 16 ) ) BYTE asm86[16];
 };
 
 #endif // THUNK_H

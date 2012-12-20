@@ -31,19 +31,25 @@
 
 class CTeamplayRoundBasedRules;
 
-static ConVar enabled("sizz_record_enable", 1, FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
+static ConVar enabled("sizz_record_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
 
 //===========================================================================//
 
 namespace DemoRecorder
 {
-	inline void StartRecording( IVEngineClient *pEngineClient, const char *szMapName );
+	inline bool CanRecordDemo( IBaseClientDLL *pBaseClientDLL );
+	inline void StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL, const char *szMapName );
 	inline void StopRecording( IVEngineClient *pEngineClient );
 }
 
-void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, const char *szMapName )
+bool DemoRecorder::CanRecordDemo( IBaseClientDLL *pBaseClientDLL )
 {
-	if (!!enabled.GetInt())
+	return pBaseClientDLL->CanRecordDemo(NULL, 0);
+}
+
+void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL, const char *szMapName )
+{
+	if ( !!enabled.GetInt() && CanRecordDemo(pBaseClientDLL) )
 	{
 		// get the time as an int64
 		time_t t = time(NULL);
@@ -456,7 +462,7 @@ bool CEmptyServerPlugin::RecvPropHookCallback( const CRecvProxyData *pData, void
 bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	bool bWaitingForPlayers = !!(pData->m_Value.m_Int);
-	static bool oldWaitingForPlayers = true;
+	static bool oldWaitingForPlayers = bWaitingForPlayers;
 
 	if (oldWaitingForPlayers != bWaitingForPlayers)
 	{
@@ -480,7 +486,7 @@ bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *
 			
 			if (bTournamentMode && !m_bTournamentMatchStarted/* && (roundstate != GR_STATE_PREGAME)*/)
 			{
-				DemoRecorder::StartRecording(m_pEngineClient, m_pGlobals->mapname.ToCStr());
+				DemoRecorder::StartRecording(m_pEngineClient, m_pBaseClientDLL, m_pGlobals->mapname.ToCStr());
 				m_bTournamentMatchStarted = true;
 			}
 		}
@@ -506,7 +512,6 @@ void CEmptyServerPlugin::HookProps()
 	RecvProp *pbInWaitingForPlayers = Helpers::GetPropFromClassAndTable( m_pBaseClientDLL, "CTeamplayRoundBasedRulesProxy", "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
 	if (pbInWaitingForPlayers)
 	{
-		//m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
 		m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, this );
 	}
 }
