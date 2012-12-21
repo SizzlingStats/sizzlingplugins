@@ -52,17 +52,14 @@ namespace SCHelpers
 	}
 
 	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle );
-	const char *GetClassname( const CBaseEntity *pEnt );
+
+	// gets the m_iClassname value for the entity
+	// doesn't check pEnt for NULL
+	const char **GetClassname( CBaseEntity * const pEnt );
 
 	edict_t *UserIDToEdict( int userid );
 	
 	unsigned int UserIDToSteamID( int userid );
-
-	void PrintSpace( int numspaces );
-	void PrintDataMap( datamap_t *pDatamap, int spacing );
-	void PrintTypeDescription( typedescription_t *pDesc, int spacing );
-
-	void PrintEntityDatamap( CBaseEntity *pEntity );
 
 	CBaseEntity *GetEntityByClassname( const char *pszClassname );
 
@@ -113,6 +110,10 @@ namespace SCHelpers
 	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
 
 	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
+
+	int GetDatamapVarOffset( datamap_t *pDatamap, const char *szVarName );
+
+	int GetOffsetForDatamapVar( const CBaseEntity *pEntity, const char *szVarName );
 
 } // namespace SCHelpers
 

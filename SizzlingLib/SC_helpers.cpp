@@ -38,31 +38,14 @@ namespace SCHelpers
 		return NULL;
 	}
 
-	const char *GetClassname( const CBaseEntity *pEnt )
+	const char **GetClassname( CBaseEntity * const pEnt )
 	{
-		//static uint32 classname_offset = 0xffff;
-		//if (classname_offset == 0xffff)
-		//{
-		//	datamap_t *pDatamap = GetDataDescMap( pEnt );
-		//}
-
-		if (pEnt)
+		static uint32 classname_offset = 0xffff;
+		if (classname_offset == 0xffff)
 		{
-			datamap_t *pDatamap = GetDataDescMap( pEnt );
-			if (pDatamap)
-			{
-				const char *name = pDatamap->dataClassName;
-				for (int i = 0; i < pDatamap->dataNumFields; ++i)
-				{
-					typedescription_t *pType = &pDatamap->dataDesc[i];
-					if (pType && FStrEq(pType->fieldName, "m_iClassname"))
-					{
-						return (const char *)((unsigned char *)pEnt + pType->fieldOffset[TD_OFFSET_NORMAL]);
-					}
-				}
-			}
+			classname_offset = GetOffsetForDatamapVar(pEnt, "m_iClassname");
 		}
-		return "";
+		return ByteOffsetFromPointer<const char*>(pEnt, classname_offset);
 	}
 
 	edict_t *UserIDToEdict( int userid )
@@ -83,62 +66,6 @@ namespace SCHelpers
 		else
 		{
 			return 0;
-		}
-	}
-
-	void PrintSpace( int numspaces )
-	{
-		for (int i = 0; i < numspaces; ++i)
-		{
-			Msg(" ");
-		}
-		Msg("|");
-	}
-
-	void PrintDataMap( datamap_t *pDatamap, int spacing )
-	{
-		if (pDatamap)
-		{
-			int numFields = pDatamap->dataNumFields;
-			for (int i = 0; i < numFields; ++i)
-			{
-				typedescription_t *pTypeDesc = &pDatamap->dataDesc[i];
-				PrintSpace(spacing);
-				Msg( "class name: %s\n", pDatamap->dataClassName );
-				PrintSpace(spacing);
-				Msg( "num fields: %i\n", pDatamap->dataNumFields );
-				PrintTypeDescription(pTypeDesc, spacing+1);
-			}
-		}
-	}
-
-	void PrintTypeDescription( typedescription_t *pDesc, int spacing )
-	{
-		if (pDesc)
-		{
-			if (pDesc->fieldType == FIELD_VOID)
-			{
-				PrintSpace(spacing);
-				Msg( "field type was void\n" );
-			}
-			PrintSpace(spacing);
-			Msg( "field name   : %s\n", pDesc->fieldName );
-			PrintSpace(spacing);
-			Msg( "external name: %s\n", pDesc->externalName );
-			PrintSpace(spacing);
-			Msg( "offset normal: %i\n", pDesc->fieldOffset[0] );
-			PrintSpace(spacing);
-			Msg( "offset packed: %i\n", pDesc->fieldOffset[1] );
-			PrintDataMap( pDesc->td, spacing+1 );
-		}
-	}
-
-	void PrintEntityDatamap( CBaseEntity *pEntity )
-	{
-		if (pEntity)
-		{
-			datamap_t *pDatamap = GetDataDescMap( pEntity );
-			PrintDataMap( pDatamap, 0 );
 		}
 	}
 
@@ -165,31 +92,10 @@ namespace SCHelpers
 				Msg( "bad datamap\n" );
 			}
 			Msg( "%s\n", pDatamap->dataClassName );
-			//Msg( "%s\n", pszClassname );
 			if ( FStrEq( pDatamap->dataClassName, pszClassname ) )
 			{
 				return pEntity;
 			}
-			//for ( int j = 0; j < pDatamap->dataNumFields; j++ )
-			//{
-			//	typedescription_t *pType = &pDatamap->dataDesc[j];
-			//	if ( pType->fieldType != FIELD_VOID )
-			//	{
-			//		//Msg( "%s\n", pType->fieldName );
-			//		if ( FStrEq( pszClassname, pType->fieldName ) )
-			//		{
-			//			int offset = pType->fieldOffset[TD_OFFSET_NORMAL];
-			//			Msg( "%i\n", offset );
-			//			string_t *m_iClassname = (string_t *)(((unsigned int)pEntity)+(offset));
-			//			Msg( "%s\n", STRING(*m_iClassname) );
-			//			if ( FStrEq( STRING(*m_iClassname), pszClassname ) )
-			//			{
-			//				Msg( "%s\n", m_iClassname );
-			//				return pEntity;
-			//			}
-			//		}
-			//	}
-			//}
 		}
 		Msg( "CLASSNAME NOT FOUND NOOOOOOO\n" );
 		return NULL;
@@ -311,14 +217,13 @@ namespace SCHelpers
 		if (!pTable)
 			return NULL;
 		
-		SendTable *pSendTable = pTable;
-		if ( FStrEq( pTableName, pSendTable->GetName() ) )
-			return pSendTable;
+		if ( FStrEq( pTableName, pTable->GetName() ) )
+			return pTable;
 		
-		int num = pSendTable->GetNumProps();
+		int num = pTable->GetNumProps();
 		for (int i = 0; i < num; i++)
 		{
-			SendProp *pProp = pSendTable->GetProp(i);
+			SendProp *pProp = pTable->GetProp(i);
 			if (pProp)
 			{
 				SendTable *pSubTable = GetDataTable( pTableName, pProp->GetDataTable() );
@@ -420,6 +325,44 @@ namespace SCHelpers
 		}
 		return NULL;
 	}
+
+	int GetDatamapVarOffset( datamap_t *pDatamap, const char *szVarName )
+	{
+		while (pDatamap)
+		{
+			int numFields = pDatamap->dataNumFields;
+			for (int i = 0; i < numFields; ++i)
+			{
+				typedescription_t *pTypeDesc = &pDatamap->dataDesc[i];
+				if (pTypeDesc)
+				{
+					if ( FStrEq(pTypeDesc->fieldName, szVarName) )
+					{
+						return pTypeDesc->fieldOffset[TD_OFFSET_NORMAL];
+					}
+					else
+					{
+						// there can be additional data tables inside this type description
+						GetDatamapVarOffset(pTypeDesc->td, szVarName);
+					}
+				}
+			}
+			pDatamap = pDatamap->baseMap;
+		}
+		return 0;
+	}
+
+	int GetOffsetForDatamapVar( const CBaseEntity *pEntity, const char *szVarName )
+	{
+		if (pEntity)
+		{
+			datamap_t *pDatamap = GetDataDescMap( pEntity );
+			return GetDatamapVarOffset( pDatamap, szVarName );
+		}
+		return 0;
+	}
+
+
 
 } // namespace SCHelpers
 

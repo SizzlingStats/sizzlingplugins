@@ -57,7 +57,7 @@ inline bool CSTVRecorder::StartRecording( IVEngineServer *pEngine, const char *s
 
 	// create the record string
 	char recordstring[128] = {};
-	V_snprintf(recordstring, 128, "tv_record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min );
+	V_snprintf(recordstring, 128, "tv_record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 	
 	// unload the sourcemod match recorder plugin so we can take over
 	pEngine->ServerCommand( "sm plugins unload matchrecorder\n" );
