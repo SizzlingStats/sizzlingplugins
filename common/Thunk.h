@@ -196,6 +196,11 @@ class CThunkCDecl
 public:
 	typedef void (__cdecl T::*ThunkType)();
 
+	CThunkCDecl():
+		m_oldRetVal(0)
+	{
+	}
+
 	void InitThunk(ThunkType method, const T *pthis)
 	{
 		union uPtr 
@@ -203,6 +208,11 @@ public:
 			BYTE *byte;
 			DWORD *dword;
 		};
+
+		// TODO: this is all wrong, i need to jump to the method instead so a second ret val isn't pushed on the stack.
+		// This means if i want the func to return to me, i need to save the return value, modify it, have it return to 
+		// me like it was a function call instead of a jump, then clean up my 'this' ptr on the stack and return back 
+		// to the original return value which i will have saved
 
 		uPtr pAsm86;
 		pAsm86.byte = asm86;
@@ -249,6 +259,7 @@ public:
 private:
 	// TODO: i think i need to align this on 16 bytes for gcc-4.5 and SSE
 	BYTE asm86[16];
+	uint32 m_oldRetVal;
 };
 
 #endif // THUNK_H

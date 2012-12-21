@@ -69,13 +69,13 @@ void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL
 		V_snprintf(recordstring, 128, "record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 
 		// start recording our demo
-		pEngineClient->ClientCmd( recordstring );
+		pEngineClient->ClientCmd_Unrestricted( recordstring );
 	}
 }
 
 void DemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 {
-	pEngineClient->ClientCmd( "stop\n" );
+	pEngineClient->ClientCmd_Unrestricted( "stop\n" );
 }
 
 //===========================================================================//
