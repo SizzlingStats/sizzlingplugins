@@ -7,13 +7,13 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-#define PUBLIC_RELEASE 1
+//#define PUBLIC_RELEASE 1
 
 #ifdef PUBLIC_RELEASE
 	#define PLUGIN_VERSION "0.8.3.7"
 	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
 #else
-	#define PLUGIN_VERSION "0.9.0.5"
+	#define PLUGIN_VERSION "0.9.0.6"
 	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
 #endif
 //#define RELEASE_VERSION
