@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-console -game tf +maxplayers 14 +map cp_granary</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-insecure -console -game tf +maxplayers 14 +map cp_granary</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>$(orangebox_dir)\srcds.exe</LocalDebuggerCommand>
   </PropertyGroup>
@@ -10,7 +10,7 @@
     <LocalDebuggerCommand>$(orangebox_dir)\srcds.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>-console -game tf +maxplayers 14 +map cp_granary</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-insecure -console -game tf +maxplayers 14 +map cp_granary</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

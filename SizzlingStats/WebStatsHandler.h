@@ -146,13 +146,17 @@ public:
 
 	void ClearPlayerStats() {}
 	void EnqueuePlayerStats(playerWebStats_t const &item) {}
+	void EnqueuePlayerInfo(playerInfo_t const &info) {}
 
 	void SetHostData(hostInfo_t const &info) {}
 
 	void GetMatchUrl( char *str, int maxlen ) {}
 	bool HasMatchUrl() { return false; }
 
+	void PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat ) {}
+
 	void SendStatsToWeb() {}
+	void SendGameStartEvent() {}
 	void SendGameOverEvent(double flMatchDuration) {}
 };
 

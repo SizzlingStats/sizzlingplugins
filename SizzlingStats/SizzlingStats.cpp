@@ -494,9 +494,11 @@ void SizzlingStats::SS_PreRoundFreeze()
 {
 	Msg( "pre-round started\n" );
 	SS_ResetData();
+#ifndef PUBLIC_RELEASE
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime;
 	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, SCHelpers::RoundDBL(curtime));
+#endif
 }
 
 void SizzlingStats::SS_RoundStarted()
@@ -507,10 +509,12 @@ void SizzlingStats::SS_RoundStarted()
 
 void SizzlingStats::SS_RoundEnded()
 {
+#ifndef PUBLIC_RELEASE
 	Msg( "round ended\n" );
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime - m_flRoundDuration;
 	m_PlayerDataManager.StopClassTracking(SCHelpers::RoundDBL(curtime));
+#endif
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
 	SS_EndOfRound();
 }
@@ -672,6 +676,12 @@ void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 	CPlayerMessage::SingleUserChatMessage( entindex, "========================\n" );
 }
 
+void SizzlingStats::SetTeamScores( int redscore, int bluscore )
+{
+	m_hostInfo.m_redscore = redscore;
+	m_hostInfo.m_bluscore = bluscore;
+}
+
 #ifndef PUBLIC_RELEASE
 
 static void messagethis()
@@ -717,16 +727,6 @@ static void loopmessage()
 		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(messagethread));
 	}
 }
-
-#endif
-
-void SizzlingStats::SetTeamScores( int redscore, int bluscore )
-{
-	m_hostInfo.m_redscore = redscore;
-	m_hostInfo.m_bluscore = bluscore;
-}
-
-#ifndef PUBLIC_RELEASE
 
 void SizzlingStats::SS_TestThreading()
 {

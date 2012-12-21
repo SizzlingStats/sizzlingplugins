@@ -7,7 +7,7 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-//#define PUBLIC_RELEASE 1
+#define PUBLIC_RELEASE 1
 
 #ifdef PUBLIC_RELEASE
 	#define PLUGIN_VERSION "0.8.3.7"

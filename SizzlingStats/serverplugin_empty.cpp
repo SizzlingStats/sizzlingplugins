@@ -447,7 +447,9 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 {
 }
 
+#ifndef PUBLIC_RELEASE
 static ConCommand test("tryend", &g_EmptyServerPlugin);
+#endif
 
 CEmptyServerPlugin::~CEmptyServerPlugin()
 {
@@ -560,13 +562,13 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	
 	// when a player types in chat (doesn't include data to differentiate say and say_team)
 	gameeventmanager->AddListener( this, "player_say", true );
-	
+#ifndef PUBLIC_RELEASE
 	// to track times for classes
 	gameeventmanager->AddListener( this, "player_changeclass", true );
 	gameeventmanager->AddListener( this, "player_team", true );
 	
 	gameeventmanager->AddListener( this, "player_death", true );
-	
+#endif
 	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
 
@@ -687,9 +689,10 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	
 	m_SizzlingStats.LevelInit(pMapName);
-
+#ifndef PUBLIC_RELEASE
 	pEngine->ServerCommand( "log on\n" );
 	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
+#endif
 }
 
 //---------------------------------------------------------------------------------
@@ -719,7 +722,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 
 		int roundstate = *m_iRoundState;
 		static int oldRoundState = roundstate;
-
+#ifndef PUBLIC_RELEASE
 		if (oldWaitingForPlayers != bWaitingForPlayers)
 		{
 			using namespace Teamplay_GameRule_States;
@@ -746,7 +749,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 
 			oldWaitingForPlayers = bWaitingForPlayers;
 		}
-
+#endif
 		if (oldRoundState != roundstate)
 		{
 			using namespace Teamplay_GameRule_States;
@@ -1402,7 +1405,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		m_bShouldRecord = false; // stop extra stats recording
 		m_SizzlingStats.SS_RoundEnded();
 	}
-	else if ( /*FStrEq( name, "teamplay_game_over" ) ||*/ FStrEq( name, "tf_game_over" ) )
+	else if ( FStrEq( name, "teamplay_game_over" ) || FStrEq( name, "tf_game_over" ) )
 	{
 		CPlayerMessage::AllUserChatMessage( "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n" );
 		CPlayerMessage::AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
@@ -1436,7 +1439,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
 			m_SizzlingStats.SS_ShowHtmlStats( entindex );
-		}
+		}/*
 		else if ( FStrEq( text, ".testupdatestats" ) )
 		{
 			m_SizzlingStats.SS_UploadStats();
@@ -1480,7 +1483,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			{
 				m_SizzlingStats.GiveUber( entindex );
 			}
-		}
+		}*/
 #endif
 	}
 }
