@@ -198,15 +198,18 @@ namespace SCHelpers
 
 	unsigned int GetThisPluginIndex( const char *pszDescriptionPart )
 	{
-		for ( unsigned int i = 0; i < g_pServerPluginHandler->nLoadedPlugins; ++i )
+		if (g_pServerPluginHandler)
 		{
-			//Msg( "plugin %i, %s\n", i, *((const char **)(g_pServerPluginHandler->pszInfo + i)) );
-			if ( V_strstr( *((const char **)(g_pServerPluginHandler->pszInfo + i)), pszDescriptionPart ) )
+			for ( unsigned int i = 0; i < g_pServerPluginHandler->nLoadedPlugins; ++i )
 			{
-				return i;
+				//Msg( "plugin %i, %s\n", i, *((const char **)(g_pServerPluginHandler->pszInfo + i)) );
+				if ( V_strstr( *((const char **)(g_pServerPluginHandler->pszInfo + i)), pszDescriptionPart ) )
+				{
+					return i;
+				}
 			}
 		}
-		return 0;
+		return 0xffff;
 	}
 
 	//---------------------------------------------------------------------------------
