@@ -66,16 +66,16 @@ void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL
 		
 		// create the record string
 		char recordstring[128] = {};
-		V_snprintf(recordstring, 128, "record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
+		V_snprintf(recordstring, 128, "say record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 
 		// start recording our demo
-		pEngineClient->ClientCmd_Unrestricted( recordstring );
+		pEngineClient->ClientCmd( recordstring );
 	}
 }
 
 void DemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 {
-	pEngineClient->ClientCmd_Unrestricted( "stop\n" );
+	pEngineClient->ClientCmd( "say stop\n" );
 }
 
 //===========================================================================//
@@ -269,8 +269,6 @@ void CEmptyServerPlugin::Unload( void )
 	{
 		ConVar_Unregister( );
 	}
-	
-	m_BaseClientDLL.Unload();
 }
 
 //---------------------------------------------------------------------------------

@@ -271,9 +271,9 @@ public:
 	}
 
 private:
+	uint32 m_oldRetVal;
 	// TODO: i think i need to align this on 16 bytes for gcc-4.5 and SSE
 	BYTE asm86[30];
-	uint32 m_oldRetVal;
 };
 
 #endif // THUNK_H
