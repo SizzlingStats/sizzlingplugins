@@ -176,7 +176,7 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
-	m_BaseClientDLL("tf/bin/client" PLUGIN_EXTENSION),
+	m_BaseClientDLL("../tf/bin/client" PLUGIN_EXTENSION),
 	m_refTournamentMode((IConVar*)NULL),
 	m_pGameEventManager(NULL),
 	m_pBaseClientDLL(NULL),

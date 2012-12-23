@@ -12,7 +12,7 @@
 BASE_DIR = ../..
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
-LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux
+LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux/client
 HL2SDK_DIR = $(BASE_DIR)/hl2sdk-ob-valve
 HL2SDK_LIB_DIR = $(HL2SDK_DIR)/lib/linux
 SIZZLINGRECORD_DIR = $(SIZZLINGPLUGINS_DIR)/SizzlingRecord
@@ -38,7 +38,7 @@ ALL_INC = \
 CPLUS=/usr/bin/g++-4.4
 CLINK=/usr/bin/gcc-4.4
 
-LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so
+LDFLAGS=-m32 -lm -ldl libtier0.so libvstdlib.so
 
 BUILD_DIR=$(SIZZLINGRECORD_DIR)
 RELEASE_DIR=./Release
@@ -60,7 +60,7 @@ ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32
 BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DNO_MALLOC_OVERRIDE=1
 SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
-SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections -Wl,--strip-all
+SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections # -Wl,--strip-all
 
 CFLAGS=$(USER_CFLAGS) $(DEFINES) $(ARCH_CFLAGS) $(BASE_CFLAGS) -Usprintf=use_Q_snprintf_instead_of_sprintf -Ustrncpy=use_Q_strncpy_instead -UPROTECTED_THINGS_ENABLE
 
@@ -104,8 +104,8 @@ TIER0_OBJS = \
 
 all: 
 	$(MAKE) dirs
-	ln -sf $(LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
-	ln -sf $(LIBS_DIR)/libtier0_srv.so libtier0_srv.so
+	ln -sf $(LIBS_DIR)/libvstdlib.so libvstdlib.so
+	ln -sf $(LIBS_DIR)/libtier0.so libtier0.so
 	$(MAKE) sizzlingrecord_$(ARCH).$(SHLIBEXT)
 
 dirs:

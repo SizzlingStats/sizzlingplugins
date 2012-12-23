@@ -12,6 +12,7 @@
 BASE_DIR = ../..
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
+SERVER_LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux/server
 LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux
 HL2SDK_DIR = $(BASE_DIR)/hl2sdk-ob-valve
 HL2SDK_LIB_DIR = $(HL2SDK_DIR)/lib/linux
@@ -123,9 +124,9 @@ TIER0_OBJS = \
 
 all: 
 	$(MAKE) dirs
-	ln -sf $(LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
+	ln -sf $(SERVER_LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
 	ln -sf $(LIBS_DIR)/libcurl.so.4.2.0 libcurl.so.4.2.0
-	ln -sf $(LIBS_DIR)/libtier0_srv.so libtier0_srv.so
+	ln -sf $(SERVER_LIBS_DIR)/libtier0_srv.so libtier0_srv.so
 	$(MAKE) sizzlingstats_$(ARCH).$(SHLIBEXT)
 
 dirs:
