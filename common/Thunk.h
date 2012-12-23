@@ -209,33 +209,47 @@ public:
 			DWORD *dword;
 		};
 
-		// TODO: this is all wrong, i need to jump to the method instead so a second ret val isn't pushed on the stack.
-		// This means if i want the func to return to me, i need to save the return value, modify it, have it return to 
-		// me like it was a function call instead of a jump, then clean up my 'this' ptr on the stack and return back 
-		// to the original return value which i will have saved
-
 		uPtr pAsm86;
 		pAsm86.byte = asm86;
 		// for __cdecl, we need to push the 'this' pointer
 		// on the end of the stack before the return value,
 		// then call our function and clean up the 'this'
 		// pointer on the stack
-		*pAsm86.byte++ = 0x58;			// pop eax
-		*pAsm86.byte++ = 0x68;			// push pThis
-		*pAsm86.dword++	= (DWORD)pthis;	// dword ptr pthis
-		*pAsm86.byte++ = 0x50;			// push eax
-		*pAsm86.byte++ = 0xE8;			// call method
+
+		// pop the old return value into our mem
+		*pAsm86.byte++ = 0x8F;			// pop m32
+		*pAsm86.byte++ = 0x05;			// modr/m byte
+		*pAsm86.dword++ = (DWORD)(&m_oldRetVal); // m32
+
+		// push our 'this' pointer
+		*pAsm86.byte++ = 0x68;			// push imm32
+		*pAsm86.dword++ = (DWORD)(pthis);	// imm32
+
+		// push our return addr
+		*pAsm86.byte++ = 0x68;			// push imm32
+		*pAsm86.dword++ = (DWORD)(asm86 + 21);	// imm32
+
+		*pAsm86.byte++ = 0xE9;			// jmp method
 		// when decoding this jump offset, the program counter 
 		// will be at the instruction after this one, because that's how it works.
 		// so the jump offset is the addr of the function we want to jump to, minus 
 		// the current position of the program counter.
 		//
-		// offset to func ( -4 is for the "add esp, 4; ret;" which is 4 bytes )
-		*pAsm86.dword++	= union_cast<DWORD>(method) - (DWORD)(asm86 + sizeof(asm86) - 4);
-		*pAsm86.byte++ = 0x83; // add esp, 4
-		*pAsm86.byte++ = 0xC4;
+		// offset to func ( -10 is for the instructions after which are 10 bytes )
+		*pAsm86.dword++	= union_cast<DWORD>(method) - (DWORD)(asm86 + sizeof(asm86) - 9);
+		
+		// clean up the 'this' ptr and jump back 
+		// to the original caller
+
+		// clean up 'this'
+		*pAsm86.byte++ = 0x83;		// add esp, 4
+		*pAsm86.byte++ = 0xC4;		// modr/m byte
 		*pAsm86.byte++ = 0x04;
-		*pAsm86.byte++ = 0xC3; // ret
+
+		// jump back to caller
+		*pAsm86.byte++ = 0xFF;		// jmp [&m_oldRetVal]
+		*pAsm86.byte++ = 0x25;		// modr/m byte
+		*pAsm86.dword++ = (DWORD)(&m_oldRetVal);
 
 		// need to enable execution access for this memory or else we will get a seg fault
 		DWORD protect;
@@ -258,7 +272,7 @@ public:
 
 private:
 	// TODO: i think i need to align this on 16 bytes for gcc-4.5 and SSE
-	BYTE asm86[16];
+	BYTE asm86[30];
 	uint32 m_oldRetVal;
 };
 
