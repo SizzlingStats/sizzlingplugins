@@ -38,7 +38,7 @@ static ConVar enabled("sizz_record_enable", "1", FCVAR_NONE, "If nonzero, enable
 namespace DemoRecorder
 {
 	inline bool CanRecordDemo( IBaseClientDLL *pBaseClientDLL );
-	inline void StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL, const char *szMapName );
+	inline void StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL );
 	inline void StopRecording( IVEngineClient *pEngineClient );
 }
 
@@ -47,7 +47,7 @@ bool DemoRecorder::CanRecordDemo( IBaseClientDLL *pBaseClientDLL )
 	return pBaseClientDLL->CanRecordDemo(NULL, 0);
 }
 
-void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL, const char *szMapName )
+void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL )
 {
 	if ( !!enabled.GetInt() && CanRecordDemo(pBaseClientDLL) )
 	{
@@ -61,21 +61,20 @@ void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL
 		uint32 year = ltime.tm_year + 1900;
 		uint32 month = ltime.tm_mon + 1;
 
-		// stop recording the current demo if there is one
-		StopRecording(pEngineClient);
-		
+		const char *szMapName = V_UnqualifiedFileName( pEngineClient->GetLevelName() );
+
 		// create the record string
 		char recordstring[128] = {};
-		V_snprintf(recordstring, 128, "say record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
+		V_snprintf(recordstring, 128, "stop; record %.4d%.2d%.2d_%.2d%.2d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 
 		// start recording our demo
-		pEngineClient->ClientCmd( recordstring );
+		pEngineClient->ClientCmd_Unrestricted( recordstring );
 	}
 }
 
 void DemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 {
-	pEngineClient->ClientCmd( "say stop\n" );
+	pEngineClient->ClientCmd_Unrestricted( "stop\n" );
 }
 
 //===========================================================================//
@@ -484,7 +483,7 @@ bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *
 			
 			if (bTournamentMode && !m_bTournamentMatchStarted/* && (roundstate != GR_STATE_PREGAME)*/)
 			{
-				DemoRecorder::StartRecording(m_pEngineClient, m_pBaseClientDLL, m_pGlobals->mapname.ToCStr());
+				DemoRecorder::StartRecording(m_pEngineClient, m_pBaseClientDLL);
 				m_bTournamentMatchStarted = true;
 			}
 		}
