@@ -49,10 +49,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -64,7 +64,7 @@
     </Link>
     <PostBuildEvent>
       <Command>rename "$(TargetDir)$(TargetFileName)"  "sizzlingrecord.dll"
-move /Y "$(TargetDir)\sizzlingrecord.dll" "$(orangebox_dir)\tf\addons\sizzlingplugins\sizzlingrecord\"</Command>
+move /Y "$(TargetDir)\sizzlingrecord.dll" "D:\Program Files\Steam\steamapps\jordan427\Team Fortress 2\tf\addons\sizzlingplugins\sizzlingrecord\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -81,7 +81,7 @@ move /Y "$(TargetDir)\sizzlingrecord.dll" "$(orangebox_dir)\tf\addons\sizzlingpl
     </Link>
     <PostBuildEvent>
       <Command>rename "$(TargetDir)$(TargetFileName)"  "sizzlingrecord.dll"
-move /Y "$(TargetDir)\sizzlingrecord.dll" "$(orangebox_dir)\tf\addons\sizzlingplugins\sizzlingrecord\"</Command>
+move /Y "$(TargetDir)\sizzlingrecord.dll" "D:\Program Files\Steam\steamapps\jordan427\Team Fortress 2\tf\addons\sizzlingplugins\sizzlingrecord\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -90,6 +90,7 @@ move /Y "$(TargetDir)\sizzlingrecord.dll" "$(orangebox_dir)\tf\addons\sizzlingpl
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="PluginContext.h" />
     <ClInclude Include="PluginDefines.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -29,5 +29,8 @@
     <ClInclude Include="PluginDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PluginContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
