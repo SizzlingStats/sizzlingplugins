@@ -32,22 +32,43 @@
 class CTeamplayRoundBasedRules;
 
 static ConVar enabled("sizz_record_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
+//static ConVar invis_players("sizz_record_fix_invisible_players", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
 
 //===========================================================================//
 
-namespace DemoRecorder
+class CClientDemoRecorder
 {
-	inline bool CanRecordDemo( IBaseClientDLL *pBaseClientDLL );
-	inline void StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL );
-	inline void StopRecording( IVEngineClient *pEngineClient );
+public:
+	CClientDemoRecorder();
+	~CClientDemoRecorder();
+
+	bool CanRecordDemo( IBaseClientDLL *pBaseClientDLL );
+	void StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL );
+	void StopRecording( IVEngineClient *pEngineClient );
+
+	void FixInvisiblePlayers( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL );
+
+private:
+	uint32 m_nDemoParts;
+	bool m_bRecording;
+};
+
+CClientDemoRecorder::CClientDemoRecorder():
+	m_nDemoParts(0),
+	m_bRecording(false)
+{
 }
 
-bool DemoRecorder::CanRecordDemo( IBaseClientDLL *pBaseClientDLL )
+CClientDemoRecorder::~CClientDemoRecorder()
+{
+}
+
+bool CClientDemoRecorder::CanRecordDemo( IBaseClientDLL *pBaseClientDLL )
 {
 	return pBaseClientDLL->CanRecordDemo(NULL, 0);
 }
 
-void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL )
+void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL )
 {
 	if ( !!enabled.GetInt() && CanRecordDemo(pBaseClientDLL) )
 	{
@@ -72,9 +93,17 @@ void DemoRecorder::StartRecording( IVEngineClient *pEngineClient, IBaseClientDLL
 	}
 }
 
-void DemoRecorder::StopRecording( IVEngineClient *pEngineClient )
+void CClientDemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 {
+	m_nDemoParts = 1;
+	m_bRecording = false;
 	pEngineClient->ClientCmd_Unrestricted( "stop\n" );
+}
+
+void CClientDemoRecorder::FixInvisiblePlayers( IVEngineClient *pEngineClient, IBaseClientDLL *pBaseClientDLL )
+{
+	++m_nDemoParts;
+	StartRecording(pEngineClient, pBaseClientDLL);
 }
 
 //===========================================================================//
@@ -149,6 +178,8 @@ public:
 	void UnhookProps();
 
 private:
+	CClientDemoRecorder m_DemoRecorder;
+
 	CDllDemandLoader m_BaseClientDLL;
 	CRecvPropHook m_bInWaitingForPlayersHook;
 	ConVarRef m_refTournamentMode;
@@ -324,7 +355,7 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 	// will this function even run on the client?
 	if (m_bTournamentMatchStarted)
 	{
-		DemoRecorder::StopRecording(m_pEngineClient);
+		m_DemoRecorder.StopRecording(m_pEngineClient);
 		m_bTournamentMatchStarted = false;
 	}
 }
@@ -472,7 +503,7 @@ bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *
 		{
 			if (m_bTournamentMatchStarted)
 			{
-				DemoRecorder::StopRecording(m_pEngineClient);
+				m_DemoRecorder.StopRecording(m_pEngineClient);
 				m_bTournamentMatchStarted = false;
 			}
 		}
@@ -483,7 +514,7 @@ bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *
 			
 			if (bTournamentMode && !m_bTournamentMatchStarted/* && (roundstate != GR_STATE_PREGAME)*/)
 			{
-				DemoRecorder::StartRecording(m_pEngineClient, m_pBaseClientDLL);
+				m_DemoRecorder.StartRecording(m_pEngineClient, m_pBaseClientDLL);
 				m_bTournamentMatchStarted = true;
 			}
 		}
