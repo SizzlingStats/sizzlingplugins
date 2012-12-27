@@ -347,8 +347,10 @@ public:
 	// IGameEventListener2 Interface
 	virtual void FireGameEvent( IGameEvent *event );
 	
+	// IRecvPropHookCallback Interface
 	virtual bool RecvPropHookCallback( const CRecvProxyData *pData, void *pStruct, void *pOut );
-
+	
+	// ICommandCallback Interface
 	virtual void CommandCallback( const CCommand &command );
 	
 	// Additions
@@ -413,13 +415,6 @@ CEmptyServerPlugin::~CEmptyServerPlugin()
 //---------------------------------------------------------------------------------
 bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory )
 {
-	/*g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
-	if (!g_pFullFileSystem)
-	{
-		Warning( "Unable to load g_pFullFileSystem, aborting load\n" );
-		return false;
-	}*/
-
 	if ( !cvar )
 	{
 	    //Warning( "[SizzlingStats]: cvar is null.\n" );
@@ -642,6 +637,12 @@ bool CEmptyServerPlugin::ConfirmInterfaces( PluginContext_t *pContext )
 	if (!pContext->m_pBaseClientDLL)
 	{
 		Warning( "Unable to load pBaseClientDLL, aborting load\n" );
+		bGood = false;
+	}
+	
+	if (!pContext->m_pFullFileSystem)
+	{
+		Warning( "Unable to load pFullFileSystem, aborting load\n" );
 		bGood = false;
 	}
 	
