@@ -69,16 +69,16 @@ public:
 
 private:
 	void LoadConfig();
-	void ConstructDemoName( PluginContext_t *pContext );
+	void ConstructDemoName( IVEngineClient *pEngineClient );
 
 private:
 	static void GetDateAndTime( struct tm &ltime );
-	static void GetMapName( PluginContext_t *pContext, char *out, int length );
+	static void GetMapName( IVEngineClient *pEngineClient, char *out, int length );
 
-	static bool CanRecordDemo( PluginContext_t *pContext );
+	static bool CanRecordDemo( const IBaseClientDLL *pBaseClientDLL );
 
-	static void StartRecording( PluginContext_t *pContext, const DemoRecording_t &demoInfo, bool bEmitSound = true );
-	static void StopRecording( PluginContext_t *pContext );
+	static void StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound = true );
+	static void StopRecording( IVEngineClient *pEngineClient );
 
 private:
 	DemoRecording_t m_LatestDemo;
@@ -115,14 +115,14 @@ void CClientDemoRecorder::ReloadConfig()
 
 void CClientDemoRecorder::TournamentMatchStarted( PluginContext_t *pContext )
 {
-	if (enabled.GetBool() && !m_bRecording && CanRecordDemo(pContext))
+	if (enabled.GetBool() && !m_bRecording && CanRecordDemo(pContext->m_pBaseClientDLL))
 	{
-		ConstructDemoName(pContext);
+		ConstructDemoName(pContext->m_pEngineClient);
 		m_LatestDemo.m_nParts = 1;
 		m_bRecording = true;
 		m_bIStopped = true;
 
-		StartRecording(pContext, m_LatestDemo);
+		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound);
 	}
 }
 
@@ -131,7 +131,7 @@ void CClientDemoRecorder::TournamentMatchEnded( PluginContext_t *pContext )
 	if (enabled.GetBool() && m_bRecording)
 	{
 		m_bRecording = false;
-		StopRecording(pContext);
+		StopRecording(pContext->m_pEngineClient);
 	}
 }
 
@@ -141,7 +141,7 @@ void CClientDemoRecorder::FixInvisiblePlayers( PluginContext_t *pContext )
 	{
 		m_bIStopped = true;
 		m_LatestDemo.m_nParts += 1;
-		StartRecording(pContext, m_LatestDemo, false);
+		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound, false);
 	}
 	else
 	{
@@ -151,14 +151,14 @@ void CClientDemoRecorder::FixInvisiblePlayers( PluginContext_t *pContext )
 
 void CClientDemoRecorder::StartRecordingFromCommand( PluginContext_t *pContext )
 {
-	if (!m_bRecording && CanRecordDemo(pContext))
+	if (!m_bRecording && CanRecordDemo(pContext->m_pBaseClientDLL))
 	{
-		ConstructDemoName(pContext);
+		ConstructDemoName(pContext->m_pEngineClient);
 		m_LatestDemo.m_nParts = 1;
 		m_bRecording = true;
 		m_bIStopped = true;
 
-		StartRecording(pContext, m_LatestDemo);
+		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound);
 	}
 	else
 	{
@@ -178,7 +178,7 @@ void CClientDemoRecorder::DeleteLatestDemo( PluginContext_t *pContext )
 		pFileSystem->RemoveFile(temp);
 
 		// remove the parts if it has any
-		for (int i = 2; i <= m_pLastDemo->m_nParts; ++i)
+		for (uint32 i = 2; i <= m_pLastDemo->m_nParts; ++i)
 		{
 			V_snprintf(temp, 128, "%s_part%d.dem", m_pLastDemo->m_szDemoName, i);
 			pFileSystem->RemoveFile(temp);
@@ -225,11 +225,11 @@ void CClientDemoRecorder::LoadConfig()
 {
 }
 
-void CClientDemoRecorder::ConstructDemoName( PluginContext_t *pContext )
+void CClientDemoRecorder::ConstructDemoName( IVEngineClient *pEngineClient )
 {
 	// get map name
 	char szMapName[32] = {};
-	GetMapName(pContext, szMapName, 32);
+	GetMapName(pEngineClient, szMapName, 32);
 
 	// get date and time
 	struct tm ltime;
@@ -252,19 +252,19 @@ void CClientDemoRecorder::GetDateAndTime( struct tm &ltime )
 	ltime.tm_mon = ltime.tm_mon + 1;
 }
 
-void CClientDemoRecorder::GetMapName( PluginContext_t *pContext, char *out, int length )
+void CClientDemoRecorder::GetMapName( IVEngineClient *pEngineClient, char *out, int length )
 {
-	const char *map_name = V_UnqualifiedFileName( pContext->m_pEngineClient->GetLevelName() );
+	const char *map_name = V_UnqualifiedFileName( pEngineClient->GetLevelName() );
 	V_StripExtension(map_name, out, length);
 	out[length-1] = '\0';
 }
 
-bool CClientDemoRecorder::CanRecordDemo( PluginContext_t *pContext )
+bool CClientDemoRecorder::CanRecordDemo( const IBaseClientDLL *pBaseClientDLL )
 {
-	return pContext->m_pBaseClientDLL->CanRecordDemo(NULL, 0);
+	return pBaseClientDLL->CanRecordDemo(NULL, 0);
 }
 
-void CClientDemoRecorder::StartRecording( PluginContext_t *pContext, const DemoRecording_t &demoInfo, bool bEmitSound /*= true*/ )
+void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound /*= true*/ )
 {
 	char command[256] = {};
 	if (demoInfo.m_nParts == 1)
@@ -278,14 +278,14 @@ void CClientDemoRecorder::StartRecording( PluginContext_t *pContext, const DemoR
 
 	if (bEmitSound)
 	{
-		pContext->m_pEngineSound->EmitAmbientSound( "buttons/button17.wav", DEFAULT_SOUND_PACKET_VOLUME );
+		pEngineSound->EmitAmbientSound( "buttons/button17.wav", DEFAULT_SOUND_PACKET_VOLUME );
 	}
-	pContext->m_pEngineClient->ClientCmd_Unrestricted( command );
+	pEngineClient->ClientCmd_Unrestricted( command );
 }
 
-void CClientDemoRecorder::StopRecording( PluginContext_t *pContext )
+void CClientDemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 {
-	pContext->m_pEngineClient->ClientCmd_Unrestricted( "stop\n" );
+	pEngineClient->ClientCmd_Unrestricted( "stop\n" );
 }
 
 //===========================================================================//
