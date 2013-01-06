@@ -28,6 +28,8 @@
 #include "SC_helpers.h"
 #include "ConCommandHook.h"
 
+#include "tier1/utllinkedlist.h"
+
 #include "cdll_int.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -48,6 +50,17 @@ public:
 		uint32 m_nParts;
 	} DemoRecording_t;
 
+	// 32 bytes
+	typedef struct bookmarkInfo_s
+	{
+		// the optional comment for the bookmark
+		char comment[20];
+		// a time value in time_t
+		uint64 time;
+		// tick number since the start of recording
+		int32 tick;
+	} bookmarkInfo_t;
+
 public:
 	CClientDemoRecorder();
 	~CClientDemoRecorder();
@@ -62,6 +75,8 @@ public:
 	void StartRecordingFromCommand( PluginContext_t *pContext );
 
 	void DeleteLatestDemo( PluginContext_t *pContext );
+
+	void Bookmark( PluginContext_t *pContext, const char *comment );
 
 public:
 	virtual bool CommandPreExecute( const CCommand &args );
@@ -85,14 +100,20 @@ private:
 	bool m_bRecording;
 	bool m_bIStopped;
 
+	ConVarRef m_bluTeamName;
+	ConVarRef m_redTeamName;
 	CConCommandHook m_hookStop;
 	DemoRecording_t *m_pLastDemo;
+
+	CUtlLinkedList<bookmarkInfo_t> m_bookmarks;
 };
 
 CClientDemoRecorder::CClientDemoRecorder():
 	m_LatestDemo(),
 	m_bRecording(false),
 	m_bIStopped(false),
+	m_bluTeamName((IConVar*)NULL),
+	m_redTeamName((IConVar*)NULL),
 	m_pLastDemo(NULL)
 {
 }
@@ -104,6 +125,8 @@ CClientDemoRecorder::~CClientDemoRecorder()
 
 void CClientDemoRecorder::Load()
 {
+	m_bluTeamName.Init("mp_tournament_blueteamname", false);
+	m_redTeamName.Init("mp_tournament_redteamname", false);
 	m_hookStop.Hook(this, cvar, "stop");
 	LoadConfig();
 }
@@ -121,6 +144,8 @@ void CClientDemoRecorder::TournamentMatchStarted( PluginContext_t *pContext )
 		m_LatestDemo.m_nParts = 1;
 		m_bRecording = true;
 		m_bIStopped = true;
+
+		m_bookmarks.RemoveAll();
 
 		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound);
 	}
@@ -158,6 +183,8 @@ void CClientDemoRecorder::StartRecordingFromCommand( PluginContext_t *pContext )
 		m_bRecording = true;
 		m_bIStopped = true;
 
+		m_bookmarks.RemoveAll();
+
 		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound);
 	}
 	else
@@ -191,6 +218,16 @@ void CClientDemoRecorder::DeleteLatestDemo( PluginContext_t *pContext )
 	{
 		Warning( "[SizzlingRecord] Error: No previous demo to delete.\n" );
 	}
+}
+
+void CClientDemoRecorder::Bookmark( PluginContext_t *pContext, const char *comment )
+{
+	bookmarkInfo_t info;
+	V_strncpy(info.comment, comment, sizeof(info.comment));
+	info.tick = pContext->m_pEngineClient->GetDemoRecordingTick();
+	info.time = time(NULL);
+
+	m_bookmarks.AddToTail(info);
 }
 
 bool CClientDemoRecorder::CommandPreExecute( const CCommand &args )
@@ -391,6 +428,7 @@ static ConCommand start_recording("sizz_record_start_recording", &s_EmptyServerP
 static ConCommand delete_last("sizz_record_delete_last_demo", &s_EmptyServerPlugin, "Deletes the most recent completed demo in this game session.");
 
 static ConCommand reload_config("sizz_record_reload_config", &s_EmptyServerPlugin, "Reloads the configuration file for SizzlingRecord.");
+static ConCommand bookmark("sizz_record_bookmark", &s_EmptyServerPlugin, "If recording, bookmarks the current tick and appends it to bookmarks.txt.\nAn optional comment is allowed as quoted or unquoted text after the command.");
 
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
@@ -686,7 +724,11 @@ void CEmptyServerPlugin::CommandCallback( const CCommand &command )
 
 	const char *name = command.Arg(0);
 
-	if ( FStrEq(name, "sizz_record_fix_invisible_players") )
+	if ( FStrEq(name, "sizz_record_bookmark") )
+	{
+		m_DemoRecorder.Bookmark(&m_PluginContext, command.ArgS());
+	}
+	else if ( FStrEq(name, "sizz_record_fix_invisible_players") )
 	{
 		m_DemoRecorder.FixInvisiblePlayers(&m_PluginContext);
 	}
