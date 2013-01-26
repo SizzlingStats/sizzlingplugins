@@ -53,6 +53,9 @@ namespace Teamplay_GameRule_States
 		GR_NUM_ROUND_STATES
 	};
 
+	static const char *GetStateName(gamerules_roundstate_t state);
+	static bool IsValidState(gamerules_roundstate_t state);
+
 	static const char *GetStateName(gamerules_roundstate_t state)
 	{
 		static const char *pszStateNames[] = 
@@ -68,9 +71,7 @@ namespace Teamplay_GameRule_States
 			"GR_STATE_GAME_OVER"
 		};
 
-		// using the IsValidState thing here just 
-		// makes more branching
-		if (state >= 0 && state < GR_NUM_ROUND_STATES)
+		if (IsValidState(state))
 		{
 			return pszStateNames[state];
 		}
@@ -82,14 +83,7 @@ namespace Teamplay_GameRule_States
 
 	static bool IsValidState(gamerules_roundstate_t state)
 	{
-		if (state >= 0 && state < GR_NUM_ROUND_STATES)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return (state >= 0 && state < GR_NUM_ROUND_STATES);
 	}
 
 }
