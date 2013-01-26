@@ -54,7 +54,7 @@ namespace Teamplay_GameRule_States
 	};
 
 	static const char *GetStateName(gamerules_roundstate_t state);
-	static bool IsValidState(gamerules_roundstate_t state);
+	inline bool IsValidState(gamerules_roundstate_t state);
 
 	static const char *GetStateName(gamerules_roundstate_t state)
 	{
@@ -81,7 +81,7 @@ namespace Teamplay_GameRule_States
 		}
 	}
 
-	static bool IsValidState(gamerules_roundstate_t state)
+	inline bool IsValidState(gamerules_roundstate_t state)
 	{
 		return (state >= 0 && state < GR_NUM_ROUND_STATES);
 	}
