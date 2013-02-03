@@ -29,6 +29,7 @@
 #include "ConCommandHook.h"
 
 #include "tier1/utllinkedlist.h"
+#include "utlbuffer.h"
 
 #include "cdll_int.h"
 
@@ -41,7 +42,7 @@ static ConVar enabled("sizz_record_enable", "1", FCVAR_NONE, "If nonzero, enable
 
 //===========================================================================//
 
-class CClientDemoRecorder: public ICommandHookCallback
+class CClientDemoRecorder
 {
 public:
 	typedef struct DemoRecording_s
@@ -78,16 +79,16 @@ public:
 
 	void Bookmark( PluginContext_t *pContext, const char *comment );
 
-public:
-	virtual bool CommandPreExecute( const CCommand &args );
-	virtual void CommandPostExecute( const CCommand &args, bool bWasCommandExecuted );
+	void StopRecordingEvent( PluginContext_t *pContext );
 
 private:
+	void WriteOutBookmarks( IFileSystem *pFileSystem );
 	void LoadConfig();
 	void ConstructDemoName( IVEngineClient *pEngineClient );
 
 private:
 	static void GetDateAndTime( struct tm &ltime );
+	static void ConvertTimeToLocalTime( const time_t &t, struct tm &ltime );
 	static void GetMapName( IVEngineClient *pEngineClient, char *out, int length );
 
 	static bool CanRecordDemo( const IBaseClientDLL *pBaseClientDLL );
@@ -102,10 +103,10 @@ private:
 
 	ConVarRef m_bluTeamName;
 	ConVarRef m_redTeamName;
-	CConCommandHook m_hookStop;
 	DemoRecording_t *m_pLastDemo;
 
 	CUtlLinkedList<bookmarkInfo_t> m_bookmarks;
+	CUtlBuffer m_bookmarkBuff;
 };
 
 CClientDemoRecorder::CClientDemoRecorder():
@@ -116,6 +117,7 @@ CClientDemoRecorder::CClientDemoRecorder():
 	m_redTeamName((IConVar*)NULL),
 	m_pLastDemo(NULL)
 {
+	m_bookmarkBuff.SetBufferType(true, true);
 }
 
 CClientDemoRecorder::~CClientDemoRecorder()
@@ -127,7 +129,6 @@ void CClientDemoRecorder::Load()
 {
 	m_bluTeamName.Init("mp_tournament_blueteamname", false);
 	m_redTeamName.Init("mp_tournament_redteamname", false);
-	m_hookStop.Hook(this, cvar, "stop");
 	LoadConfig();
 }
 
@@ -222,26 +223,26 @@ void CClientDemoRecorder::DeleteLatestDemo( PluginContext_t *pContext )
 
 void CClientDemoRecorder::Bookmark( PluginContext_t *pContext, const char *comment )
 {
-	bookmarkInfo_t info;
-	V_strncpy(info.comment, comment, sizeof(info.comment));
-	info.tick = pContext->m_pEngineClient->GetDemoRecordingTick();
-	info.time = time(NULL);
+	if (m_bRecording)
+	{
+		bookmarkInfo_t info;
+		V_strncpy(info.comment, comment, sizeof(info.comment));
+		info.tick = pContext->m_pEngineClient->GetDemoRecordingTick();
+		info.time = time(NULL);
 
-	m_bookmarks.AddToTail(info);
+		m_bookmarks.AddToTail(info);
+	}
 }
 
-bool CClientDemoRecorder::CommandPreExecute( const CCommand &args )
+void CClientDemoRecorder::StopRecordingEvent( PluginContext_t *pContext )
 {
-	// 'stop' is the only command that 
-	// is hooked so far, so no need to check
-
-	// if it wasn't me who issued 'stop'
-	// (or if i issued 'stop' by itself)
 	if (!m_bIStopped)
 	{
 		// stop recording if i am
 		m_bRecording = false;
 
+		WriteOutBookmarks(pContext->m_pFullFileSystem);
+		
 		// update the most recent completed demo
 		// TODO: only delete and new when i have to
 		delete m_pLastDemo;
@@ -251,11 +252,30 @@ bool CClientDemoRecorder::CommandPreExecute( const CCommand &args )
 	}
 	
 	m_bIStopped = false;
-	return true;
 }
 
-void CClientDemoRecorder::CommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
+void CClientDemoRecorder::WriteOutBookmarks( IFileSystem *pFileSystem )
 {
+	if (m_bookmarks.Count() > 0)
+	{
+		m_bookmarkBuff.Clear();
+
+		for (int i = 0; i < m_bookmarks.Count(); ++i)
+		{
+			bookmarkInfo_t &info = m_bookmarks.Element(i);
+
+			struct tm ltime;
+			ConvertTimeToLocalTime(info.time, ltime);
+
+			m_bookmarkBuff.Printf( "[%04i/%02i/%02i %02i:%02i] Player bookmark (\"%s\" at %i)\t\t// %s\r\n", 
+				ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min,
+				m_LatestDemo.m_szDemoName, info.tick, info.comment );
+		}
+
+		pFileSystem->AsyncAppend("Killstreaks.txt", m_bookmarkBuff.Base(), m_bookmarkBuff.TellPut(), false);
+
+		m_bookmarks.RemoveAll();
+	}
 }
 
 void CClientDemoRecorder::LoadConfig()
@@ -281,6 +301,11 @@ void CClientDemoRecorder::GetDateAndTime( struct tm &ltime )
 	// get the time as an int64
 	time_t t = time(NULL);
 
+	ConvertTimeToLocalTime(t, ltime);
+}
+
+void CClientDemoRecorder::ConvertTimeToLocalTime( const time_t &t, struct tm &ltime )
+{
 	// convert it to a struct of time values
 	ltime = *localtime(&t);
 
@@ -355,7 +380,7 @@ static char *UTIL_VarArgs( char *format, ... )
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
-class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public IRecvPropHookCallback, public ICommandCallback
+class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public IRecvPropHookCallback, public ICommandCallback, public ICommandHookCallback
 {
 public:
 	CEmptyServerPlugin();
@@ -390,6 +415,10 @@ public:
 	// ICommandCallback Interface
 	virtual void CommandCallback( const CCommand &command );
 	
+	// ICommandHookCallback interface
+	virtual bool CommandPreExecute( const CCommand &args );
+	virtual void CommandPostExecute( const CCommand &args, bool bWasCommandExecuted );
+
 	// Additions
 	bool WaitingForPlayersChangeCallback( const CRecvProxyData *pData, void *pStruct, void *pOut );
 	
@@ -407,7 +436,7 @@ private:
 	CDllDemandLoader m_BaseClientDLL;
 	CRecvPropHook m_bInWaitingForPlayersHook;
 	ConVarRef m_refTournamentMode;
-	
+	CConCommandHook m_hookStop;
 	// Interfaces from the engine in this struct
 	PluginContext_t m_PluginContext;
 	
@@ -494,6 +523,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_PluginContext.m_pGameEventManager->AddListener( this, "game_newmap", false );
 	
 	m_refTournamentMode.Init( "mp_tournament", false );
+	m_hookStop.Hook(this, cvar, "stop");
 
 	m_DemoRecorder.Load();
 
@@ -746,10 +776,24 @@ void CEmptyServerPlugin::CommandCallback( const CCommand &command )
 	}
 }
 
+bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
+{
+	m_DemoRecorder.StopRecordingEvent(&m_PluginContext);
+	return true;
+}
+
+void CEmptyServerPlugin::CommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
+{
+}
+
 bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *pData, void *pStruct, void *pOut )
 {
 	bool bWaitingForPlayers = !!(pData->m_Value.m_Int);
-	static bool oldWaitingForPlayers = bWaitingForPlayers;
+
+	// if the plugin is loaded right before the match starts,
+	// this being true will trigger a recording started when the
+	// match starts. that is what we want.
+	static bool oldWaitingForPlayers = true;
 
 	if (oldWaitingForPlayers != bWaitingForPlayers)
 	{
