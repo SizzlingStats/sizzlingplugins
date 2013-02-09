@@ -156,7 +156,8 @@ void CClientDemoRecorder::TournamentMatchEnded( PluginContext_t *pContext )
 {
 	if (enabled.GetBool() && m_bRecording)
 	{
-		m_bRecording = false;
+		// let the 'stop' hook worry about
+		// setting m_bRecording to false
 		StopRecording(pContext->m_pEngineClient);
 	}
 }
@@ -236,15 +237,14 @@ void CClientDemoRecorder::Bookmark( PluginContext_t *pContext, const char *comme
 
 void CClientDemoRecorder::StopRecordingEvent( PluginContext_t *pContext )
 {
-	if (!m_bIStopped)
+	if (!m_bIStopped && m_bRecording)
 	{
-		// stop recording if i am
+		// stop recording
 		m_bRecording = false;
 
 		WriteOutBookmarks(pContext->m_pFullFileSystem);
 		
 		// update the most recent completed demo
-		// TODO: only delete and new when i have to
 		delete m_pLastDemo;
 		m_pLastDemo = new DemoRecording_t;
 		m_pLastDemo->m_nParts = m_LatestDemo.m_nParts;
@@ -293,7 +293,7 @@ void CClientDemoRecorder::ConstructDemoName( IVEngineClient *pEngineClient )
 	GetDateAndTime(ltime);
 
 	// construct the demo name
-	V_snprintf(m_LatestDemo.m_szDemoName, 64, "%.4d%.2d%.2d_%.2d%.2d_%s", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName);
+	V_snprintf(m_LatestDemo.m_szDemoName, 64, "%.4d%.2d%.2d_%.2d%.2d_%s_%s_%s", ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName, m_bluTeamName.GetString(), m_redTeamName.GetString());
 }
 
 void CClientDemoRecorder::GetDateAndTime( struct tm &ltime )
@@ -352,7 +352,7 @@ void CClientDemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 
 //===========================================================================//
 
-void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
+static void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
 static ConVar version("sizz_record_version", PLUGIN_VERSION_STRING, FCVAR_NOTIFY, "The version of SizzlingRecord running.", &VersionChangeCallback);
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
@@ -520,7 +520,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	HookProps();
 	
 	// hook this event so we can get the new gamerules pointer each time
-	m_PluginContext.m_pGameEventManager->AddListener( this, "game_newmap", false );
+	//m_PluginContext.m_pGameEventManager->AddListener( this, "game_newmap", false );
 	
 	m_refTournamentMode.Init( "mp_tournament", false );
 	m_hookStop.Hook(this, cvar, "stop");

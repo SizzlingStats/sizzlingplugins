@@ -3,7 +3,6 @@
 #define THREAD_CALL_QUEUE_H
 
 #include "callqueue.h"
-//#include "queuethread.h"
 
 class CTSCallQueue
 {
@@ -91,7 +90,6 @@ private:
 	CTSQueue<CFunctor *>	m_queue;
 public:
 	CFunctor	*m_pFuncCommandCaller;
-	//CThreadMutexPthread		m_FnCommandMutex;
 };
 
 #endif // THREAD_CALL_QUEUE_H
