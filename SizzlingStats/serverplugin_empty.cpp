@@ -410,7 +410,6 @@ private:
 	int m_iLastCapTick;
 	bool m_bShouldRecord;
 	bool m_bTournamentMatchStarted;
-	bool m_bRoundEnded;
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
