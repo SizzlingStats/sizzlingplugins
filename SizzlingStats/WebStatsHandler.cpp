@@ -14,6 +14,7 @@ void CWebStatsHandler::SetHostData(hostInfo_t const &info)
 	V_strncpy(m_hostInfo.m_bluname, info.m_bluname, 32);
 	V_strncpy(m_hostInfo.m_redname, info.m_redname, 32);
 	m_hostInfo.m_roundduration = info.m_roundduration;
+	m_hostInfo.m_iFirstCapTeamIndex = info.m_iFirstCapTeamIndex;
 	m_hostInfo.m_bluscore = info.m_bluscore;
 	m_hostInfo.m_redscore = info.m_redscore;
 
@@ -193,6 +194,7 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 			temp.InsertKV("hostname", host.m_hostname);
 			temp.InsertKV("bluname", host.m_bluname);
 			temp.InsertKV("redname", host.m_redname);
+			temp.InsertKV("teamfirstcap", host.m_iFirstCapTeamIndex);
 			temp.InsertKV("bluscore", host.m_bluscore);
 			temp.InsertKV("redscore", host.m_redscore);
 			temp.InsertKV("roundduration", SCHelpers::RoundDBL(host.m_roundduration));

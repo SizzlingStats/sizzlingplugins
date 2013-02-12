@@ -36,6 +36,7 @@ typedef struct hostInfo_s
 			const char *bluname,
 			const char *redname,
 			double roundduration,
+			unsigned int team_first_cap,
 			unsigned int bluscore,
 			unsigned int redscore);
 
@@ -44,6 +45,7 @@ typedef struct hostInfo_s
 	char m_bluname[32];
 	char m_redname[32];
 	double m_roundduration;
+	unsigned char m_iFirstCapTeamIndex;
 	unsigned char m_bluscore;
 	unsigned char m_redscore;
 } hostInfo_t;
@@ -189,6 +191,7 @@ inline hostInfo_s::hostInfo_s():
 	m_bluname(),
 	m_redname(),
 	m_roundduration(0.0),
+	m_iFirstCapTeamIndex(0),
 	m_bluscore(0),
 	m_redscore(0)
 {
@@ -199,9 +202,11 @@ inline hostInfo_s::hostInfo_s(const char *hostname,
 		const char *bluname,
 		const char *redname,
 		double roundduration,
+		unsigned int team_first_cap,
 		unsigned int bluscore,
 		unsigned int redscore):
 	m_roundduration(roundduration),
+	m_iFirstCapTeamIndex(team_first_cap),
 	m_bluscore(bluscore),
 	m_redscore(redscore)
 {

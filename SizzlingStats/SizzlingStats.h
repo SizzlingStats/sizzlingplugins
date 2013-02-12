@@ -46,6 +46,8 @@ public:
 	
 	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
 
+	void	TeamCapped( int team_index );
+
 	void	GiveUber( int entindex );
 
 	// checks to see if any of the medics with uber on the same team 
@@ -134,6 +136,7 @@ private:
 	double m_flRoundDuration;
 	double m_flMatchDuration;
 	bool m_bTournamentMatchRunning;
+	bool m_bFirstCapOfRound;
 };
 
 #endif // SIZZLING_STATS_H

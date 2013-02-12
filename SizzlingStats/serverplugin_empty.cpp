@@ -1373,6 +1373,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	else if ( FStrEq( name, "teamplay_point_captured" ) )
 	{
 		m_iLastCapTick = gpGlobals->tickcount;
+		m_SizzlingStats.TeamCapped( event->GetInt("team") );
 	}
 	else if ( FStrEq( name, "player_team" ) )
 	{

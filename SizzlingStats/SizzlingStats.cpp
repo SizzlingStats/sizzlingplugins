@@ -70,7 +70,8 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_hostInfo(),
 								m_flRoundDuration(0),
 								m_flMatchDuration(0),
-								m_bTournamentMatchRunning(false)
+								m_bTournamentMatchRunning(false),
+								m_bFirstCapOfRound(false)
 {
 	m_playerDataArchive.Init(32);
 
@@ -157,6 +158,15 @@ void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 	// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
 	// so subtracting gets the time since the match started
 	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
+}
+
+void SizzlingStats::TeamCapped( int team_index )
+{
+	if (m_bTournamentMatchRunning && m_bFirstCapOfRound)
+	{
+		m_bFirstCapOfRound = false;
+		m_hostInfo.m_iFirstCapTeamIndex = team_index;
+	}
 }
 
 class CTraceFilterSkipTwo: public ITraceFilter
@@ -504,6 +514,8 @@ void SizzlingStats::SS_PreRoundFreeze()
 void SizzlingStats::SS_RoundStarted()
 {
 	Msg( "round started\n" );
+	m_bFirstCapOfRound = true;
+	m_hostInfo.m_iFirstCapTeamIndex = 0;
 	SS_AllUserChatMessage( "Stats Recording Started\n" );
 }
 
