@@ -568,7 +568,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	gameeventmanager->AddListener( this, "player_changeclass", true );
 	gameeventmanager->AddListener( this, "player_team", true );
 	
-	gameeventmanager->AddListener( this, "player_death", true );
+	//gameeventmanager->AddListener( this, "player_death", true );
 #endif
 	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
