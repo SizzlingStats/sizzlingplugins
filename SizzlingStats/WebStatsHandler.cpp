@@ -190,10 +190,6 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 		CJsonObject outer(buff);
 		{
 			CJsonObject temp(buff, "stats");
-			temp.InsertKV("map", host.m_mapname);
-			temp.InsertKV("hostname", host.m_hostname);
-			temp.InsertKV("bluname", host.m_bluname);
-			temp.InsertKV("redname", host.m_redname);
 			temp.InsertKV("teamfirstcap", host.m_iFirstCapTeamIndex);
 			temp.InsertKV("bluscore", host.m_bluscore);
 			temp.InsertKV("redscore", host.m_redscore);
