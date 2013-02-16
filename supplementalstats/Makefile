@@ -39,7 +39,7 @@ ALL_INC = \
 CPLUS=/usr/bin/g++-4.4
 CLINK=/usr/bin/gcc-4.4
 
-LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so libcurl.so.4.2.0
+LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so
 
 BUILD_DIR=$(SUPPLEMENTALSTATS_DIR)
 RELEASE_DIR=./Release
@@ -94,13 +94,6 @@ DO_CC=nice -n 20 $(CPLUS) $(INCLUDEDIRS) -w $(CFLAGS) -DARCH=$(ARCH) -o $@ -c $<
 #####################################################################
 
 SIZZLINGLIB_OBJS = \
-	$(SIZZLIB_OBJ_DIR)/autoupdate.o \
-	$(SIZZLIB_OBJ_DIR)/curlconnection.o \
-	$(SIZZLIB_OBJ_DIR)/downloader.o \
-	$(SIZZLIB_OBJ_DIR)/SC_helpers.o \
-	$(SIZZLIB_OBJ_DIR)/ServerPluginHandler.o \
-	$(SIZZLIB_OBJ_DIR)/SizzFileSystem.o \
-	$(SIZZLIB_OBJ_DIR)/ThreadCallQueue.o \
 	$(SIZZLIB_OBJ_DIR)/UserIdTracker.o
 
 SUPPLEMENTALSTATS_OBJS = \
@@ -112,7 +105,6 @@ TIER0_OBJS = \
 all: 
 	$(MAKE) dirs
 	ln -sf $(SERVER_LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
-	ln -sf $(LIBS_DIR)/libcurl.so.4.2.0 libcurl.so.4.2.0
 	ln -sf $(SERVER_LIBS_DIR)/libtier0_srv.so libtier0_srv.so
 	$(MAKE) supplementalstats_$(ARCH).$(SHLIBEXT)
 
