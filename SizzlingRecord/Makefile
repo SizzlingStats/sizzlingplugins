@@ -93,7 +93,8 @@ DO_CC=nice -n 20 $(CPLUS) $(INCLUDEDIRS) -w $(CFLAGS) -DARCH=$(ARCH) -o $@ -c $<
 #####################################################################
 
 SIZZLINGLIB_OBJS = \
-	$(SIZZLIB_OBJ_DIR)/SC_helpers.o
+	$(SIZZLIB_OBJ_DIR)/SC_helpers.o \
+	$(SIZZLIB_OBJ_DIR)/ConCommandHook.o
 
 SIZZLINGRECORD_OBJS = \
 	$(PLUGIN_OBJ_DIR)/Helpers.o \
