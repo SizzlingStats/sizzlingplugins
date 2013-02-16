@@ -39,8 +39,13 @@
 class CTeamplayRoundBasedRules;
 
 static ConVar enabled("sizz_record_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
+static ConVar notify("sizz_record_notify", "1", FCVAR_ARCHIVE, "If nonzero, notifies demo recording start with a say_team chat message.");
+static ConVar notify_message_start("sizz_record_notify_message_start", "Recording Started", FCVAR_PRINTABLEONLY, "Sets the message to be printed when a demo record starts.");
+static ConVar notify_message_stop("sizz_record_notify_message_stop", "Recording Stopped", FCVAR_PRINTABLEONLY, "Sets the message to be printed when a demo record stops.");
 
 //===========================================================================//
+
+#define BOOKMARK_SOUND_FILE "buttons/button17.wav"
 
 class CClientDemoRecorder
 {
@@ -66,7 +71,7 @@ public:
 	CClientDemoRecorder();
 	~CClientDemoRecorder();
 
-	void Load();
+	void Load( IEngineSound *pEngineSound );
 	void ReloadConfig();
 
 	void TournamentMatchStarted( PluginContext_t *pContext );
@@ -93,7 +98,7 @@ private:
 
 	static bool CanRecordDemo( const IBaseClientDLL *pBaseClientDLL );
 
-	static void StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound = true );
+	static void StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound = true, bool bNotifyChat = true );
 	static void StopRecording( IVEngineClient *pEngineClient );
 
 private:
@@ -125,11 +130,12 @@ CClientDemoRecorder::~CClientDemoRecorder()
 	delete m_pLastDemo;
 }
 
-void CClientDemoRecorder::Load()
+void CClientDemoRecorder::Load( IEngineSound *pEngineSound )
 {
 	m_bluTeamName.Init("mp_tournament_blueteamname", false);
 	m_redTeamName.Init("mp_tournament_redteamname", false);
 	LoadConfig();
+	pEngineSound->PrecacheSound(BOOKMARK_SOUND_FILE);
 }
 
 void CClientDemoRecorder::ReloadConfig()
@@ -158,7 +164,21 @@ void CClientDemoRecorder::TournamentMatchEnded( PluginContext_t *pContext )
 	{
 		// let the 'stop' hook worry about
 		// setting m_bRecording to false
-		StopRecording(pContext->m_pEngineClient);
+		IVEngineClient *pEngineClient = pContext->m_pEngineClient;
+		StopRecording(pEngineClient);
+
+		if (notify.GetBool())
+		{
+			char temp[128] = {};
+			V_snprintf(temp, 128, "say_team [SizzRec] %s\n", notify_message_stop.GetString());
+			// incase the string is too large, overwrite with newline and null 
+			// for correct command formatting
+			// 
+			// the ending could come out to be '\n\n\0' but that's not a big issue
+			temp[126] = '\n';
+			temp[127] = '\0';
+			pEngineClient->ClientCmd_Unrestricted(temp);
+		}
 	}
 }
 
@@ -168,7 +188,7 @@ void CClientDemoRecorder::FixInvisiblePlayers( PluginContext_t *pContext )
 	{
 		m_bIStopped = true;
 		m_LatestDemo.m_nParts += 1;
-		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound, false);
+		StartRecording(pContext->m_pEngineClient, m_LatestDemo, pContext->m_pEngineSound, false, false);
 	}
 	else
 	{
@@ -326,7 +346,7 @@ bool CClientDemoRecorder::CanRecordDemo( const IBaseClientDLL *pBaseClientDLL )
 	return pBaseClientDLL->CanRecordDemo(NULL, 0);
 }
 
-void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound /*= true*/ )
+void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound /*= true*/, bool bNotifyChat /*= true*/ )
 {
 	char command[256] = {};
 	if (demoInfo.m_nParts == 1)
@@ -340,9 +360,20 @@ void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, const D
 
 	if (bEmitSound)
 	{
-		pEngineSound->EmitAmbientSound( "buttons/button17.wav", DEFAULT_SOUND_PACKET_VOLUME );
+		pEngineSound->EmitAmbientSound( BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME );
 	}
 	pEngineClient->ClientCmd_Unrestricted( command );
+	if (bNotifyChat && enabled.GetBool())
+	{
+		V_snprintf(command, 256, "say_team [SizzRec] %s\n", notify_message_start.GetString());
+		// incase the string is too large, overwrite with newline and null 
+		// for correct command formatting
+		// 
+		// the ending could come out to be '\n\n\0' but that's not a big issue
+		command[254] = '\n';
+		command[255] = '\0';
+		pEngineClient->ClientCmd_Unrestricted(command);
+	}
 }
 
 void CClientDemoRecorder::StopRecording( IVEngineClient *pEngineClient )
@@ -525,7 +556,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_refTournamentMode.Init( "mp_tournament", false );
 	m_hookStop.Hook(this, cvar, "stop");
 
-	m_DemoRecorder.Load();
+	m_DemoRecorder.Load(m_PluginContext.m_pEngineSound);
 
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2 );
 	ConVar_Register( 0 );
