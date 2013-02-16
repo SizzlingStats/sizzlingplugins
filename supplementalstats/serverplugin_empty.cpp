@@ -17,10 +17,10 @@
 #include "fasttimer.h"
 #include "tier2/tier2.h"
 
-#include "ServerPluginHandler.h"
+//#include "ServerPluginHandler.h"
 #include "UserIdTracker.h"
-#include "autoupdate.h"
-#include "ThreadCallQueue.h"
+//#include "autoupdate.h"
+//#include "ThreadCallQueue.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -34,7 +34,7 @@ IServerGameEnts				*pServerEnts;
 IGameEventManager2			*gameeventmanager = NULL; // game events interface
 IPlayerInfoManager			*playerinfomanager = NULL; // game dll interface to interact with players
 CGlobalVars					*gpGlobals = NULL;
-extern s_ServerPlugin		*g_pServerPluginHandler;
+//extern s_ServerPlugin		*g_pServerPluginHandler;
 extern UserIdTracker 		*g_pUserIdTracker;
 
 struct playerInfo
@@ -128,7 +128,7 @@ public:
 	virtual PLUGIN_RESULT	NetworkIDValidated( const char *pszUserName, const char *pszNetworkID );
 	virtual void			OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue );
 
-	void					AutoUpdate();
+	//void					AutoUpdate();
 	void					LoadCurrentPlayers();
 	friend void				testDownloader();
 
@@ -137,11 +137,11 @@ public:
 
 	virtual int				GetCommandIndex() { return m_iClientCommandIndex; }
 
-	void EnqueueFunctor( CFunctor *pFunctor ) { m_CallQueue.EnqueueFunctor( pFunctor ); }
+	//void EnqueueFunctor( CFunctor *pFunctor ) { m_CallQueue.EnqueueFunctor( pFunctor ); }
 
 private:
 	playerInfo			m_entIndexToPlayerInfo[33];
-	CTSCallQueue		m_CallQueue;
+	//CTSCallQueue		m_CallQueue;
 	int					m_iClientCommandIndex;
 };
 
@@ -156,7 +156,7 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
-CEmptyServerPlugin::CEmptyServerPlugin() : m_entIndexToPlayerInfo(), m_CallQueue(), m_iClientCommandIndex(0)
+CEmptyServerPlugin::CEmptyServerPlugin() : m_entIndexToPlayerInfo(), /*m_CallQueue(),*/ m_iClientCommandIndex(0)
 {
 }
 #pragma warning( pop )
@@ -198,19 +198,19 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 		Warning( "Unable to load IVEngineServer, aborting load\n" );
 		return false;
 	}
-
+	/*
 	g_pServerPluginHandler = (s_ServerPlugin*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 	
 	if (!g_pServerPluginHandler)
 	{
 		Warning( "Unable to load IServerPluginHelpers, aborting load\n" );
 		return false;
-	}
+	}*/
 
 	// hopefully nothing bad will happen from this being inbetween the interface loading
 	// it needs at least these two interfaces and IFileSystem *g_pFullFileSystem
 	// not sure if the filesystem is loaded here yet
-	AutoUpdate();
+	//AutoUpdate();
 
 	gameeventmanager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
 	if (!gameeventmanager)
@@ -269,7 +269,7 @@ void CEmptyServerPlugin::Pause( void )
 void CEmptyServerPlugin::UnPause( void )
 {
 }
-
+/*
 void CEmptyServerPlugin::AutoUpdate()
 {
     // need to change this to make it threaded
@@ -278,25 +278,7 @@ void CEmptyServerPlugin::AutoUpdate()
 	//autoUpdater.OfflineTest();
 	autoUpdater.PerformUpdateIfAvailable( s_pluginInfo );
 	//autoUpdater.testDownloadMeta();
-}
-
-void doMessage()
-{
-	Msg( "sdfadfasd\n" );
-}
-
-void testDownloader()
-{
-	//autoUpdateInfo_s a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
-	//CAutoUpdater autoUpdater(a);
-	////autoUpdater.OfflineTest();
-	//autoUpdater.PerformUpdateIfAvailable();
-	////autoUpdater.testDownloadMeta();
-	CFunctor *pFunc = CreateFunctor( &doMessage );
-	g_EmptyServerPlugin.EnqueueFunctor( pFunc );
-}
-
-ConCommand print_page("print_page", testDownloader );
+}*/
 
 //---------------------------------------------------------------------------------
 // Purpose: the name of this plugin, returned in "plugin_print" command
@@ -331,7 +313,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 {
     // this is used to call engine functions from separate threads
     // since valve's code is probably not thread safe
-    m_CallQueue.callQueueGameFrame();
+   // m_CallQueue.callQueueGameFrame();
 }
 
 //---------------------------------------------------------------------------------
