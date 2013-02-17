@@ -39,8 +39,6 @@ extern IEngineTrace		*enginetrace;
 
 extern IServerGameEnts			*pServerEnts;
 
-JOB_INTERFACE IThreadPool *g_pThreadPool;
-
 #ifndef PUBLIC_RELEASE
 
 static ConVar ftp_user("sizz_stats_ftp_username", "username", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP username to connect with when using web stats.");
