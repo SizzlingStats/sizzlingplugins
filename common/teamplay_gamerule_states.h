@@ -89,4 +89,3 @@ namespace Teamplay_GameRule_States
 }
 
 #endif // TEAMPLAY_GAMERULE_STATES_H
-

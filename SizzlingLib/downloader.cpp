@@ -10,7 +10,7 @@
 
 // TODO: get rid of curl and use sockets @_@
 
-size_t CDownloader::rcvData(void *ptr, size_t size, size_t nmemb, void *userdata)
+static size_t rcvData(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
 	pBuffer->Put( ptr, size*nmemb );
@@ -19,13 +19,13 @@ size_t CDownloader::rcvData(void *ptr, size_t size, size_t nmemb, void *userdata
 }
 
 // should the downloader keep trying if it keeps failing to dl the file?
-bool CDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
+bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 {
 	CCurlConnection connection;
 	if (connection.Initialize())
 	{
 		connection.SetUrl(const_cast<char*>(url));
-		connection.SetBodyWriteFunction(&CDownloader::rcvData);
+		connection.SetBodyWriteFunction(&rcvData);
 		connection.SetBodyWriteUserdata(&buf);
 
 	#ifndef NDEBUG
@@ -47,7 +47,7 @@ bool CDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 	return false;
 }
 
-bool CDownloader::DownloadFileAndVerify( const char *url, unsigned int crc, CUtlBuffer &buf )
+bool SizzDownloader::DownloadFileAndVerify( const char *url, unsigned int crc, CUtlBuffer &buf )
 {
 	// keeps trying until it gets it right
 	// 5 tries max
@@ -72,7 +72,7 @@ bool CDownloader::DownloadFileAndVerify( const char *url, unsigned int crc, CUtl
 	}
 }
 
-bool CDownloader::VerifyFile( const unsigned int actualCRC, CUtlBuffer const &buf )
+bool SizzDownloader::VerifyFile( const unsigned int actualCRC, CUtlBuffer const &buf )
 {
 	CRC32_t crc = CRC32_ProcessSingleBuffer( buf.PeekGet(), buf.GetBytesRemaining() );
 

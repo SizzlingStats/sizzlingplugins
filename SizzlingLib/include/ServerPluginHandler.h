@@ -13,7 +13,7 @@
 // so just do a cast like this:
 // struct s_ServerPlugin *pServerPluginHandler = (s_ServerPlugin*)pServerPluginHelpers;
 
-struct s_ServerPlugin //size 28 i'm pretty sure
+typedef struct s_ServerPlugin //size 28 i'm pretty sure
 {
 	char unk[16];
 
@@ -22,8 +22,8 @@ struct s_ServerPlugin //size 28 i'm pretty sure
 
 	// description strings of the loaded plugins
 	const char ***pszInfo;
-};
+} s_ServerPlugin;
 
-extern struct s_ServerPlugin	*g_pServerPluginHandler;
+extern s_ServerPlugin	*g_pServerPluginHandler;
 
 #endif // SERVER_PLUGIN_HANDLER_H

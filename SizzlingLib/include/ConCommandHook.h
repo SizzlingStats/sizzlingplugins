@@ -3,8 +3,6 @@
 #define CON_COMMAND_HOOK_H
 
 #include "convar.h"
-#include "icvar.h"
-#include "eiface.h"
 
 class ICommandHookCallback
 {

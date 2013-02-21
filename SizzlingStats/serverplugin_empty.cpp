@@ -6,8 +6,6 @@
 //
 //===========================================================================//
 
-#define GAME_DLL
-
 #include "dbgflag.h"
 
 #include <stdio.h>
@@ -19,28 +17,18 @@
 #include "eiface.h"
 #include "igameevents.h"
 #include "convar.h"
-#include "Color.h"
-#include "vstdlib/random.h"
+
 #include "engine/IEngineTrace.h"
-#include "tier2/tier2.h"
-
-#include "tier1/stringpool.h"
-#include "tier1/utlmap.h"
-
-#include "tier1/bitbuf.h"
-#include "MRecipientFilter.h"
-#include "SRecipientFilter.h"
 
 #include "dt_send.h"
 #include "server_class.h"
-#include "const.h"
-#include "playerdata.h"
+
 #include "PlayerMessage.h"
 #include "SizzlingStats.h"
 #include "ThreadCallQueue.h"
-//#include "cbase.h"
+
 #include "SC_helpers.h"
-//#include "EventQueue.h"
+
 #ifdef COUNT_CYCLES
 	#include "fasttimer.h"
 #endif
@@ -54,12 +42,9 @@
 
 #include "ConCommandHook.h"
 #include "teamplay_gamerule_states.h"
-#include "NetPropUtils.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
-
-//struct s_ServerPlugin;
 
 // Interfaces from the engine
 IVEngineServer			*pEngine = NULL; // helper functions (messaging clients, loading content, making entities, running commands, etc)
@@ -106,7 +91,7 @@ static char *UTIL_VarArgs( char *format, ... )
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
-class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandHookCallback//, public IPropHookCallback
+class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandHookCallback
 {
 public:
 	CEmptyServerPlugin();
