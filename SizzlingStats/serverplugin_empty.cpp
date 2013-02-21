@@ -106,7 +106,7 @@ static char *UTIL_VarArgs( char *format, ... )
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
 //---------------------------------------------------------------------------------
-class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandCallback, public ICommandHookCallback//, public IPropHookCallback
+class CEmptyServerPlugin: public IServerPluginCallbacks, public IGameEventListener2, public ICommandHookCallback//, public IPropHookCallback
 {
 public:
 	CEmptyServerPlugin();
@@ -136,14 +136,6 @@ public:
 	bool	ConfirmInterfaces( void );
 	void	LoadCurrentPlayers();
 
-	virtual void	CommandCallback( const CCommand &command )
-	{
-		if ( SCHelpers::FStrEq(command.GetCommandString(), "tryend"))
-		{
-			m_SizzlingStats.SS_EndOfRound();
-		}
-	}
-
 	virtual bool CommandPreExecute( const CCommand &args );
 	virtual void CommandPostExecute( const CCommand &args, bool bWasCommandExecuted );
 
@@ -153,33 +145,8 @@ public:
 	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
 
 private:
-	void GetGameRules()
-	{
-		if ( !m_pTeamplayRoundBasedRules )
-		{
-			m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
-		}
-	}
-
-	void GetPropOffsets()
-	{
-		using namespace SCHelpers;
-
-		if (!m_pTeamplayRoundBasedRules)
-		{
-			GetGameRules();
-		}
-		
-		bool bError = false;
-		unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
-			GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
-		
-		int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
-		int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
-
-		m_iRoundState = ((int *)((unsigned char*)m_pTeamplayRoundBasedRules + roundstateoffset));
-		m_bInWaitingForPlayers = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + waitingoffset));
-	}
+	void GetGameRules();
+	void GetPropOffsets();
 
 private:
 	SizzlingStats m_SizzlingStats;
@@ -225,10 +192,6 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_bTournamentMatchStarted(false)
 {
 }
-
-#ifndef PUBLIC_RELEASE
-static ConCommand test("tryend", &g_EmptyServerPlugin);
-#endif
 
 CEmptyServerPlugin::~CEmptyServerPlugin()
 {
@@ -414,22 +377,6 @@ void CEmptyServerPlugin::Pause( void )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::UnPause( void )
 {
-}
-
-//---------------------------------------------------------------------------------
-// Purpose: called once on plugin load incase the plugin is loaded dynamically
-//---------------------------------------------------------------------------------
-void CEmptyServerPlugin::LoadCurrentPlayers()
-{
-	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		edict_t *pEdict = pEngine->PEntityOfEntIndex(i);
-		if (pEdict)
-		{
-			g_pUserIdTracker->ClientActive( pEdict );
-			m_SizzlingStats.SS_InsertPlayer( pEdict );
-		}
-	}
 }
 
 //---------------------------------------------------------------------------------
@@ -647,6 +594,10 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 			m_SizzlingStats.GiveUber( entindex );
 		}
 	}
+	else if ( FStrEq( pcmd, "tryend" ) )
+	{
+		m_SizzlingStats.SS_EndOfRound();
+	}
 	else if ( FStrEq( pcmd, "testupdatestats" ) )
 	{
 		m_SizzlingStats.SS_UploadStats();
@@ -753,84 +704,19 @@ bool CEmptyServerPlugin::ConfirmInterfaces( void )
 	return true;
 }
 
-#ifdef GetProp
-#undef GetProp
-#endif
-
-void RecurseServerTable( SendTable *pTable, int &spacing )
+//---------------------------------------------------------------------------------
+// Purpose: called once on plugin load incase the plugin is loaded dynamically
+//---------------------------------------------------------------------------------
+void CEmptyServerPlugin::LoadCurrentPlayers()
 {
-	SendTable *pSendTable = pTable;
-	if (pSendTable == NULL)
+	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
-		spacing--;
-		return;
-	}
-	
-	char TableName[128];
-	int size = sizeof(TableName);
-
-	memset( TableName, 0, size );
-	for (int i = 0; i < spacing; i++)
-		V_strcat( TableName, "  |", size );
-	V_strcat( TableName, pSendTable->GetName(), size );
-	Msg( "%s\n", TableName );
-
-	spacing++;
-	int num = pSendTable->GetNumProps();
-	for (int i = 0; i < num; i++)
-	{
-		SendProp *pProp = pSendTable->GetProp(i);
-		SendPropType PropType = pProp->m_Type;
-		char type[10];
-		switch( PropType )
+		edict_t *pEdict = pEngine->PEntityOfEntIndex(i);
+		if (pEdict)
 		{
-			case 0: 
-				Q_strncpy( type, "int", 10 );
-				break;
-			case 1: 
-				Q_strncpy( type, "float", 10 );
-				break;
-			case 2: 
-				Q_strncpy( type, "vector", 10 );
-				break;
-			case 3: 
-				Q_strncpy( type, "vectorxy", 10 );
-				break;
-			case 4: 
-				Q_strncpy( type, "string", 10 );
-				break;
-			case 5: 
-				Q_strncpy( type, "array", 10 );
-				break;
-			case 6: 
-				Q_strncpy( type, "datatable", 10 );
-				break;
-			default:
-				break;
+			g_pUserIdTracker->ClientActive( pEdict );
+			m_SizzlingStats.SS_InsertPlayer( pEdict );
 		}
-
-		memset( TableName, 0, sizeof(TableName) );
-		for (int j = 0; j < spacing; j++)
-			V_strcat( TableName, "  |", size );
-		V_strcat( TableName, pProp->GetName(), size );
-		Msg( "%s, Offset: %i ( type: %s, size: %i bits )\n", TableName, pProp->GetOffset(), type, pProp->m_nBits );
-
-		RecurseServerTable( pProp->GetDataTable(), ++spacing );
-	}
-	spacing-=2;
-}
-
-CON_COMMAND ( printservertables, "prints the server tables ya" )
-{
-	ServerClass *pClass = pServerDLL->GetAllServerClasses();
-	while ( pClass )
-	{
-		Msg("%s\n", pClass->m_pNetworkName );
-		SendTable *pTable = pClass->m_pTable;
-		int i = 1;
-		RecurseServerTable( pTable, i );
-		Msg("\n");
-		pClass = pClass->m_pNext;
 	}
 }
 
@@ -991,5 +877,114 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			m_SizzlingStats.SS_ShowHtmlStats( entindex );
 		}
 #endif
+	}
+}
+
+void CEmptyServerPlugin::GetGameRules()
+{
+	if ( !m_pTeamplayRoundBasedRules )
+	{
+		m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
+	}
+}
+
+void CEmptyServerPlugin::GetPropOffsets()
+{
+	using namespace SCHelpers;
+
+	if (!m_pTeamplayRoundBasedRules)
+	{
+		GetGameRules();
+	}
+		
+	bool bError = false;
+	unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
+		GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
+		
+	int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
+	int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
+
+	m_iRoundState = ((int *)((unsigned char*)m_pTeamplayRoundBasedRules + roundstateoffset));
+	m_bInWaitingForPlayers = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + waitingoffset));
+}
+
+#ifdef GetProp
+#undef GetProp
+#endif
+
+void RecurseServerTable( SendTable *pTable, int &spacing )
+{
+	SendTable *pSendTable = pTable;
+	if (pSendTable == NULL)
+	{
+		spacing--;
+		return;
+	}
+	
+	char TableName[128];
+	int size = sizeof(TableName);
+
+	memset( TableName, 0, size );
+	for (int i = 0; i < spacing; i++)
+		V_strcat( TableName, "  |", size );
+	V_strcat( TableName, pSendTable->GetName(), size );
+	Msg( "%s\n", TableName );
+
+	spacing++;
+	int num = pSendTable->GetNumProps();
+	for (int i = 0; i < num; i++)
+	{
+		SendProp *pProp = pSendTable->GetProp(i);
+		SendPropType PropType = pProp->m_Type;
+		char type[10];
+		switch( PropType )
+		{
+			case 0: 
+				Q_strncpy( type, "int", 10 );
+				break;
+			case 1: 
+				Q_strncpy( type, "float", 10 );
+				break;
+			case 2: 
+				Q_strncpy( type, "vector", 10 );
+				break;
+			case 3: 
+				Q_strncpy( type, "vectorxy", 10 );
+				break;
+			case 4: 
+				Q_strncpy( type, "string", 10 );
+				break;
+			case 5: 
+				Q_strncpy( type, "array", 10 );
+				break;
+			case 6: 
+				Q_strncpy( type, "datatable", 10 );
+				break;
+			default:
+				break;
+		}
+
+		memset( TableName, 0, sizeof(TableName) );
+		for (int j = 0; j < spacing; j++)
+			V_strcat( TableName, "  |", size );
+		V_strcat( TableName, pProp->GetName(), size );
+		Msg( "%s, Offset: %i ( type: %s, size: %i bits )\n", TableName, pProp->GetOffset(), type, pProp->m_nBits );
+
+		RecurseServerTable( pProp->GetDataTable(), ++spacing );
+	}
+	spacing-=2;
+}
+
+CON_COMMAND ( printservertables, "prints the server tables ya" )
+{
+	ServerClass *pClass = pServerDLL->GetAllServerClasses();
+	while ( pClass )
+	{
+		Msg("%s\n", pClass->m_pNetworkName );
+		SendTable *pTable = pClass->m_pTable;
+		int i = 1;
+		RecurseServerTable( pTable, i );
+		Msg("\n");
+		pClass = pClass->m_pNext;
 	}
 }
