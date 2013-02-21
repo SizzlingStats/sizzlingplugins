@@ -316,10 +316,6 @@ void SizzlingMatches::SM_GetPropOffsets()
 
 	m_AwaitingReadyRestartOffset = GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError )
 						+ GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bAwaitingReadyRestart", bError );
-
-	//oKills = m_PlayerFlagsOffset;
-
-	//CBaseEntity *pEntity = gEntList.FindEntityByClassname( pServerEnts->EdictToBaseEntity( pEngine->PEntityOfEntIndex( gpGlobals->maxClients ) ), "CWeaponIFMSteadyCam" );
 }
 
 void SizzlingMatches::SM_GetEntities()

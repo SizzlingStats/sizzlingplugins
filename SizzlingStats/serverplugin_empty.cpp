@@ -7,7 +7,6 @@
 //===========================================================================//
 
 #define GAME_DLL
-#define SERVER_BUILD
 
 #include "dbgflag.h"
 
@@ -53,12 +52,6 @@
 
 #include "curl/curl.h"
 
-#ifndef SERVER_BUILD
-	#include "cdll_int.h"
-	#include "dt_recv.h"
-	#include "client_class.h"
-#endif
-
 #include "ConCommandHook.h"
 #include "teamplay_gamerule_states.h"
 #include "NetPropUtils.h"
@@ -79,22 +72,11 @@ IEngineTrace			*enginetrace = NULL;
 //extern UserIdTracker 	*g_pUserIdTracker;
 extern CTSCallQueue		*g_pTSCallQueue;
 
-#ifndef SERVER_BUILD
-	IBaseClientDLL			*pBaseClientDLL = NULL;
-	IVEngineClient			*pEngineClient = NULL;
-#endif
 IServerGameDLL			*pServerDLL = NULL;
 IServerGameEnts			*pServerEnts = NULL;
 IFileSystem			*g_pFullFileSystem = NULL;
 
 CGlobalVars				*gpGlobals = NULL;
-
-/*
-static CCountedStringPool g_RefCountedStrPool;
-CCountedStringPool *g_pRefCountedStringPool = &g_RefCountedStrPool;
-*/
-
-//extern PlayerMessage	*g_pMessage;
 
 //===========================================================================//
 
@@ -120,111 +102,6 @@ static char *UTIL_VarArgs( char *format, ... )
 
     return string;  
 }
-
-// function to initialize any cvars/command in this plugin
-//void Bot_RunAll( void ); 
-
-//template <typename T>
-//T *GetInterface( const char	*pchModuleName, const char *pszInterfaceVersion );
-
-//void			GetEntityByClassname(const char *szClassname);
-//void			PrintInfo( void );
-//void			CreateMenu(bf_write* pBuffer, const char* szMessage, int nOptions=10, int iSecondsToStayOpen=-1);
-
-//CBaseEntity *GetBaseFromID(int id);
-
-//void ShowMenu( edict_t *pEntity, int buttons, int time, const char *pText) // STOLE IT FROM TONY AND MODIFIED IT LOL
-//{
-//	SRecipientFilter filter;
-//	filter.AddRecipient( engine->IndexOfEdict( pEntity ) );
-//
-//	int umsg = 9;
-//	if(umsg != -1)
-//	{
-//		char text[2048];
-//		char buf[251];
-//		char *p = text;
-//		//int limit = strlen(pText);
-//
-//		strncpy(text, pText, sizeof(text));
-//		text[sizeof(text)-1] = '\0';
-//
-//		// write messages with more option enabled while there is enough data
-//		while(strlen(p) > sizeof(buf)-1)
-//		{
-//			strncpy(buf, p, sizeof(buf));
-//			buf[sizeof(buf)-1] = '\0';
-//
-//			bf_write *pBuffer = engine->UserMessageBegin(&filter, umsg);
-//			pBuffer->WriteShort(buttons);       // Sets how many options the menu has
-//			pBuffer->WriteChar(time);           // Sets how long the menu stays open -1 for stay until option selected
-//			pBuffer->WriteByte(true);           // more?
-//			pBuffer->WriteString(buf);          // The text shown on the menu
-//			engine->MessageEnd();
-//
-//			p += sizeof(buf) - 1;
-//		}
-//		// then send last bit
-//		bf_write *pBuffer = engine->UserMessageBegin(&filter, umsg);
-//		pBuffer->WriteShort(buttons);       // Sets how many options the menu has
-//		pBuffer->WriteChar(time);           // Sets how long the menu stays open -1 for stay until option selected
-//		pBuffer->WriteByte(false);          // more?
-//		pBuffer->WriteString(p);            // The text shown on the menu
-//		engine->MessageEnd();
-//	}
-//}
-
-//===========================================================================//
-
-// useful helper func
-//inline bool FStrEq(const char *sz1, const char *sz2)
-//{
-//	return(Q_stricmp(sz1, sz2) == 0);
-//}
-
-//template<typename T>
-//T *UTIL_LoadInterface(CreateInterfaceFn pfnFactory, const char *pszInterfaceVersion, bool &bSuccess)
-//{
-//	int nResult = 0;
-//	T *pInterface = (T*)pfnFactory(pszInterfaceVersion, &nResult);
-//
-//	if(nResult == IFACE_OK)
-//	{
-//		DevMsg("UTIL_LoadInterface: factory reported interface \"%s\" loaded successfully\n", pszInterfaceVersion);
-//	}
-//	else
-//	{
-//		Warning("UTIL_LoadInterface: pfnFactory(%s, %p) => IFACE_FAIL\n", pszInterfaceVersion, &nResult);
-//		bSuccess = false;
-//		return NULL;
-//	}
-//
-//	if(pInterface == NULL)
-//	{
-//		Warning("UTIL_LoadInterface: pfnFactory(%s, %p) => NULL\n", pszInterfaceVersion, &nResult);
-//		bSuccess = false;
-//		return NULL;
-//	}
-//
-//	Msg("UTIL_LoadInterface: interface \"%s\" pointer appears valid, factory reports that the interface loaded successfully\n", pszInterfaceVersion);
-//
-//	return pInterface;
-//}
-
-//template <typename T>
-//T *GetInterface( const char	*pchModuleName, const char *pszInterfaceVersion )
-//{
-//	int nReturnCode = 0;
-//	CDllDemandLoader module = CDllDemandLoader( pchModuleName );
-//	T *pInterface = (T*)module.GetFactory()(pszInterfaceVersion, &nReturnCode);
-//	module.Unload();
-//	//if (nReturnCode == IFACE_FAILED)
-//	//	return NULL;
-//	//else
-//	//	return pInterface;
-//
-//	return (nReturnCode == IFACE_FAILED) ? NULL : pInterface;
-//}
 
 //---------------------------------------------------------------------------------
 // Purpose: a sample 3rd party plugin class
@@ -256,11 +133,8 @@ public:
 	virtual void			OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue );
 
 	// Additions
-	virtual bool			ConfirmInterfaces( void );
-	void					LoadCurrentPlayers();
-	//virtual bool			GetPropOffset( const char *pClassName, const char *pPropName, unsigned int &offset, bool bServerSide );
-	//virtual void			GetPropsFromTable( const char *pTableName );
-	//virtual void			GetMessageInts( void );
+	bool	ConfirmInterfaces( void );
+	void	LoadCurrentPlayers();
 
 	virtual void	CommandCallback( const CCommand &command )
 	{
@@ -287,87 +161,6 @@ private:
 		}
 	}
 
-	/*
-	virtual bool SendPropHookCallback( const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID )
-	{
-		using namespace SCHelpers;
-		if (FStrEq(pProp->GetName(), "m_iRoundState"))
-		{
-			return RoundStateChangeCallback(pProp, pStructBase, pData, pOut, iElement, objectID);
-		}
-		else if (FStrEq(pProp->GetName(), "m_bInWaitingForPlayers"))
-		{
-			return WaitingForPlayersChangeCallback(pProp, pStructBase, pData, pOut, iElement, objectID);
-		}
-	}
-	
-	bool RoundStateChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
-	{
-		using namespace Teamplay_GameRule_States;
-
-		gamerules_roundstate_t state = *reinterpret_cast<const gamerules_roundstate_t*>(pData);
-
-		Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(state) ) );
-		
-		switch (state)
-		{
-		case GR_STATE_RND_RUNNING:
-			m_SizzlingStats.SS_RoundStarted();
-		case GR_STATE_TEAM_WIN:
-		case GR_STATE_RESTART:
-		case GR_STATE_STALEMATE:
-			m_SizzlingStats.SS_RoundEnded();
-		default:
-			break;
-		}
-		return true;
-	}
-	
-	bool WaitingForPlayersChangeCallback(const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID)
-	{
-		bool bWaiting = *reinterpret_cast<const bool*>(pData);
-		if (bWaiting)
-		{
-			Msg( "waiting for players, if mp_tournament is 1, a tournament game is not active\n" );
-		}
-		else
-		{
-			Msg( "not waiting for players, if mp_tournament is 1, a tournament game is active\n" );
-		}
-		return true;
-	}
-	
-	void HookProps()
-	{
-		using namespace SCHelpers;
-		
-		bool bError = false;
-		// is there a possibility that the hooking will fail?
-		unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
-			GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
-		
-		SendProp *piRoundState = GetPropFromClassAndTable( "CTeamplayRoundBasedRulesProxy", "DT_TeamplayRoundBasedRules", "m_iRoundState" );
-		if (piRoundState)
-		{
-			m_iRoundStateOffset = gamerulesoffset + piRoundState->GetOffset();
-			m_iRoundStateHook.Hook( piRoundState, this );
-		}
-		
-		SendProp *pbInWaitingForPlayers = GetPropFromClassAndTable( "CTeamplayRoundBasedRulesProxy", "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
-		if (pbInWaitingForPlayers)
-		{
-			m_bInWaitingForPlayersOffset = gamerulesoffset + pbInWaitingForPlayers->GetOffset();
-			m_bInWaitingForPlayersHook.Hook( pbInWaitingForPlayers, this );
-		}
-	}
-	
-	void UnhookProps()
-	{
-	    m_iRoundStateHook.Unhook();
-	    m_bInWaitingForPlayersHook.Unhook();
-	}
-	*/
-
 	void GetPropOffsets()
 	{
 		using namespace SCHelpers;
@@ -384,13 +177,8 @@ private:
 		int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
 		int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
 
-		//int insetupoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInSetup", bError );
-		//int readyrestartoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bAwaitingReadyRestart", bError );
-
 		m_iRoundState = ((int *)((unsigned char*)m_pTeamplayRoundBasedRules + roundstateoffset));
 		m_bInWaitingForPlayers = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + waitingoffset));
-		//m_bInSetup = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + insetupoffset));
-		//m_bAwaitingReadyRestart = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + readyrestartoffset));
 	}
 
 private:
@@ -398,15 +186,11 @@ private:
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
 	CConCommandHook m_SwitchTeamsHook;
-	//CSendPropHook	m_iRoundStateHook;
-	//CSendPropHook	m_bInWaitingForPlayersHook;
 	ConVarRef m_refTournamentMode;
 	CAutoUpdateThread	*m_pAutoUpdater;
 	CTeamplayRoundBasedRules *m_pTeamplayRoundBasedRules;
 	int	*m_iRoundState;
 	bool *m_bInWaitingForPlayers;
-	//bool *m_bInSetup;
-	//bool *m_bAwaitingReadyRestart;
 	int m_iClientCommandIndex;
 	int m_iLastCapTick;
 	bool m_bShouldRecord;
@@ -414,8 +198,6 @@ private:
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
-	//CUtlMap<char *, int> m_MessageNameToIDMap;
-	//const char *m_pPropNames[20];
 };
 
 // 
@@ -432,15 +214,11 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SayHook(),
 	m_SayTeamHook(),
 	m_SwitchTeamsHook(),
-	//m_iRoundStateHook(),
-	//m_bInWaitingForPlayersHook(),
 	m_refTournamentMode((IConVar*)NULL),
 	m_pAutoUpdater(NULL),
 	m_pTeamplayRoundBasedRules(NULL),
 	m_iRoundState(NULL),
 	m_bInWaitingForPlayers(NULL),
-	//m_bInSetup(NULL),
-	//m_bAwaitingReadyRestart(NULL),
 	m_iClientCommandIndex(0),
 	m_iLastCapTick(0),
 	m_bShouldRecord(false),
@@ -500,20 +278,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	g_pUserIdTracker->Load();
 
-	//CSysModule *pClientModule = g_pFullFileSystem->LoadModule("bin/client.dll", "MOD", false);
-	//if(!pClientModule)
-	//{
-	//	Warning("Unable to find client DLL module (are you on a dedicated server?)\n");
-	//	return false;
-	//}
-
-	//CreateInterfaceFn pfnClientFactory = Sys_GetFactory(pClientModule);
-	//if(!interfaceFactory)
-	//{
-	//	Warning("Unable to retrieve client factory\n");
-	//	return false;
-	//}
-
 	playerinfomanager = (IPlayerInfoManager *)gameServerFactory(INTERFACEVERSION_PLAYERINFOMANAGER,NULL);
 	pEngine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 	gameeventmanager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
@@ -522,13 +286,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	pServerEnts = (IServerGameEnts *)gameServerFactory(INTERFACEVERSION_SERVERGAMEENTS, NULL);
 	pServerDLL = (IServerGameDLL *)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
-#ifndef SERVER_BUILD
-	pEngineClient = (IVEngineClient *)interfaceFactory(VENGINE_CLIENT_INTERFACE_VERSION, NULL);
-	//pEngineClient = UTIL_LoadInterface<IVEngineClient>(interfaceFactory, VENGINE_CLIENT_INTERFACE_VERSION, bSucess);
-	//pBaseClientDLL = UTIL_LoadInterface<IBaseClientDLL>(pfnClientFactory, CLIENT_DLL_INTERFACE_VERSION, bSucess);
-
-	pBaseClientDLL = GetInterface<IBaseClientDLL>( "tf/bin/client.dll", CLIENT_DLL_INTERFACE_VERSION );
-#endif
 
 	if ( !ConfirmInterfaces() ){
 		return false;
@@ -816,8 +573,8 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 {
 	//pEngine->LogPrint(UTIL_VarArgs( "ClientActive: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
-	if( !pEdict || pEdict->IsFree() )		//TODO: decide on having the null and isfree check in the insert, or outside
-		return;								// for now... BOTH!	heuheuuehuhuehuhe
+	if( !pEdict || pEdict->IsFree() )
+		return;
 
 	g_pUserIdTracker->ClientActive( pEdict );
 	m_SizzlingStats.SS_InsertPlayer( pEdict );
@@ -841,24 +598,6 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientPutInServer( edict_t *pEntity, char const *playername )
 {
-	//pEngine->LogPrint(UTIL_VarArgs( "ClientPutInServer: %s, %u, %u\n", playername, (unsigned int)pEntity, pEngine->IndexOfEdict(pEntity) ));
-	//if( !pEntity || pEntity->IsFree() )
-	//	return;
-
-	//IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo( pEntity );
-	//if (pPlayerInfo)
-	//	Msg("player: %s put in server\n", pPlayerInfo->GetName() );
-	//else
-	//	Msg("ClientPutInServer error\n");
-
-	//KeyValues *kv = new KeyValues( "msg" );
-	//kv->SetString( "title", "Hello" );
-	//kv->SetString( "msg", "Hello there" );
-	//kv->SetColor( "color", Color( 255, 0, 0, 255 ));
-	//kv->SetInt( "level", 5);
-	//kv->SetInt( "time", 10);
-	//helpers->CreateMessage( pEntity, DIALOG_MSG, kv, this );
-	//kv->deleteThis();
 }
 
 //---------------------------------------------------------------------------------
@@ -875,22 +614,6 @@ void CEmptyServerPlugin::SetCommandClient( int index )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientSettingsChanged( edict_t *pEdict )
 {
-	//if ( playerinfomanager )
-	//{
-	//	IPlayerInfo *playerinfo = playerinfomanager->GetPlayerInfo( pEdict );
-
-	//	const char * name = engine->GetClientConVarValue( engine->IndexOfEdict(pEdict), "name" );
-
-	//	if ( playerinfo && name && playerinfo->GetName() && 
-	//		 Q_stricmp( name, playerinfo->GetName()) ) // playerinfo may be NULL if the MOD doesn't support access to player data 
-	//												   // OR if you are accessing the player before they are fully connected
-	//	{
-	//		char msg[128];
-	//		Q_snprintf( msg, sizeof(msg), "Your name changed to \"%s\" (from \"%s\"\n", name, playerinfo->GetName() ); 
-	//		engine->ClientPrintf( pEdict, msg ); // this is the bad way to check this, the better option it to listen for the "player_changename" event in FireGameEvent()
-	//											// this is here to give a real example of how to use the playerinfo interface
-	//	}
-	//}
 }
 
 //---------------------------------------------------------------------------------
@@ -898,42 +621,8 @@ void CEmptyServerPlugin::ClientSettingsChanged( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CEmptyServerPlugin::ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen )
 {
-	//pEngine->LogPrint(UTIL_VarArgs( "ClientConnect: %s, %u, %u\n", pszName, (unsigned int)pEntity, pEngine->IndexOfEdict(pEntity) ));
-	//IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo( pEntity );
-	//if (pPlayerInfo)
-	//	Msg("player: %s connected\n", pPlayerInfo->GetName() );
-	//else
-	//	Msg("ClientConnect error\n");
-
 	return PLUGIN_CONTINUE;
 }
-
-//CON_COMMAND( DoAskConnect, "Server plugin example of using the ask connect dialog" )
-//{
-//	if ( args.ArgC() < 2 )
-//	{
-//		Warning ( "DoAskConnect <server IP>\n" );
-//	}
-//	else
-//	{
-//		const char *pServerIP = args.Arg( 1 );
-//
-//		KeyValues *kv = new KeyValues( "menu" );
-//		kv->SetString( "title", pServerIP );	// The IP address of the server to connect to goes in the "title" field.
-//		kv->SetInt( "time", 3 );
-//
-//		for ( int i=1; i < gpGlobals->maxClients; i++ )
-//		{
-//			edict_t *pEdict = engine->PEntityOfEntIndex( i );
-//			if ( pEdict )
-//			{
-//				helpers->CreateMessage( pEdict, DIALOG_ASKCONNECT, kv, &g_EmtpyServerPlugin );
-//			}
-//		}
-//
-//		kv->deleteThis();
-//	}
-//}
 
 //---------------------------------------------------------------------------------
 // Purpose: called when a client types in a command (only a subset of commands however, not CON_COMMAND's)
@@ -994,81 +683,6 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 		kv->deleteThis();
 	}
 #endif
-
-	//if ( SCHelpers::FStrEq( pcmd, "closed_htmlpage" ) )
-	//{
-	//	Msg( "index: %i, closed_htmlpage\n", m_iClientCommandIndex );
-	//	//g_pMessage->SingleUserEmptyVGUIMenu( m_iClientCommandIndex );
-	//}
-
-	//if ( FStrEq( pcmd, "SA_changefov" ) )
-	//{
-	//	KeyValues *kv = new KeyValues( "SA_changefov" );
-
-	//}
-
-	//if ( FStrEq( pcmd, "menu" ) )
-	//{
-	//	KeyValues *kv = new KeyValues( "menu" );
-	//	kv->SetString( "title", "You've got options, hit ESC" );
-	//	kv->SetInt( "level", 1 );
-	//	kv->SetColor( "color", Color( 255, 0, 0, 255 ));
-	//	kv->SetInt( "time", 20 );
-	//	kv->SetString( "msg", "Pick an option\nOr don't." );
-	//	
-	//	for( int i = 1; i < 9; i++ )
-	//	{
-	//		char num[10], msg[10], cmd[10];
-	//		Q_snprintf( num, sizeof(num), "%i", i );
-	//		Q_snprintf( msg, sizeof(msg), "Option %i", i );
-	//		Q_snprintf( cmd, sizeof(cmd), "option%i", i );
-
-	//		KeyValues *item1 = kv->FindKey( num, true );
-	//		item1->SetString( "msg", msg );
-	//		item1->SetString( "command", cmd );
-	//	}
-
-	//	helpers->CreateMessage( pEntity, DIALOG_MENU, kv, this );
-	//	kv->deleteThis();
-	//	return PLUGIN_STOP; // we handled this function
-	//}
-	//else if ( FStrEq( pcmd, "rich" ) )
-	//{
-	//	KeyValues *kv = new KeyValues( "menu" );
-	//	kv->SetString( "title", "A rich message" );
-	//	kv->SetInt( "level", 1 );
-	//	kv->SetInt( "time", 20 );
-	//	kv->SetString( "msg", "This is a long long long text string.\n\nIt also has line breaks." );
-	//	
-	//	helpers->CreateMessage( pEntity, DIALOG_TEXT, kv, this );
-	//	kv->deleteThis();
-	//	return PLUGIN_STOP; // we handled this function
-	//}
-	//else if ( FStrEq( pcmd, "msg" ) )
-	//{
-	//	KeyValues *kv = new KeyValues( "menu" );
-	//	kv->SetString( "title", "Just a simple hello" );
-	//	kv->SetInt( "level", 1 );
-	//	kv->SetInt( "time", 20 );
-	//	
-	//	helpers->CreateMessage( pEntity, DIALOG_MSG, kv, this );
-	//	kv->deleteThis();
-	//	return PLUGIN_STOP; // we handled this function
-	//}
-	//else if ( FStrEq( pcmd, "entry" ) )
-	//{
-	//	KeyValues *kv = new KeyValues( "entry" );
-	//	kv->SetString( "title", "Stuff" );
-	//	kv->SetString( "msg", "Enter something" );
-	//	kv->SetString( "command", "say" ); // anything they enter into the dialog turns into a say command
-	//	kv->SetInt( "level", 1 );
-	//	kv->SetInt( "time", 20 );
-	//	
-	//	helpers->CreateMessage( pEntity, DIALOG_ENTRY, kv, this );
-	//	kv->deleteThis();
-	//	return PLUGIN_STOP; // we handled this function		
-	//}
-
 	return PLUGIN_CONTINUE;
 }
 
@@ -1094,21 +708,25 @@ void CEmptyServerPlugin::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, ed
 //---------------------------------------------------------------------------------
 bool CEmptyServerPlugin::ConfirmInterfaces( void )
 {
-	if (!playerinfomanager){
+	if (!playerinfomanager)
+	{
 		Warning( "Unable to load playerinfomanager, aborting load\n" );
 		return false;
 	}
-	if (!pEngine){
+	if (!pEngine)
+	{
 		Warning( "Unable to load engine, aborting load\n" );
 		return false;
 	}
 
-	if (!gameeventmanager){
+	if (!gameeventmanager)
+	{
 		Warning( "Unable to load gameeventmanager, aborting load\n" );
 		return false;
 	}
 
-	if (!helpers){
+	if (!helpers)
+	{
 		Warning( "Unable to load helpers, aborting load\n" );
 		return false;
 	}
@@ -1119,23 +737,14 @@ bool CEmptyServerPlugin::ConfirmInterfaces( void )
 		return false;
 	}
 
-#ifndef SERVER_BUILD
-	if (!pEngineClient){
-		Warning( "Unable to load pEngineClient, aborting load\n" );
-		return false;
-	}
-
-	if (!pBaseClientDLL){
-		Warning( "Unable to load pBaseClientDLL, aborting load\n" );
-		return false;
-	}
-#endif
-	if (!pServerDLL){
+	if (!pServerDLL)
+	{
 		Warning( "Unable to load pServerDLL, aborting load\n" );
 		return false;
 	}
 
-	if (!pServerEnts){
+	if (!pServerEnts)
+	{
 		Warning( "Unable to load pServerEnts, aborting load\n" );
 		return false;
 	}
@@ -1143,82 +752,6 @@ bool CEmptyServerPlugin::ConfirmInterfaces( void )
 	Msg( "All interfaces sucessfully loaded\n" );
 	return true;
 }
-
-//void CEmptyServerPlugin::GetMessageInts()
-//{
-//	//Returns MessageIndex IDs from Msg String
-//	char pName[64] = "";
-//	int iSize = 0;
-//	int i = 0;
-//	bool bReturn = true;
-//	CStringPool sPool;
-//
-//	while (bReturn)
-//	{
-//		bReturn =  pServerDLL->GetUserMessageInfo(++i, pName, 64, iSize);
-//		if (bReturn)
-//		{
-//			const char *formattedname = sPool.Allocate(pName);
-//			m_MessageNameToIDMap.Insert( formattedname, i );
-//			Msg("name: %s, %i\n", formattedname, i);
-//			Msg("name: %s, %i\n", formattedname, m_MessageNameToIDMap[ m_MessageNameToIDMap.Find(formattedname) ] );
-//		}
-//	}
-//
-//	Msg("name: %s, %i\n", "SayText", m_MessageNameToIDMap[ m_MessageNameToIDMap.Find( sPool.Find("SayText") ) ] );
-//	Msg("name: %s, %i\n", "SayText", m_MessageNameToIDMap[ m_MessageNameToIDMap.Find( "SayText" )] );
-//	return; 
-//}
-
-#ifndef SERVER_BUILD
-void RecurseClientTable( RecvTable *pTable, int &spacing )
-{
-	RecvTable *pRecvTable = pTable;
-	if (pRecvTable == NULL){
-		spacing--;
-		return;
-	}
-	
-	char TableName[128];
-	int size = sizeof(TableName);
-
-	memset( TableName, 0, size );
-	for (int i = 0; i < spacing; i++)
-		V_strcat( TableName, "  |", size );
-	V_strcat( TableName, pRecvTable->GetName(), size );
-	Msg( "%s\n", TableName );
-
-	spacing++;
-	int num = pRecvTable->GetNumProps();
-	for (int i = 0; i < num; i++)
-	{
-		RecvProp *pProp = pRecvTable->GetProp(i);
-
-		memset( TableName, 0, sizeof(TableName) );
-		for (int j = 0; j < spacing; j++)
-			V_strcat( TableName, "  |", size );
-		V_strcat( TableName, pProp->GetName(), size );
-		Msg( "%s\n", TableName );
-
-		RecurseClientTable( pProp->GetDataTable(), ++spacing );
-	}
-	spacing-=2;
-}
-
-CON_COMMAND ( printclienttables, "prints the client tables ya" )
-{
-	ClientClass *pClass = pBaseClientDLL->GetAllClasses();
-	while ( pClass )
-	{
-		Msg("%s\n", pClass->m_pNetworkName );
-		RecvTable *pTable = pClass->m_pRecvTable;
-		int i = 1;
-		RecurseClientTable( pTable, i );
-		Msg("\n");
-		pClass = pClass->m_pNext;
-	}
-}
-#endif
 
 #ifdef GetProp
 #undef GetProp
@@ -1300,48 +833,6 @@ CON_COMMAND ( printservertables, "prints the server tables ya" )
 		pClass = pClass->m_pNext;
 	}
 }
-
-//void CreateMenu(bf_write* pBuffer, const char* szMessage, int nOptions, int iSecondsToStayOpen)
-//{
-//	Assert(pBuffer);
-// 
-//	// Add option to bits
-//	int optionBits = 0;
-//	for(int i = 0; i < nOptions; i++)
-//		optionBits |= (1<<i);
-// 
-//	pBuffer->WriteShort(optionBits); // Write options
-//	pBuffer->WriteChar( iSecondsToStayOpen ); // Seconds to stay open
-//	pBuffer->WriteByte(false); // We don't need to receive any more of this menu
-//	pBuffer->WriteString(szMessage); // Write the menu message
-//}
-
-//void HUD_printf (char *string, edict_t *pPlayerEdict)
-//{
-//   // this function sends "string" over the network for display on pPlayerEdict's HUD
-// 
-//   bf_write *netmsg; // our network message object
-//   SimpleRecipientFilter recipient_filter; // the corresponding recipient filter
-// 
-//   // BUG FIX: the Source engine "eats" the last character from HUD SayText messages :(
-//   strcat (string, "\n"); // so add an arbitrary carriage return to the string :)
-// 
-//   // pPlayerEdict is a pointer to the edict of a player for which you want this HUD message
-//   // to be displayed. There can be several recipients in the filter, don't forget.
-//   recipient_filter.AddPlayer (engine->IndexOfEdict (pPlayerEdict));
-// 
-//   // HACK: Valve doesn't permit server plugins to know about net messages yet, we have
-//   // to figure out ourselves the message numbers, which is not nice. Here "SayText" is 3.
-//   // Hopefully this network message code being in game_shared, we can assume many game DLLs
-//   // will keep the same message number. Until Valve gives us another interface...
-//   netmsg = engine->UserMessageBegin (&recipient_filter, 3);
-//   netmsg->WriteByte (0); // index of the player this message comes from. "0" means the server.
-//   netmsg->WriteString (string); // the HUD message itself
-//   netmsg->WriteByte (1); // I don't know yet the purpose of this byte, it can be 1 or 0
-//   engine->MessageEnd ();
-// 
-//   return; // et voilà
-//}
 
 bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 {
@@ -1502,251 +993,3 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 #endif
 	}
 }
-
-//CBaseEntity *GetBaseFromID(int id) {
-//   edict_t *pEntity = NULL;
-//   for(int i = 1; i <= pEngineClient->GetMaxClients(); i++) { 
-//      pEntity = engine->PEntityOfEntIndex(i); 
-//      if(!pEntity || pEntity->IsFree()) 
-//		  continue; 
-//      if(engine->GetPlayerUserId(pEntity) == id) 
-//		  return engine->PEntityOfEntIndex(i)->GetUnknown()->GetBaseEntity();
-//   } 
-//   return 0; 
-//}
-
-//void GetEntityByClassname(const char *szClassname) {
-//	edict_t *pEntity = NULL;
-//	//for(int i = gpGlobals->maxClients; i <= gpGlobals->maxEntities; i++) { 
-//	//	pEntity = engine->PEntityOfEntIndex(i); 
-//	//	if(!pEntity || pEntity->IsFree()) 
-//	//		continue;
-//	CBaseEntity *pBaseEntity = engine->PEntityOfEntIndex( gpGlobals->maxClients )->GetUnknown()->GetBaseEntity();
-//	CBaseEntity *pClass = gEntList.FindEntityByClassname( pBaseEntity, szClassname );
-//	Msg( "%s\n", pClass->GetClassname() );
-//	//}
-//}
-
-//CON_COMMAND( isdedicated, "dedicated server?" )
-//{
-//	if (engine->IsDedicatedServer())
-//		Msg("yep\n");
-//	else
-//		Msg("nope\n");
-//}
-//
-//CON_COMMAND( isingame, "dedicated server?" )
-//{
-//	if (pEngineClient->IsInGame())
-//		Msg("yep\n");
-//	else
-//		Msg("nope\n");
-//}
-//
-//CON_COMMAND( isplayingdemo, "dedicated server?" )
-//{
-//	if (pEngineClient->IsPlayingDemo())
-//		Msg("yep\n");
-//	else
-//		Msg("nope\n");
-//}
-//
-//CON_COMMAND( ishltv, "dedicated server?" )
-//{
-//	if (pEngineClient->IsHLTV())
-//		Msg("yep\n");
-//	else
-//		Msg("nope\n");
-//}
-//
-//CON_COMMAND( getlocalplayer, "gets the local player" )
-//{
-//	IPlayerInfo *player = NULL;
-//	int localplayer = pEngineClient->GetLocalPlayer();
-//	Msg("localplayer: %i\n", localplayer );
-//	player = playerinfomanager->GetPlayerInfo(engine->PEntityOfEntIndex( localplayer ) );
-//	if (player)
-//		Msg("player name: %s\n", player->GetName() );
-//	else
-//		Msg("player has not spawned\n");
-//}
-
-//void PrintInfo( void )
-//{
-//	edict_t *pEntity = engine->PEntityOfEntIndex( 1 );
-//	if( !pEntity || pEntity->IsFree() )
-//		return;
-//
-//	CBaseEntity *pPlayer = NULL;
-//	pPlayer = pServerEnts->EdictToBaseEntity( pEntity );
-//	if ( !pPlayer )
-//		return;
-//
-//	unsigned int *fFlags = (unsigned int *)( ((unsigned char *)pPlayer) + oKills);
-//	//Msg("flags offset: %i\n", oKills);
-//	Msg( "flags: %i\n", *fFlags );
-//	if ( *fFlags & FL_ONGROUND )
-//		Msg("player is on teh ground\n");
-//	if ( *fFlags & FL_DUCKING )
-//		Msg("player is ducking\n");
-//	if ( *fFlags & FL_CLIENT )
-//		Msg("player is a client\n");
-//	if ( *fFlags & FL_FAKECLIENT )
-//		Msg("player is a fake client\n");
-//	if ( *fFlags & FL_INWATER )
-//		Msg("player is in water\n");
-//}
-
-//ConVar classtables_showvars( "classtables_showvars", "1", FCVAR_REPLICATED );
-
-//CON_COMMAND( classtables_client, "Lists the client classes, and also their member variables if classtables_showvars is set" )
-//{
-//	int start = 0, end = INT_MAX;
-//	if ( args.ArgC() > 2 )
-//	{
-//		start = atoi(args[1]);
-//		if ( args.ArgC() > 1 )
-//			end = atoi(args[2]);
-//	}
-//
-//	int pos = 0;
-//	ClientClass *pClass = pBaseClientDLL->GetAllClasses();
-//	if (pClass)
-//		Msg("CC name: %s\n", pClass->GetName());
-//	while ( pClass )
-//	{
-//		if ( pos >= start && pos <= end )
-//		{
-//			Msg("%s (%i)\n",pClass->m_pNetworkName,pClass->m_ClassID);
-//			if ( classtables_showvars.GetInt()  > 0 )
-//			{
-//				RecvTable *pTable = pClass->m_pRecvTable;
-//				if ( pTable == NULL )
-//					continue;
-//				int num = pTable->GetNumProps();
-//				for ( int i=0; i<num; i++ )
-//				{
-//					RecvProp *pProp = pTable->GetProp(i);
-//					Msg("   %s\n",pProp->GetName());
-//					int offset =  pProp->GetOffset();
-//					Msg("		%i\n", offset);
-//				}
-//				Msg("\n");
-//			}
-//		}
-//		pClass = pClass->m_pNext;
-//		pos ++;
-//	}
-//}
-
-//CON_COMMAND( classtables_server, "Lists the server classes, and also their member variables if classtables_showvars is set" )
-//{
-//	int start = 0, end = INT_MAX;
-//	if ( args.ArgC() > 2 )
-//	{
-//		start = atoi(args[1]);
-//		if ( args.ArgC() > 1 )
-//			end = atoi(args[2]);
-//	}
-//
-//	int pos = 0;
-//	ServerClass *pClass = pServerDLL->GetAllServerClasses();
-//	if (pClass)
-//		Msg( "SC name: %s\n", pClass->GetName() );
-//	while ( pClass )
-//	{
-//		if ( pos >= start && pos <= end )
-//		{
-//			Msg("%s (%i)\n",pClass->m_pNetworkName,pClass->m_ClassID);
-//			if ( classtables_showvars.GetInt()  > 0 )
-//			{
-//				SendTable *pTable = pClass->m_pTable;
-//				if ( pTable == NULL )
-//					continue;
-//				Msg(" %s\n", pTable->GetName() );
-//				int num = pTable->GetNumProps();
-//				for ( int i=0; i<num; i++ )
-//				{
-//					SendProp *pProp = pTable->GetProp(i);
-//					Msg("   %i, %s\n",pProp->GetOffset(), pProp->GetName());
-//					if ( FStrEq(pProp->GetName(), "m_Shared" ) || FStrEq(pProp->GetName(), "m_PlayerClass" )){
-//						SendTable *pSSendTable = pProp->GetDataTable();
-//						Msg("	%s\n", pSSendTable->GetName());
-//						int num2 = pSSendTable->GetNumProps();
-//						for (int j = 0; j < num2; j++)
-//						{
-//							SendProp *pPProp = pSSendTable->GetProp(j);
-//							Msg("		%i, %s\n", pPProp->GetOffset(), pPProp->GetName() );
-//							if ( FStrEq(pPProp->GetName(), "tfsharedlocaldata" ) ){
-//								SendTable *pSSSendTable = pPProp->GetDataTable();
-//								Msg("			%s\n", pSSSendTable->GetName());
-//								int num3 = pSSSendTable->GetNumProps();
-//								for (int k = 0; k < num3; k++)
-//								{
-//									SendProp *pPPProp = pSSSendTable->GetProp(k);
-//									Msg("				%i, %s\n", pPPProp->GetOffset(), pPPProp->GetName() );
-//									if ( FStrEq(pPPProp->GetName(), "m_ScoreData" ) || FStrEq(pPPProp->GetName(), "m_RoundScoreData" ) ){
-//										SendTable *pSSSSendTable = pPPProp->GetDataTable();
-//										Msg("					%s\n", pSSSSendTable->GetName());
-//										int num4 = pSSSSendTable->GetNumProps();
-//										for (int l = 0; l < num4; l++)
-//										{
-//											SendProp *pPPPProp = pSSSSendTable->GetProp(l);
-//											Msg("						%i, %s\n", pPPPProp->GetOffset(), pPPPProp->GetName() );
-//										}
-//									}
-//								}
-//							}
-//						}
-//					}
-//				}
-//				Msg("\n");
-//			}
-//		}
-//		pClass = pClass->m_pNext;
-//		pos ++;
-//	}
-//}
-
-//---------------------------------------------------------------------------------
-// Purpose: an example of how to implement a new command
-//---------------------------------------------------------------------------------
-//CON_COMMAND( empty_version, "prints the version of the empty plugin" )
-//{
-//	Msg( "Version:1.0.0.0\n" );
-//}
-
-//CON_COMMAND( empty_log, "logs the version of the empty plugin" )
-//{
-//	engine->LogPrint( "Version:1.0.0.0\n" );
-//}
-
-//---------------------------------------------------------------------------------
-// Purpose: an example cvar
-//---------------------------------------------------------------------------------
-//static ConVar empty_cvar("plugin_empty", "0", 0, "Example plugin cvar");
-
-//void KickAll_SS ( const CCommand &args )
-//{
-//	//if ( args.ArgC() < 1 | args.Arg(1) == "" )
-//	//{
-//	//	Msg( "Usage: my_say <text>\n" );
-//	//	return;
-//	//}
-//	
-//	for ( int i = 1; i <= gpGlobals->maxClients; ++i )
-//	{
-//		edict_t *pEdict = engine->PEntityOfEntIndex( i );
-//		if ( !pEdict )
-//			return;
-//		int id = engine->GetPlayerUserId( pEdict );
-//		if ( id == -1 )
-//			return;
-//		char command[64] = "";
-//		Q_snprintf( command, 64, "kickid %i %s\n", id, args.Arg(1) );
-//		engine->ServerCommand( command );
-//	}
-//}
-// 
-//ConCommand my_say( "ss_kickall", KickAll_SS , "kicks everyone (including you) with a message of your choice", 0);
-
