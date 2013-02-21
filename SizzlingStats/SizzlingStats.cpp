@@ -57,6 +57,16 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_PlayerFlagsOffset(0), 
 								m_TeamRoundsWonOffset(0),
 								m_PlayerClassOffset(0), // what am i using this for yet??
+								m_iWeaponsOffset(0),
+								m_iChargeLevelOffset(0),
+								m_iOriginOffset(0),
+								m_iChargeReleaseOffset(0),
+								m_pRedTeam(NULL),
+								m_pBluTeam(NULL),
+								m_iTeamScoreOffset(0),
+								m_iTeamNumOffset(0),
+								m_iOldRedScore(0),
+								m_iOldBluScore(0),
 								m_nCurrentRound(0),
 								m_playerDataArchive(),
 								//m_playerDataArchiveVec(0, 32),
@@ -95,6 +105,7 @@ SizzlingStats::~SizzlingStats()
 void SizzlingStats::Load()
 {
     GetPropOffsets();
+	GetEntities();
 	m_refHostname.Init("hostname", false);
 	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
 	m_refRedTeamName.Init("mp_tournament_redteamname", false);
@@ -112,6 +123,11 @@ void SizzlingStats::Unload()
 
 void SizzlingStats::LevelInit(const char *pMapName)
 {
+}
+
+void SizzlingStats::ServerActivate()
+{
+	GetEntities();
 }
 
 void SizzlingStats::GameFrame()
@@ -495,7 +511,7 @@ void SizzlingStats::SS_TournamentMatchEnded()
 	m_bTournamentMatchRunning = false;
 	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
 	m_pWebStatsHandler->SendGameOverEvent(m_flMatchDuration);
-	SetTeamScores(0, 0);
+	//SetTeamScores(0, 0);
 }
 
 void SizzlingStats::SS_PreRoundFreeze()
@@ -512,6 +528,8 @@ void SizzlingStats::SS_PreRoundFreeze()
 void SizzlingStats::SS_RoundStarted()
 {
 	Msg( "round started\n" );
+	m_iOldBluScore = *SCHelpers::ByteOffsetFromPointer<uint32>(m_pBluTeam, m_iTeamScoreOffset);
+	m_iOldRedScore = *SCHelpers::ByteOffsetFromPointer<uint32>(m_pRedTeam, m_iTeamScoreOffset);
 	m_bFirstCapOfRound = true;
 	m_hostInfo.m_iFirstCapTeamIndex = 0;
 	SS_AllUserChatMessage( "Stats Recording Started\n" );
@@ -688,8 +706,8 @@ void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 
 void SizzlingStats::SetTeamScores( int redscore, int bluscore )
 {
-	m_hostInfo.m_redscore = redscore;
-	m_hostInfo.m_bluscore = bluscore;
+	m_hostInfo.m_redscore = redscore - m_iOldRedScore;
+	m_hostInfo.m_bluscore = bluscore - m_iOldBluScore;
 }
 
 #ifndef PUBLIC_RELEASE
@@ -759,7 +777,10 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 	{
 		char temp[128] = {};
 		m_pWebStatsHandler->GetMatchUrl(temp, 128);
-		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp );
+		// send an invisible one to clear the html message if there is one
+		// then send the visible one
+		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp, false );
+		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp, true );
 	}
 	else
 	{
@@ -771,27 +792,6 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 
 void SizzlingStats::GetPropOffsets()
 {
-//DT_TFPlayerScoringDataExclusive
-//	4, Captures				0
-//	8, Defenses				1
-//	12, Kills				2
-//	16, Deaths				3
-//	20, Suicides			4
-//	24, Dominations			5
-//	28, Revenge				6
-//	32, BuildingsBuilt		7
-//	36, BuildingsDestroyed	8
-//	40, Headshots			9
-//	44, Backstabs			10
-//	48, HealPoints			11
-//	52, Invulns				12
-//	56, Teleports			13
-//	60, DamageDone			14
-//	64, Crits				15
-//	68, ResupplyPoints		16
-//	72, KillAssists			17
-//	76, BonusPoints			18
-//	80, Points				19
 	using namespace SCHelpers;
 	bool bError = false;
 	int iTFPlayerScoreingDataExclusiveOffset = GetPropOffsetFromTable( "DT_TFPlayer", "m_Shared", bError ) 
@@ -827,8 +827,15 @@ void SizzlingStats::GetPropOffsets()
 	m_iOriginOffset = GetPropOffsetFromTable( "DT_BaseEntity", "m_vecOrigin", bError );
 	m_iChargeReleaseOffset = GetPropOffsetFromTable( "DT_WeaponMedigun", "m_bChargeRelease", bError );
 
+	m_iTeamScoreOffset = GetPropOffsetFromTable( "DT_Team", "m_iScore", bError );
+	m_iTeamNumOffset = GetPropOffsetFromTable( "DT_Team", "m_iTeamNum", bError );
+
 	//oKills = m_PlayerFlagsOffset;
 
 	//CBaseEntity *pEntity = gEntList.FindEntityByClassname( pServerEnts->EdictToBaseEntity( engine->PEntityOfEntIndex( gpGlobals->maxClients ) ), "CWeaponIFMSteadyCam" );
 }
 
+void SizzlingStats::GetEntities()
+{
+	SCHelpers::GetTeamEnts(&m_pBluTeam, &m_pRedTeam, m_iTeamNumOffset);
+}

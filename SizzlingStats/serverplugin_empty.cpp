@@ -397,6 +397,7 @@ private:
 	SizzlingStats m_SizzlingStats;
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
+	CConCommandHook m_SwitchTeamsHook;
 	//CSendPropHook	m_iRoundStateHook;
 	//CSendPropHook	m_bInWaitingForPlayersHook;
 	ConVarRef m_refTournamentMode;
@@ -430,6 +431,7 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
+	m_SwitchTeamsHook(),
 	//m_iRoundStateHook(),
 	//m_bInWaitingForPlayersHook(),
 	m_refTournamentMode((IConVar*)NULL),
@@ -596,6 +598,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	m_SayHook.Hook(this, cvar, "say");
 	m_SayTeamHook.Hook(this, cvar, "say_team");
+	m_SwitchTeamsHook.Hook(this, cvar, "mp_switchteams");
 
 	m_refTournamentMode.Init("mp_tournament", false);
 
@@ -611,6 +614,7 @@ void CEmptyServerPlugin::Unload( void )
 {
 	m_SayHook.Unhook();
 	m_SayTeamHook.Unhook();
+	m_SwitchTeamsHook.Unhook();
 	if (pEngine)
 	{
 		pEngine->LogPrint("Unload\n");
@@ -704,6 +708,7 @@ void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, in
 {
 	//GetGameRules();
 	GetPropOffsets();
+	m_SizzlingStats.ServerActivate();
 	//HookProps();
 }
 
@@ -935,12 +940,60 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientConnect( bool *bAllowConnect, edict_t *p
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CCommand &args )
 {
-	//const char *pcmd = args[0];
+#ifdef DEV_COMMANDS_ON
+	using namespace SCHelpers;
+	const char *pcmd = args[0];
 
-	//if ( !pEntity || pEntity->IsFree() ) 
-	//{
-	//	return PLUGIN_CONTINUE;
-	//}
+	if ( !pEntity || pEntity->IsFree() ) 
+	{
+		return PLUGIN_CONTINUE;
+	}
+
+	int entindex = pEngine->IndexOfEdict(pEntity);
+
+	if ( FStrEq( pcmd, "gibuber" ) )
+	{
+		if ( entindex > 0 )
+		{
+			m_SizzlingStats.GiveUber( entindex );
+		}
+	}
+	else if ( FStrEq( pcmd, "testupdatestats" ) )
+	{
+		m_SizzlingStats.SS_UploadStats();
+	}
+	else if ( FStrEq( pcmd, "testthreading" ) )
+	{
+		m_SizzlingStats.SS_TestThreading();
+	}
+	else if ( FStrEq( pcmd, "menutest" ) )
+	{
+		KeyValues *kv = new KeyValues( "menu" );
+		kv->SetString( "title", "You've got options, hit ESC" );
+		kv->SetInt( "level", 1 );
+		kv->SetColor( "color", Color( 255, 0, 0, 255 ));
+		kv->SetInt( "time", 20 );
+		kv->SetString( "msg", "Pick an option\nOr don't." );
+				
+		for( int i = 1; i < 9; i++ )
+		{
+			char num[10], msg[10], cmd[10];
+			Q_snprintf( num, sizeof(num), "%i", i );
+			Q_snprintf( msg, sizeof(msg), "Option %i", i );
+			Q_snprintf( cmd, sizeof(cmd), "option%i", i );
+
+			KeyValues *item1 = kv->FindKey( num, true );
+			item1->SetString( "msg", msg );
+			item1->SetString( "command", cmd );
+		}
+
+		if ( entindex > 0 )
+		{
+			helpers->CreateMessage( pEngine->PEntityOfEntIndex(entindex), DIALOG_MENU, kv, this );
+		}
+		kv->deleteThis();
+	}
+#endif
 
 	//if ( SCHelpers::FStrEq( pcmd, "closed_htmlpage" ) )
 	//{
@@ -1308,6 +1361,10 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 				m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), true );
 			}
 		}
+		if ( FStrEq( szCommand, "mp_switchteams" ) )
+		{
+			Msg( "teams switched\n" );
+		}
 	}
 
 	// dispatch the command
@@ -1441,51 +1498,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
 			m_SizzlingStats.SS_ShowHtmlStats( entindex );
-		}/*
-		else if ( FStrEq( text, ".testupdatestats" ) )
-		{
-			m_SizzlingStats.SS_UploadStats();
 		}
-		else if ( FStrEq( text, ".testthreading" ) )
-		{
-			m_SizzlingStats.SS_TestThreading();
-		}
-		else if ( FStrEq( text, ".menutest" ) )
-		{
-			KeyValues *kv = new KeyValues( "menu" );
-			kv->SetString( "title", "You've got options, hit ESC" );
-			kv->SetInt( "level", 1 );
-			kv->SetColor( "color", Color( 255, 0, 0, 255 ));
-			kv->SetInt( "time", 20 );
-			kv->SetString( "msg", "Pick an option\nOr don't." );
-				
-			for( int i = 1; i < 9; i++ )
-			{
-				char num[10], msg[10], cmd[10];
-				Q_snprintf( num, sizeof(num), "%i", i );
-				Q_snprintf( msg, sizeof(msg), "Option %i", i );
-				Q_snprintf( cmd, sizeof(cmd), "option%i", i );
-
-				KeyValues *item1 = kv->FindKey( num, true );
-				item1->SetString( "msg", msg );
-				item1->SetString( "command", cmd );
-			}
-
-			int userid = event->GetInt( "userid" );
-			int entindex = SCHelpers::UserIDToEntIndex( userid );
-			if ( entindex != 0 )
-				helpers->CreateMessage( pEngine->PEntityOfEntIndex(entindex), DIALOG_MENU, kv, this );
-			kv->deleteThis();
-		}
-		else if ( FStrEq( text, ".gibuber" ) )
-		{
-			int userid = event->GetInt( "userid" );
-			int entindex = SCHelpers::UserIDToEntIndex( userid );
-			if ( entindex != 0 )
-			{
-				m_SizzlingStats.GiveUber( entindex );
-			}
-		}*/
 #endif
 	}
 }

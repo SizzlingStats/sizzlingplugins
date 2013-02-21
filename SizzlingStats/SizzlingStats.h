@@ -10,11 +10,8 @@
 #include "mempool.h"
 
 #include "WebStatsHandler.h"
-
 #include "convar.h"
-
 #include "PluginDefines.h"
-
 #include "PlayerDataManager.h"
 
 class CFuncQueueThread;
@@ -33,6 +30,8 @@ public:
 
 	// called on level start
 	void	LevelInit(const char *pMapName);
+
+	void	ServerActivate();
 
 	void	GameFrame();
 	
@@ -107,6 +106,8 @@ public:
 	//	gets the prop offest
 	void	GetPropOffsets();
 
+	void	GetEntities();
+
 private:
 	unsigned int	m_aPropOffsets[20];
 	unsigned int	m_PlayerFlagsOffset;
@@ -116,6 +117,13 @@ private:
 	uint32			m_iChargeLevelOffset;
 	uint32			m_iOriginOffset;
 	uint32			m_iChargeReleaseOffset;
+
+	CBaseEntity		*m_pRedTeam;
+	CBaseEntity		*m_pBluTeam;
+	uint32			m_iTeamScoreOffset;
+	uint32			m_iTeamNumOffset;
+	uint16			m_iOldRedScore;
+	uint16			m_iOldBluScore;
 
 	int				m_nCurrentRound;
 	CUtlVector<char> m_vecMedics; //ent index of medics
