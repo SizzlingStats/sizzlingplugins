@@ -3,11 +3,7 @@
 
 #include "strtools.h"
 
-#ifndef NULL
-#define NULL 0
-#endif
-
-typedef unsigned char byte;
+#include <stddef.h>
 
 class CBaseEntity;
 struct edict_t;
