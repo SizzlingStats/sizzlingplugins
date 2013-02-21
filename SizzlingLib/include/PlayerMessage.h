@@ -28,7 +28,7 @@ public:
 	static void	AllUserHudMsg( const char *szMessage, colour rgba, float timeonscreen, float x = -1, float y = -1, int channel = 1 );
 	static void	AllUserHudHintText( const char *szMessage );
 
-	static void	SingleUserVGUIMenu( int clientIndex, const char *title, const char *url );
+	static void	SingleUserVGUIMenu( int clientIndex, const char *title, const char *url, bool bVisible = true );
 	static void	SingleUserEmptyVGUIMenu( int clientIndex );
 };
 

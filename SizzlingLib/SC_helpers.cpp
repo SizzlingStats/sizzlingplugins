@@ -69,36 +69,86 @@ namespace SCHelpers
 		}
 	}
 
-	CBaseEntity *GetEntityByClassname( const char *pszClassname )
+	CBaseEntity *GetEntityByClassname( const char *pszClassname, int start_index /*= 0*/, int *ent_index_out /*= NULL*/ )
 	{
-		for ( int i = gpGlobals->maxClients; i < gpGlobals->maxEntities; ++i )
+		for ( int i = start_index; i < gpGlobals->maxEntities; ++i )
 		{
 			edict_t *pEdict = pEngine->PEntityOfEntIndex( i );
 			if ( !pEdict )
 			{
+				//Msg( "bad edict\n" );
 				continue;
-				Msg( "bad edict\n" );
 			}
+			IServerNetworkable *pNetworkable = pEdict->GetNetworkable();
+			if (!pNetworkable)
+			{
+				continue;
+			}
+			ServerClass *pClass = pNetworkable->GetServerClass();
+			if (pClass)
+			{
+				//Msg( "%s\n", pClass->GetName() );
+				if ( FStrEq( pClass->GetName(), pszClassname ) )
+				{
+					if (ent_index_out)
+					{
+						*ent_index_out = i+1;
+					}
+					return pNetworkable->GetBaseEntity();
+				}
+			}
+			/*
 			CBaseEntity *pEntity = pServerEnts->EdictToBaseEntity( pEdict );
 			if ( !pEntity )
 			{
+				//Msg( "bad entity\n" );
 				continue;
-				Msg( "bad entity\n" );
 			}
 			datamap_t *pDatamap = GetDataDescMap( pEntity );
 			if ( !pDatamap )
 			{
+				//Msg( "bad datamap\n" );
 				continue;
-				Msg( "bad datamap\n" );
 			}
 			Msg( "%s\n", pDatamap->dataClassName );
 			if ( FStrEq( pDatamap->dataClassName, pszClassname ) )
 			{
+				if (ent_index_out)
+				{
+					*ent_index_out = i;
+				}
 				return pEntity;
-			}
+			}*/
 		}
-		Msg( "CLASSNAME NOT FOUND NOOOOOOO\n" );
+		//Msg( "CLASSNAME NOT FOUND NOOOOOOO\n" );
 		return NULL;
+	}
+
+	// gets the blu and red team entities and puts them in the pointers passed in
+	void GetTeamEnts( CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset )
+	{
+		int cur_index = gpGlobals->maxClients;
+		*ppBluTeam = NULL;
+		*ppRedTeam = NULL;
+
+		CBaseEntity *pTeam = NULL;
+		do
+		{
+			pTeam = GetEntityByClassname( "CTFTeam", cur_index, &cur_index );
+			//CBaseEntity *pTeam = GetEntityByClassname( "", cur_index, &cur_index );
+			if (pTeam)
+			{
+				int *team_num = ByteOffsetFromPointer<int>(pTeam, team_num_offset);
+				if (*team_num == 2)
+				{
+					*ppRedTeam = pTeam;
+				}
+				else if (*team_num == 3)
+				{
+					*ppBluTeam = pTeam;
+				}
+			}
+		} while ( pTeam && (!(*ppBluTeam) || !(*ppRedTeam)) );
 	}
 
 	int UserIDToEntIndex( int userid )

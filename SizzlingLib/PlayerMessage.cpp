@@ -265,7 +265,7 @@ void CPlayerMessage::AllUserHudHintText( const char *szMessage )
 #define MOTDPANEL_TYPE_FILE		"3"	/**< Treat msg as a filename to be openned */
           // ^^ FILE LOADS STUFF FROM THE CLIENT (bad)
 
-void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, const char *url )
+void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, const char *url, bool bVisible /*= true*/ )
 {
 	SRecipientFilter filter;
 	filter.AddRecipient( clientIndex );
@@ -275,7 +275,7 @@ void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, con
 	pBuffer->WriteString( "info" );
 
 	// will the panel be visible? 1 is yes, 0 is no
-	pBuffer->WriteByte( 1 );
+	pBuffer->WriteByte( bVisible ? 1 : 0 );
 
 	// number of entries in the following'table
 	pBuffer->WriteByte( 5 );
