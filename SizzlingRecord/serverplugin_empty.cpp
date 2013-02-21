@@ -831,7 +831,6 @@ bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *
 		//using namespace Teamplay_GameRule_States;
 
 		//Msg( UTIL_VarArgs( "round state is %s\n", GetStateName((gamerules_roundstate_t)roundstate) ) );
-		bool bTournamentMode = m_refTournamentMode.GetInt() == 1;
 
 		if (bWaitingForPlayers == true)
 		{
@@ -845,6 +844,7 @@ bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *
 		{
 			// i don't think i need to check the round state for client stuff
 			//int roundstate = *m_iRoundState;
+			bool bTournamentMode = m_refTournamentMode.GetInt() == 1;
 			
 			if (bTournamentMode && !m_bTournamentMatchStarted/* && (roundstate != GR_STATE_PREGAME)*/)
 			{
