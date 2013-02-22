@@ -14,18 +14,9 @@
 #include "ThreadCallQueue.h"
 #include "curl/curl.h"
 #include "engine/IEngineTrace.h"
-#include "mathlib/vector.h"
-
-#include "fasttimer.h"
-
-#define GAME_DLL 1
-#include "networkvar.h"
 
 #include "eiface.h"
-//#include "engine/iserverplugin.h"
 #include "game/server/iplayerinfo.h"
-
-#include "steam/steamclientpublic.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -829,10 +820,6 @@ void SizzlingStats::GetPropOffsets()
 
 	m_iTeamScoreOffset = GetPropOffsetFromTable( "DT_Team", "m_iScore", bError );
 	m_iTeamNumOffset = GetPropOffsetFromTable( "DT_Team", "m_iTeamNum", bError );
-
-	//oKills = m_PlayerFlagsOffset;
-
-	//CBaseEntity *pEntity = gEntList.FindEntityByClassname( pServerEnts->EdictToBaseEntity( engine->PEntityOfEntIndex( gpGlobals->maxClients ) ), "CWeaponIFMSteadyCam" );
 }
 
 void SizzlingStats::GetEntities()
