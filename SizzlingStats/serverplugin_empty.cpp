@@ -286,6 +286,9 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//gameeventmanager->AddListener( this, "teamplay_suddendeath_end", true );
 	//gameeventmanager->AddListener( this, "teamplay_overtime_end", true );
 
+	gameeventmanager->AddListener( this, "player_connect", true );
+	gameeventmanager->AddListener( this, "player_disconnect", true );
+
 	m_SizzlingStats.Load();
 
 	LoadCurrentPlayers();
@@ -862,6 +865,14 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			m_SizzlingStats.SS_ShowHtmlStats( entindex );
 		}
 #endif
+	}
+	else if ( FStrEq( name, "player_connect" ) )
+	{
+		Msg( "player connect\n" );
+	}
+	else if ( FStrEq( name, "player_disconnect" ) )
+	{
+		Msg( "player disconnect\n" );
 	}
 }
 
