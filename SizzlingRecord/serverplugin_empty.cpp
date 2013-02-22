@@ -72,7 +72,6 @@ public:
 	~CClientDemoRecorder();
 
 	void Load( IEngineSound *pEngineSound );
-	void ReloadConfig();
 
 	void TournamentMatchStarted( PluginContext_t *pContext );
 	void TournamentMatchEnded( PluginContext_t *pContext );
@@ -88,7 +87,6 @@ public:
 
 private:
 	void WriteOutBookmarks( IFileSystem *pFileSystem );
-	void LoadConfig();
 	void ConstructDemoName( IVEngineClient *pEngineClient );
 
 private:
@@ -134,13 +132,7 @@ void CClientDemoRecorder::Load( IEngineSound *pEngineSound )
 {
 	m_bluTeamName.Init("mp_tournament_blueteamname", false);
 	m_redTeamName.Init("mp_tournament_redteamname", false);
-	LoadConfig();
 	pEngineSound->PrecacheSound(BOOKMARK_SOUND_FILE);
-}
-
-void CClientDemoRecorder::ReloadConfig()
-{
-	LoadConfig();
 }
 
 void CClientDemoRecorder::TournamentMatchStarted( PluginContext_t *pContext )
@@ -314,10 +306,6 @@ void CClientDemoRecorder::WriteOutBookmarks( IFileSystem *pFileSystem )
 
 		m_bookmarks.RemoveAll();
 	}
-}
-
-void CClientDemoRecorder::LoadConfig()
-{
 }
 
 void CClientDemoRecorder::ConstructDemoName( IVEngineClient *pEngineClient )
