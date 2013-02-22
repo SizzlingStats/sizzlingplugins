@@ -402,7 +402,7 @@ void CClientDemoRecorder::StopRecording( IVEngineClient *pEngineClient )
 //===========================================================================//
 
 static void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
-static ConVar version("sizz_record_version", PLUGIN_VERSION_STRING, FCVAR_NOTIFY, "The version of SizzlingRecord running.", &VersionChangeCallback);
+static ConVar version("sizz_rec_version", PLUGIN_VERSION_STRING, FCVAR_NOTIFY, "The version of SizzlingRecord running.", &VersionChangeCallback);
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
@@ -804,19 +804,19 @@ void CEmptyServerPlugin::CommandCallback( const CCommand &command )
 
 	const char *name = command.Arg(0);
 
-	if ( FStrEq(name, "sizz_record_bookmark") )
+	if ( FStrEq(name, "sizz_rec_bookmark") )
 	{
 		m_DemoRecorder.Bookmark(&m_PluginContext, command.ArgS());
 	}
-	else if ( FStrEq(name, "sizz_record_fix_invisible_players") )
+	else if ( FStrEq(name, "sizz_rec_fix_invisible_players") )
 	{
 		m_DemoRecorder.FixInvisiblePlayers(&m_PluginContext);
 	}
-	else if ( FStrEq(name, "sizz_record_start_recording") )
+	else if ( FStrEq(name, "sizz_rec_start_recording") )
 	{
 		m_DemoRecorder.StartRecordingFromCommand(&m_PluginContext);
 	}
-	else if ( FStrEq(name, "sizz_record_delete_last_demo") )
+	else if ( FStrEq(name, "sizz_rec_delete_last_demo") )
 	{
 		m_DemoRecorder.DeleteLatestDemo(&m_PluginContext);
 	}
