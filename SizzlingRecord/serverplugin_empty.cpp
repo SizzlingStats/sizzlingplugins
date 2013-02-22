@@ -820,10 +820,6 @@ void CEmptyServerPlugin::CommandCallback( const CCommand &command )
 	{
 		m_DemoRecorder.DeleteLatestDemo(&m_PluginContext);
 	}
-	else if ( FStrEq(name, "sizz_record_reload_config") )
-	{
-		m_DemoRecorder.ReloadConfig();
-	}
 }
 
 bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
