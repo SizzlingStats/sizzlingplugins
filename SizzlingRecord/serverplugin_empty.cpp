@@ -220,6 +220,8 @@ void CClientDemoRecorder::DeleteLatestDemo( PluginContext_t *pContext )
 			pFileSystem->RemoveFile(temp);
 		}
 
+		ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Deleted demo %s.dem\n", m_pLastDemo->m_szDemoName );
+
 		delete m_pLastDemo;
 		m_pLastDemo = NULL;
 	}
@@ -239,6 +241,8 @@ void CClientDemoRecorder::Bookmark( PluginContext_t *pContext, const char *comme
 		info.time = time(NULL);
 
 		m_bookmarks.AddToTail(info);
+
+		ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Bookmarked \"%s\"\n", info.comment );
 
 		if (notify.GetBool())
 		{
@@ -270,6 +274,7 @@ void CClientDemoRecorder::StopRecordingEvent( PluginContext_t *pContext )
 		m_pLastDemo->m_nParts = m_LatestDemo.m_nParts;
 		V_strcpy(m_pLastDemo->m_szDemoName, m_LatestDemo.m_szDemoName);
 
+		ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Recording Stopped\n" );
 		if (notify.GetBool())
 		{
 			char temp[128] = {};
@@ -361,21 +366,25 @@ bool CClientDemoRecorder::CanRecordDemo( const IBaseClientDLL *pBaseClientDLL )
 
 void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, const DemoRecording_t &demoInfo, IEngineSound *pEngineSound, bool bEmitSound /*= true*/, bool bNotifyChat /*= true*/ )
 {
-	char command[256] = {};
+	char tempname[128] = {};
 	if (demoInfo.m_nParts == 1)
 	{
-		V_snprintf( command, 256, "stop; record %s\n", demoInfo.m_szDemoName );
+		V_snprintf( tempname, 128, "%s", demoInfo.m_szDemoName );
 	}
 	else
 	{
-		V_snprintf( command, 256, "stop; record %s_part%d\n", demoInfo.m_szDemoName, demoInfo.m_nParts );
+		V_snprintf( tempname, 128, "%s_part%d", demoInfo.m_szDemoName, demoInfo.m_nParts );
 	}
+	ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Recording %s.dem\n", tempname );
+
+	char command[256] = {};
+	V_snprintf( command, 256, "stop; record %s\n", tempname );
+	pEngineClient->ClientCmd_Unrestricted( command );
 
 	if (bEmitSound)
 	{
 		pEngineSound->EmitAmbientSound( BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME );
 	}
-	pEngineClient->ClientCmd_Unrestricted( command );
 	if (bNotifyChat && enabled.GetBool())
 	{
 		V_snprintf(command, 256, "say_team [SizzRec] %s\n", notify_message_start.GetString());
