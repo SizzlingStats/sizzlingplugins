@@ -13,9 +13,10 @@ public:
 	~UserIdTracker(void);
 
 	void		Load();
+	void		Reset();
 	int 		ClientActive( edict_t *pEdict );
 	void 		ClientDisconnect( edict_t *pEdict );
-	int 		GetEntIndex( int userid );
+	int 		GetEntIndex( int userid ) const;
 
 private:
 	char m_entIndexTable[65536];

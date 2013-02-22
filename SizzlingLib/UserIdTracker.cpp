@@ -23,12 +23,18 @@ UserIdTracker::~UserIdTracker()
 
 void UserIdTracker::Load()
 {
+	Reset();
+}
+
+void UserIdTracker::Reset()
+{
 	memset( m_entIndexTable, -1, 65536 );
 }
 
 int UserIdTracker::ClientActive( edict_t *pEdict )
 {
 	int userid = pEngine->GetPlayerUserId( pEdict );
+	Assert(userid != -1);
 	m_entIndexTable[userid] = pEngine->IndexOfEdict( pEdict );
 	return static_cast<int>( m_entIndexTable[userid] );
 }
@@ -39,8 +45,7 @@ void UserIdTracker::ClientDisconnect( edict_t *pEdict )
 	m_entIndexTable[userid] = -1;
 }
 
-int UserIdTracker::GetEntIndex( int userid )
+int UserIdTracker::GetEntIndex( int userid ) const
 {
 	return static_cast<int>( m_entIndexTable[userid] );
 }
-

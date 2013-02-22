@@ -147,6 +147,10 @@ private:
 	int m_iLastCapTick;
 	bool m_bShouldRecord;
 	bool m_bTournamentMatchStarted;
+
+	// this var makes sure that LevelShutdown is 
+	// only called once for every LevelInit
+	bool m_bAlreadyLevelShutdown;
 #ifdef COUNT_CYCLES
 		CCycleCount m_CycleCount;
 #endif
@@ -174,7 +178,8 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_iClientCommandIndex(0),
 	m_iLastCapTick(0),
 	m_bShouldRecord(false),
-	m_bTournamentMatchStarted(false)
+	m_bTournamentMatchStarted(false),
+	m_bAlreadyLevelShutdown(true)
 {
 }
 
@@ -286,9 +291,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//gameeventmanager->AddListener( this, "teamplay_suddendeath_end", true );
 	//gameeventmanager->AddListener( this, "teamplay_overtime_end", true );
 
-	gameeventmanager->AddListener( this, "player_connect", true );
-	gameeventmanager->AddListener( this, "player_disconnect", true );
-
 	m_SizzlingStats.Load();
 
 	LoadCurrentPlayers();
@@ -380,6 +382,8 @@ const char *CEmptyServerPlugin::GetPluginDescription( void )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::LevelInit( char const *pMapName )
 {
+	m_bAlreadyLevelShutdown = false;
+
 	//pEngine->LogPrint(UTIL_VarArgs( "LevelInit: %s\n", pMapName ));
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
 	m_pAutoUpdater->StartThread();
@@ -487,19 +491,24 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multiple times per map change
 {
-#ifdef COUNT_CYCLES
-	Msg( "clock cycles: %i\n", m_CycleCount.GetCycles() );
-	Msg( "milliseconds: %i\n", m_CycleCount.GetMilliseconds() );
-	m_CycleCount.Init( (int64)0 );
-#endif
-	//pEngine->LogPrint("LevelShutdown\n");
-	if (m_bTournamentMatchStarted)
+	if (!m_bAlreadyLevelShutdown)
 	{
-		m_SizzlingStats.SS_TournamentMatchEnded();
-		m_bTournamentMatchStarted = false;
+		m_bAlreadyLevelShutdown = true;
+	#ifdef COUNT_CYCLES
+		Msg( "clock cycles: %i\n", m_CycleCount.GetCycles() );
+		Msg( "milliseconds: %i\n", m_CycleCount.GetMilliseconds() );
+		m_CycleCount.Init( (int64)0 );
+	#endif
+		//pEngine->LogPrint("LevelShutdown\n");
+		if (m_bTournamentMatchStarted)
+		{
+			m_SizzlingStats.SS_TournamentMatchEnded();
+			m_bTournamentMatchStarted = false;
+		}
+		m_pTeamplayRoundBasedRules = NULL;
+		m_SizzlingStats.SS_DeleteAllPlayerData();
+		g_pUserIdTracker->Reset();
 	}
-	m_pTeamplayRoundBasedRules = NULL;
-	m_SizzlingStats.SS_DeleteAllPlayerData();
 }
 
 //---------------------------------------------------------------------------------
@@ -520,12 +529,20 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 {
-	//pEngine->LogPrint(UTIL_VarArgs( "ClientDisconnect: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
-	if( !pEdict || pEdict->IsFree() )
-		return;
-	m_SizzlingStats.SS_DeletePlayer( pEdict );
-	g_pUserIdTracker->ClientDisconnect( pEdict );
-
+	// ClientDisconnect isn't called for bots 
+	// on LevelShutdown, so I just call 
+	// ClientDisconnect myself in LevelShutdown 
+	// for all players.
+	// This check makes sure that ClientDisconnect 
+	// isn't called twice for the same player.
+	if (!m_bAlreadyLevelShutdown)
+	{
+		//pEngine->LogPrint(UTIL_VarArgs( "ClientDisconnect: %u, %u\n", (unsigned int)pEdict, pEngine->IndexOfEdict(pEdict) ));
+		if( !pEdict || pEdict->IsFree() )
+			return;
+		m_SizzlingStats.SS_DeletePlayer( pEdict );
+		g_pUserIdTracker->ClientDisconnect( pEdict );
+	}
 }
 
 //---------------------------------------------------------------------------------
@@ -728,7 +745,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 		}
 		if ( FStrEq( szCommand, "mp_switchteams" ) )
 		{
-			Msg( "teams switched\n" );
+			//Msg( "teams switched\n" );
 		}
 	}
 
@@ -865,14 +882,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			m_SizzlingStats.SS_ShowHtmlStats( entindex );
 		}
 #endif
-	}
-	else if ( FStrEq( name, "player_connect" ) )
-	{
-		Msg( "player connect\n" );
-	}
-	else if ( FStrEq( name, "player_disconnect" ) )
-	{
-		Msg( "player disconnect\n" );
 	}
 }
 
