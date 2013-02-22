@@ -38,12 +38,13 @@
 
 class CTeamplayRoundBasedRules;
 
-static ConVar enabled("sizz_rec_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
-static ConVar notify("sizz_rec_notify", "1", FCVAR_ARCHIVE, "If nonzero, notifies demo recording start/stop/bookmark with a say_team chat message.");
-static ConVar notify_sound("sizz_rec_notify_sound", "1", FCVAR_ARCHIVE, "If nonzero, plays a beep sound on start/stop/bookmark events.");
+static ConVar enabled("sizz_rec_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.", true, 0.0f, false, 0.0f);
+static ConVar notify("sizz_rec_notify", "1", FCVAR_ARCHIVE, "If nonzero, notifies demo recording start/stop/bookmark with a say_team chat message.", true, 0.0f, false, 0.0f);
+static ConVar notify_sound("sizz_rec_notify_sound", "1", FCVAR_ARCHIVE, "If nonzero, plays a beep sound on start/stop/bookmark events.", true, 0.0f, false, 0.0f);
 static ConVar notify_message_start("sizz_rec_notify_message_start", "Recording Started", FCVAR_PRINTABLEONLY, "Sets the message to be printed when demo recording starts.");
 static ConVar notify_message_stop("sizz_rec_notify_message_stop", "Recording Stopped", FCVAR_PRINTABLEONLY, "Sets the message to be printed when demo recording stops.");
 static ConVar notify_message_bookmark("sizz_rec_notify_bookmark_message", "Bookmark", FCVAR_PRINTABLEONLY, "Sets the message to be printed when bookmarking.");
+static ConVar min_demo_length("sizz_rec_demo_min_length", "70", FCVAR_NONE, "Demos below this length in ticks will be automatically deleted by the plugin", true, 0.0f, false, 0.0f);
 //===========================================================================//
 
 #define BOOKMARK_SOUND_FILE "buttons/button17.wav"
@@ -85,6 +86,7 @@ public:
 	void Bookmark( PluginContext_t *pContext, const char *comment );
 
 	void StopRecordingEvent( PluginContext_t *pContext );
+	void StopEventPost( PluginContext_t *pContext );
 
 private:
 	void WriteOutBookmarks( IFileSystem *pFileSystem );
@@ -111,6 +113,8 @@ private:
 
 	CUtlLinkedList<bookmarkInfo_t> m_bookmarks;
 	CUtlBuffer m_bookmarkBuff;
+
+	bool m_bShouldDeleteDemo;
 };
 
 CClientDemoRecorder::CClientDemoRecorder():
@@ -119,7 +123,8 @@ CClientDemoRecorder::CClientDemoRecorder():
 	m_bIStopped(false),
 	m_bluTeamName((IConVar*)NULL),
 	m_redTeamName((IConVar*)NULL),
-	m_pLastDemo(NULL)
+	m_pLastDemo(NULL),
+	m_bShouldDeleteDemo(false)
 {
 	m_bookmarkBuff.SetBufferType(true, true);
 }
@@ -262,7 +267,17 @@ void CClientDemoRecorder::StopRecordingEvent( PluginContext_t *pContext )
 		// stop recording
 		m_bRecording = false;
 
-		WriteOutBookmarks(pContext->m_pFullFileSystem);
+		int length = pContext->m_pEngineClient->GetDemoRecordingTick();
+		m_bShouldDeleteDemo = length < min_demo_length.GetInt();
+		if (!m_bShouldDeleteDemo)
+		{
+			WriteOutBookmarks(pContext->m_pFullFileSystem);
+		}
+		else
+		{
+			ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Automatic delete due to length %d < min length %d\n", length, min_demo_length.GetInt() );
+			// the rest of the deletion is in the StopEventPost method since we need the demo to be written to the disk first
+		}
 		
 		// update the most recent completed demo
 		delete m_pLastDemo;
@@ -290,6 +305,15 @@ void CClientDemoRecorder::StopRecordingEvent( PluginContext_t *pContext )
 	}
 	
 	m_bIStopped = false;
+}
+
+void CClientDemoRecorder::StopEventPost( PluginContext_t *pContext )
+{
+	if (m_bShouldDeleteDemo)
+	{
+		DeleteLatestDemo(pContext);
+		m_bShouldDeleteDemo = false;
+	}
 }
 
 void CClientDemoRecorder::WriteOutBookmarks( IFileSystem *pFileSystem )
@@ -830,6 +854,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 
 void CEmptyServerPlugin::CommandPostExecute( const CCommand &args, bool bWasCommandExecuted )
 {
+	m_DemoRecorder.StopEventPost(&m_PluginContext);
 }
 
 bool CEmptyServerPlugin::WaitingForPlayersChangeCallback( const CRecvProxyData *pData, void *pStruct, void *pOut )
