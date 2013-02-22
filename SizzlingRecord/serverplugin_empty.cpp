@@ -38,11 +38,12 @@
 
 class CTeamplayRoundBasedRules;
 
-static ConVar enabled("sizz_record_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
-static ConVar notify("sizz_record_notify", "1", FCVAR_ARCHIVE, "If nonzero, notifies demo recording start/stop/bookmark with a say_team chat message.");
-static ConVar notify_message_start("sizz_record_notify_message_start", "Recording Started", FCVAR_PRINTABLEONLY, "Sets the message to be printed when demo recording starts.");
-static ConVar notify_message_stop("sizz_record_notify_message_stop", "Recording Stopped", FCVAR_PRINTABLEONLY, "Sets the message to be printed when demo recording stops.");
-static ConVar notify_message_bookmark("sizz_record_notify_bookmark_message", "Bookmark", FCVAR_PRINTABLEONLY, "Sets the message to be printed when bookmarking.");
+static ConVar enabled("sizz_rec_enable", "1", FCVAR_NONE, "If nonzero, enables tournament match demo recording.");
+static ConVar notify("sizz_rec_notify", "1", FCVAR_ARCHIVE, "If nonzero, notifies demo recording start/stop/bookmark with a say_team chat message.");
+static ConVar notify_sound("sizz_rec_notify_sound", "1", FCVAR_ARCHIVE, "If nonzero, plays a beep sound on start/stop/bookmark events.");
+static ConVar notify_message_start("sizz_rec_notify_message_start", "Recording Started", FCVAR_PRINTABLEONLY, "Sets the message to be printed when demo recording starts.");
+static ConVar notify_message_stop("sizz_rec_notify_message_stop", "Recording Stopped", FCVAR_PRINTABLEONLY, "Sets the message to be printed when demo recording stops.");
+static ConVar notify_message_bookmark("sizz_rec_notify_bookmark_message", "Bookmark", FCVAR_PRINTABLEONLY, "Sets the message to be printed when bookmarking.");
 //===========================================================================//
 
 #define BOOKMARK_SOUND_FILE "buttons/button17.wav"
@@ -235,7 +236,10 @@ void CClientDemoRecorder::Bookmark( PluginContext_t *pContext, const char *comme
 		m_bookmarks.AddToTail(info);
 
 		ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Bookmarked \"%s\"\n", info.comment );
-
+		if (notify_sound.GetBool())
+		{
+			pContext->m_pEngineSound->EmitAmbientSound( BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME );
+		}
 		if (notify.GetBool())
 		{
 			char temp[128] = {};
@@ -267,6 +271,10 @@ void CClientDemoRecorder::StopRecordingEvent( PluginContext_t *pContext )
 		V_strcpy(m_pLastDemo->m_szDemoName, m_LatestDemo.m_szDemoName);
 
 		ConColorMsg( Color(0, 128, 255, 255), "[SizzRec] Recording Stopped\n" );
+		if (notify_sound.GetBool())
+		{
+			pContext->m_pEngineSound->EmitAmbientSound( BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME );
+		}
 		if (notify.GetBool())
 		{
 			char temp[128] = {};
@@ -302,7 +310,7 @@ void CClientDemoRecorder::WriteOutBookmarks( IFileSystem *pFileSystem )
 				m_LatestDemo.m_szDemoName, info.tick, info.comment );
 		}
 
-		pFileSystem->AsyncAppend("Killstreaks.txt", m_bookmarkBuff.Base(), m_bookmarkBuff.TellPut(), false);
+		pFileSystem->AsyncAppend("sizzrec_bookmarks.txt", m_bookmarkBuff.Base(), m_bookmarkBuff.TellPut(), false);
 
 		m_bookmarks.RemoveAll();
 	}
@@ -369,7 +377,7 @@ void CClientDemoRecorder::StartRecording( IVEngineClient *pEngineClient, const D
 	V_snprintf( command, 256, "stop; record %s\n", tempname );
 	pEngineClient->ClientCmd_Unrestricted( command );
 
-	if (bEmitSound)
+	if (notify_sound.GetBool() && bEmitSound)
 	{
 		pEngineSound->EmitAmbientSound( BOOKMARK_SOUND_FILE, DEFAULT_SOUND_PACKET_VOLUME );
 	}
@@ -493,12 +501,11 @@ private:
 static CEmptyServerPlugin s_EmptyServerPlugin;
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, s_EmptyServerPlugin);
 
-static ConCommand invis_players("sizz_record_fix_invisible_players", &s_EmptyServerPlugin, "Fixes invisible players by restarting the demo recording.");
-static ConCommand start_recording("sizz_record_start_recording", &s_EmptyServerPlugin, "Starts recording a demo with SizzlingRecord.");
-static ConCommand delete_last("sizz_record_delete_last_demo", &s_EmptyServerPlugin, "Deletes the most recent completed demo in this game session.");
+static ConCommand invis_players("sizz_rec_fix_invisible_players", &s_EmptyServerPlugin, "Fixes invisible players by restarting the demo recording without interrupting the current record session.");
+static ConCommand start_recording("sizz_rec_start_recording", &s_EmptyServerPlugin, "Starts recording a demo with SizzlingRecord.");
+static ConCommand delete_last("sizz_rec_delete_last_demo", &s_EmptyServerPlugin, "Deletes the most recent recorded demo by SizzlingRecord in this game session.");
 
-static ConCommand reload_config("sizz_record_reload_config", &s_EmptyServerPlugin, "Reloads the configuration file for SizzlingRecord.");
-static ConCommand bookmark("sizz_record_bookmark", &s_EmptyServerPlugin, "If recording, bookmarks the current tick and appends it to bookmarks.txt.\nAn optional comment is allowed as quoted or unquoted text after the command.");
+static ConCommand bookmark("sizz_rec_bookmark", &s_EmptyServerPlugin, "If recording, bookmarks the current tick and appends it to sizzrec_bookmarks.txt.\nAn optional comment is allowed as quoted or unquoted text after the command.");
 
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
