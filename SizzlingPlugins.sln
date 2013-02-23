@@ -224,7 +224,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "open_steamworks", "open_ste
 		common\open_steamworks\MatchmakingServersCommon.h = common\open_steamworks\MatchmakingServersCommon.h
 		common\open_steamworks\NetworkingCommon.h = common\open_steamworks\NetworkingCommon.h
 		common\open_steamworks\OAuthCommon.h = common\open_steamworks\OAuthCommon.h
-		common\open_steamworks\Open Steamworks.vcproj = common\open_steamworks\Open Steamworks.vcproj
 		common\open_steamworks\POSIXLibrary.h = common\open_steamworks\POSIXLibrary.h
 		common\open_steamworks\RemoteStorageCommon.h = common\open_steamworks\RemoteStorageCommon.h
 		common\open_steamworks\ScreenshotsCommon.h = common\open_steamworks\ScreenshotsCommon.h
