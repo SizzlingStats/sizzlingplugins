@@ -62,11 +62,13 @@ public:
 	typedef struct bookmarkInfo_s
 	{
 		// the optional comment for the bookmark
-		char comment[20];
+		char comment[16];
 		// a time value in time_t
 		uint64 time;
 		// tick number since the start of recording
 		int32 tick;
+		// demo part # that this bookmark is from
+		int32 part;
 	} bookmarkInfo_t;
 
 public:
@@ -237,6 +239,7 @@ void CClientDemoRecorder::Bookmark( PluginContext_t *pContext, const char *comme
 		V_strncpy(info.comment, comment, sizeof(info.comment));
 		info.tick = pContext->m_pEngineClient->GetDemoRecordingTick();
 		info.time = time(NULL);
+		info.part = m_LatestDemo.m_nParts;
 
 		m_bookmarks.AddToTail(info);
 
@@ -321,6 +324,7 @@ void CClientDemoRecorder::WriteOutBookmarks( IFileSystem *pFileSystem )
 	if (m_bookmarks.Count() > 0)
 	{
 		m_bookmarkBuff.Clear();
+		m_bookmarkBuff.Printf("\r\n");
 
 		for (int i = 0; i < m_bookmarks.Count(); ++i)
 		{
@@ -328,10 +332,19 @@ void CClientDemoRecorder::WriteOutBookmarks( IFileSystem *pFileSystem )
 
 			struct tm ltime;
 			ConvertTimeToLocalTime(info.time, ltime);
-
-			m_bookmarkBuff.Printf( "[%04i/%02i/%02i %02i:%02i] Player bookmark (\"%s\" at %i)\t\t// %s\r\n", 
-				ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min,
-				m_LatestDemo.m_szDemoName, info.tick, info.comment );
+			
+			if (info.part == 1)
+			{
+				m_bookmarkBuff.Printf( "[%04i/%02i/%02i %02i:%02i] Player bookmark (\"%s\" at %i)\t\t// %s\r\n", 
+					ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min,
+					m_LatestDemo.m_szDemoName, info.tick, info.comment );
+			}
+			else
+			{
+				m_bookmarkBuff.Printf( "[%04i/%02i/%02i %02i:%02i] Player bookmark (\"%s_part%d\" at %i)\t\t// %s\r\n", 
+					ltime.tm_year, ltime.tm_mon, ltime.tm_mday, ltime.tm_hour, ltime.tm_min,
+					m_LatestDemo.m_szDemoName, info.part, info.tick, info.comment );
+			}
 		}
 
 		pFileSystem->AsyncAppend("sizzrec_bookmarks.txt", m_bookmarkBuff.Base(), m_bookmarkBuff.TellPut(), false);
