@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{1A5B6E
 	ProjectSection(SolutionItems) = preProject
 		common\funcqueuethread.h = common\funcqueuethread.h
 		common\queuethread.h = common\queuethread.h
-		StructPrinter.h = StructPrinter.h
+		common\StructPrinter.h = common\StructPrinter.h
 		common\teamplay_gamerule_states.h = common\teamplay_gamerule_states.h
 		common\Thunk.h = common\Thunk.h
 	EndProjectSection
