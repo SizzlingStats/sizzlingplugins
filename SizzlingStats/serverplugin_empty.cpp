@@ -717,10 +717,13 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		edict_t *pEdict = pEngine->PEntityOfEntIndex(i);
-		if (pEdict)
+		if (pEdict && !pEdict->IsFree())
 		{
-			g_pUserIdTracker->ClientActive( pEdict );
-			m_SizzlingStats.SS_InsertPlayer( pEdict );
+			if (pServerEnts->EdictToBaseEntity(pEdict))
+			{
+				g_pUserIdTracker->ClientActive( pEdict );
+				m_SizzlingStats.SS_InsertPlayer( pEdict );
+			}
 		}
 	}
 }
