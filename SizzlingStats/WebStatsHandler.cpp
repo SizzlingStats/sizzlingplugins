@@ -294,9 +294,10 @@ void CWebStatsHandler::createMatchPlayerInfo(CUtlBuffer &buff)
 			{
 				char buff[16];
 				SCHelpers::IntIPToString(m_hostInfo.m_hostip, buff, sizeof(buff));
-				temp.InsertKV("ip", buff);
+				temp.InsertKV("hostip", buff);
 			}
-			temp.InsertKV("port", m_hostInfo.m_hostport);
+			temp.InsertKV("ip", m_hostInfo.m_ip);
+			temp.InsertKV("hostport", m_hostInfo.m_hostport);
 			m_hostInfoMutex.Unlock();
 
 			buff.PutString(",");

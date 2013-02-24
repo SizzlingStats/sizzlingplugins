@@ -67,6 +67,7 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_refBlueTeamName((IConVar*)NULL),
 								m_refRedTeamName((IConVar*)NULL),
 								m_refHostIP((IConVar*)NULL),
+								m_refIP((IConVar*)NULL),
 								m_refHostPort((IConVar*)NULL),
 								m_hostInfo(),
 								m_flRoundDuration(0),
@@ -103,6 +104,7 @@ void SizzlingStats::Load()
 	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
 	m_refRedTeamName.Init("mp_tournament_redteamname", false);
 	m_refHostIP.Init("hostip", false);
+	m_refIP.Init("ip", false);
 	m_refHostPort.Init("hostport", false);
 #ifndef PUBLIC_RELEASE
 	m_pWebStatsHandler = new CWebStatsHandler();
@@ -481,6 +483,7 @@ void SizzlingStats::SS_TournamentMatchStarted()
 	V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
 	V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
 	m_hostInfo.m_hostip = m_refHostIP.GetInt();
+	V_strncpy(m_hostInfo.m_ip, m_refIP.GetString(), 32);
 	m_hostInfo.m_hostport = m_refHostPort.GetInt();
 	m_hostInfo.m_roundduration = m_flRoundDuration;
 	m_pWebStatsHandler->SetHostData(m_hostInfo);

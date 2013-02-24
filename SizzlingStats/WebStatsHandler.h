@@ -38,6 +38,7 @@ typedef struct hostInfo_s
 	char m_mapname[64];
 	char m_bluname[32];
 	char m_redname[32];
+	char m_ip[32];
 	double m_roundduration;
 	int32 m_hostip;
 	int16 m_hostport;
@@ -186,6 +187,7 @@ inline hostInfo_s::hostInfo_s():
 	m_mapname(),
 	m_bluname(),
 	m_redname(),
+	m_ip(),
 	m_roundduration(0.0),
 	m_hostip(0),
 	m_hostport(0),
@@ -207,6 +209,7 @@ inline hostInfo_s::hostInfo_s( const hostInfo_t &other ):
 	V_strncpy(m_mapname, other.m_mapname, sizeof(m_mapname));
 	V_strncpy(m_bluname, other.m_bluname, sizeof(m_bluname));
 	V_strncpy(m_redname, other.m_redname, sizeof(m_redname));
+	V_strncpy(m_ip, other.m_ip, sizeof(m_ip));
 }
 
 inline hostInfo_s &hostInfo_s::operator=( const hostInfo_s &other )
