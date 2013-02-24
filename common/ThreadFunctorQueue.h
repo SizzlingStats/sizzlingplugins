@@ -29,12 +29,17 @@ public:
 		Start();
 	}
 
+	// there might be a deadlock
+	// somewhere around when this 
+	// is called... need to test
 	void JoinQueue()
 	{
 		if (!m_bJoining)
 		{
 			m_bJoining = true;
 			//Msg( "=== joining\n" );
+			// let the queue run past the 
+			// lock so it can exit
 			m_waitingForItems.Set();
 			Join();
 		}
@@ -45,11 +50,8 @@ public:
 		while (!m_bJoining)
 		{
 			// stall here while there aren't any functors to run
-			Msg( "waiting lock\n" );
+			//Msg( "waiting lock\n" );
 			m_waitingForItems.Wait();
-			// release our waiting lock
-			//Msg( "waiting release\n" );
-			//m_waitingForItems.Reset();
 
 			//Msg( "processing functors\n" );
 			// process the current number of functors
