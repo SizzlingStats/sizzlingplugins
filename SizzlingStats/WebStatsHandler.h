@@ -4,9 +4,8 @@
 #ifndef WEB_STATS_HANDLER_H
 #define WEB_STATS_HANDLER_H
 
-#include "queuethread.h"
 #include "utlbuffer.h"
-#include "funcqueuethread.h"
+#include "ThreadFunctorQueue.h"
 #include "playerdata.h"
 
 #define STATS_UPDATE_URL "sizzlingstats.com/api/stats/update"
@@ -78,10 +77,10 @@ typedef struct responseInfo_s
 	void ResetMatchUrl();
 
 private:
-	CThreadMutexPthread		matchUrlMutex;
-	CThreadMutexPthread		sessionIdMutex;
-	char					matchUrl[128];
-	char					sessionId[64];
+	CThreadMutex	matchUrlMutex;
+	CThreadMutex	sessionIdMutex;
+	char			matchUrl[128];
+	char			sessionId[64];
 } responseInfo_t;
 
 class CWebStatsHandler
@@ -126,10 +125,10 @@ private:
 	void createMatchPlayerInfo(CUtlBuffer &buff);
 
 private:
-	CFuncQueueThread m_queue;
-	CThreadMutexPthread				m_dataListAndChatMutex;
-	CThreadMutexPthread				m_hostInfoMutex;
-	CThreadMutexPthread				m_playerInfoMutex;
+	CSizzFuncQueueThread			m_queue;
+	CThreadMutex					m_dataListAndChatMutex;
+	CThreadMutex					m_hostInfoMutex;
+	CThreadMutex					m_playerInfoMutex;
 	CUtlVector<chatInfo_t>			m_chatLog;
 	CUtlVector<playerWebStats_t>	m_webStats;
 	CUtlVector<playerInfo_t>		m_playerInfo;
@@ -345,17 +344,17 @@ inline void CWebStatsHandler::PlayerChatEvent( double timestamp, const char *szS
 
 inline void CWebStatsHandler::SendStatsToWeb()
 {
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendStatsToWebInternal));
+	m_queue.EnqueueFunctor(CreateFunctor(this, &CWebStatsHandler::SendStatsToWebInternal));
 }
 
 inline void CWebStatsHandler::SendGameStartEvent()
 {
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameStartEventInternal));
+	m_queue.EnqueueFunctor(CreateFunctor(this, &CWebStatsHandler::SendGameStartEventInternal));
 }
 
 inline void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 {
-	m_queue.EnqueueItem(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
+	m_queue.EnqueueFunctor(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
 }
 
 #endif // WEB_STATS_HANDLER_H
