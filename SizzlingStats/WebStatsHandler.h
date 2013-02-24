@@ -31,20 +31,16 @@ typedef struct chatInfo_s
 typedef struct hostInfo_s
 {
 	hostInfo_s();
-	hostInfo_s(const char *hostname,
-			const char *mapname,
-			const char *bluname,
-			const char *redname,
-			double roundduration,
-			unsigned int team_first_cap,
-			unsigned int bluscore,
-			unsigned int redscore);
+	hostInfo_s( const hostInfo_s &other );
+	hostInfo_s &operator=( const hostInfo_s &other );
 
 	char m_hostname[64];
 	char m_mapname[64];
 	char m_bluname[32];
 	char m_redname[32];
 	double m_roundduration;
+	int32 m_hostip;
+	int16 m_hostport;
 	unsigned char m_iFirstCapTeamIndex;
 	unsigned char m_bluscore;
 	unsigned char m_redscore;
@@ -191,29 +187,31 @@ inline hostInfo_s::hostInfo_s():
 	m_bluname(),
 	m_redname(),
 	m_roundduration(0.0),
+	m_hostip(0),
+	m_hostport(0),
 	m_iFirstCapTeamIndex(0),
 	m_bluscore(0),
 	m_redscore(0)
 {
 }
 
-inline hostInfo_s::hostInfo_s(const char *hostname,
-		const char *mapname,
-		const char *bluname,
-		const char *redname,
-		double roundduration,
-		unsigned int team_first_cap,
-		unsigned int bluscore,
-		unsigned int redscore):
-	m_roundduration(roundduration),
-	m_iFirstCapTeamIndex(team_first_cap),
-	m_bluscore(bluscore),
-	m_redscore(redscore)
+inline hostInfo_s::hostInfo_s( const hostInfo_t &other ):
+	m_roundduration(other.m_roundduration),
+	m_hostip(other.m_hostip),
+	m_hostport(other.m_hostport),
+	m_iFirstCapTeamIndex(other.m_iFirstCapTeamIndex),
+	m_bluscore(other.m_bluscore),
+	m_redscore(other.m_redscore)
 {
-	V_strncpy(m_hostname, hostname, 64);
-	V_strncpy(m_mapname, mapname, 64);
-	V_strncpy(m_bluname, bluname, 32);
-	V_strncpy(m_redname, redname, 32);
+	V_strncpy(m_hostname, other.m_hostname, sizeof(m_hostname));
+	V_strncpy(m_mapname, other.m_mapname, sizeof(m_mapname));
+	V_strncpy(m_bluname, other.m_bluname, sizeof(m_bluname));
+	V_strncpy(m_redname, other.m_redname, sizeof(m_redname));
+}
+
+inline hostInfo_s &hostInfo_s::operator=( const hostInfo_s &other )
+{
+	return *::new(this) hostInfo_t(other);
 }
 
 inline responseInfo_s::responseInfo_s():
@@ -358,4 +356,3 @@ inline void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 }
 
 #endif // WEB_STATS_HANDLER_H
-

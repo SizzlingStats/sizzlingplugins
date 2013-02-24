@@ -5,19 +5,10 @@
 #include "JsonUtils.h"
 #include "SC_helpers.h"
 
-void CWebStatsHandler::SetHostData(hostInfo_t const &info)
+void CWebStatsHandler::SetHostData( hostInfo_t const &info )
 {
 	m_hostInfoMutex.Lock();
-
-	V_strncpy(m_hostInfo.m_hostname, info.m_hostname, 64);
-	V_strncpy(m_hostInfo.m_mapname, info.m_mapname, 64);
-	V_strncpy(m_hostInfo.m_bluname, info.m_bluname, 32);
-	V_strncpy(m_hostInfo.m_redname, info.m_redname, 32);
-	m_hostInfo.m_roundduration = info.m_roundduration;
-	m_hostInfo.m_iFirstCapTeamIndex = info.m_iFirstCapTeamIndex;
-	m_hostInfo.m_bluscore = info.m_bluscore;
-	m_hostInfo.m_redscore = info.m_redscore;
-
+	::new(&m_hostInfo) hostInfo_t(info);
 	m_hostInfoMutex.Unlock();
 }
 
@@ -300,6 +291,12 @@ void CWebStatsHandler::createMatchPlayerInfo(CUtlBuffer &buff)
 			temp.InsertKV("map", m_hostInfo.m_mapname);
 			temp.InsertKV("bluname", m_hostInfo.m_bluname);
 			temp.InsertKV("redname", m_hostInfo.m_redname);
+			{
+				char buff[16];
+				SCHelpers::IntIPToString(m_hostInfo.m_hostip, buff, sizeof(buff));
+				temp.InsertKV("ip", buff);
+			}
+			temp.InsertKV("port", m_hostInfo.m_hostport);
 			m_hostInfoMutex.Unlock();
 
 			buff.PutString(",");

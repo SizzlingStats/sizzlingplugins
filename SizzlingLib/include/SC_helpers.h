@@ -41,6 +41,16 @@ namespace SCHelpers
 		return static_cast<uint64>(num + 0.5);
 	}
 
+	inline void IntIPToString( int32 ip, char *out, int32 out_len )
+	{
+		// x.y.z.w
+		int32 x = (ip >> 24) & 0xFF;
+		int32 y = (ip >> 16) & 0xFF;
+		int32 z = (ip >> 8) & 0xFF;
+		int32 w = (ip) & 0xFF;
+		V_snprintf(out, out_len, "%d.%d.%d.%d", x, y, z, w);
+	}
+
 	template<typename T, typename U>
 	inline T *ByteOffsetFromPointer( U *pBase, uint32 byte_offset )
 	{

@@ -140,6 +140,8 @@ private:
 	ConVarRef m_refHostname;
 	ConVarRef m_refBlueTeamName;
 	ConVarRef m_refRedTeamName;
+	ConVarRef m_refHostIP;
+	ConVarRef m_refHostPort;
 	hostInfo_t m_hostInfo;
 	double m_flRoundDuration;
 	double m_flMatchDuration;
