@@ -27,6 +27,9 @@
     <ClCompile Include="PlayerDataManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ThreadFunctorQueueTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SizzlingStats.h">
