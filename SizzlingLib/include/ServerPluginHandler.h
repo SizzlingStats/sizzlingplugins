@@ -1,7 +1,3 @@
-// ---------------------
-//
-//
-// ---------------------
 
 #ifndef SERVER_PLUGIN_HANDLER_H
 #define SERVER_PLUGIN_HANDLER_H
