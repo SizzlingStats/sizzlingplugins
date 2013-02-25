@@ -8,17 +8,11 @@ Various client and server plugins developed in C++ for Team Fortress&#174; 2 and
 ## License 
 - - -
 
-Copyright (c) 2010-2013 Jordan Cristiano &lt;first name DOT first six letters of last name AT googly mail DOT com&gt;
-
-All individuals associated with SizzlingPlugins do not 
-claim ownership of the contents of the directory "/external" 
-and the directory "/lib".
+Copyright (c) 2010-2013, Jordan Cristiano, &lt;jordan DOT first six letters of last name AT gmail DOT com&gt;
 
 SizzlingPlugins includes code Copyright (c) Valve Corporation and is licensed separately.
-Source and Team Fortress are trademarks and/or registered trademarks of Valve Corporation.
+SizzlingPlugins includes code Copyright (c) Daniel Stenberg and is licensed as described:
 
-SizzlingPlugins includes code Copyright (c) Daniel Stenberg and 
-is licensed as described:
     COPYRIGHT AND PERMISSION NOTICE
      
     Copyright (c) 1996 - 2013, Daniel Stenberg, <daniel@haxx.se>.
@@ -40,7 +34,6 @@ is licensed as described:
     Except as contained in this notice, the name of a copyright holder shall not
     be used in advertising or otherwise to promote the sale, use or other dealings
     in this Software without prior written authorization of the copyright holder.
-.
 
 Redistribution and use of the SizzlingPlugins code or any derivative
 works are permitted provided that the following conditions are met:
@@ -64,6 +57,11 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+All individuals associated with SizzlingPlugins do not claim ownership of 
+the contents of the directory "/external" and/or the directory "/lib".
+
+Source and Team Fortress are trademarks and/or registered trademarks of Valve Corporation.
 
 
 ## Contact
