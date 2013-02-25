@@ -97,7 +97,6 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
     <ClCompile Include="WebStatsHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\funcqueuethread.h" />
     <ClInclude Include="PlayerDataManager.h" />
     <ClInclude Include="PluginDefines.h" />
     <ClInclude Include="SizzlingStats.h" />

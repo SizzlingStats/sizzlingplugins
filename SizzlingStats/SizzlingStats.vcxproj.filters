@@ -41,9 +41,6 @@
     <ClInclude Include="PluginDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\funcqueuethread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PlayerDataManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
