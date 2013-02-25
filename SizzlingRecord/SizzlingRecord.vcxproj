@@ -93,6 +93,9 @@ move /Y "$(TargetDir)\sizzlingrecord.dll" "D:\Program Files\Steam\steamapps\jord
     <ClInclude Include="PluginContext.h" />
     <ClInclude Include="PluginDefines.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\sizzlingplugins.licenseheader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

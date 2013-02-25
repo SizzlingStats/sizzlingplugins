@@ -93,6 +93,9 @@
     <ClCompile Include="serverplugin_empty.cpp" />
     <ClCompile Include="SizzPlugin.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\sizzlingplugins.licenseheader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

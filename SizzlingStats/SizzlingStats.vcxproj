@@ -104,6 +104,9 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
     <ClInclude Include="STVRecorder.h" />
     <ClInclude Include="WebStatsHandler.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\sizzlingplugins.licenseheader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

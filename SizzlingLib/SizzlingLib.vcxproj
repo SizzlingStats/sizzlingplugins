@@ -56,6 +56,9 @@
     <ClInclude Include="include\UserIdTracker.h" />
     <ClInclude Include="include\VFuncs.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\sizzlingplugins.licenseheader" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and '$(VisualStudioVersion)' == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>
