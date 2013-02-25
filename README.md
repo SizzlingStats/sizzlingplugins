@@ -2,13 +2,13 @@
 # SizzlingPlugins
 - - -
 
-Various client and server plugins developed in C++ for Team Fortress&#174; 2 and the Source&#174; Engine.
+Various client and server plugins developed in C++ for Team Fortress(R) 2 and the Source(R) Engine.
 
 
 ## License 
 - - -
 
-Copyright (c) 2010-2013, Jordan Cristiano, &lt;jordan DOT first six letters of last name AT gmail DOT com&gt;
+Copyright (c) 2010-2013, Jordan Cristiano, <jordan DOT first six letters of last name AT gmail DOT com>
 
 SizzlingPlugins includes code Copyright (c) Valve Corporation and is licensed separately.
 SizzlingPlugins includes code Copyright (c) Daniel Stenberg and is licensed as described:
