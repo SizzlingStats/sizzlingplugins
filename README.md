@@ -46,6 +46,7 @@ the contents of the directory "/external" and/or the directory "/lib",
 which do not fall under the previous license.
 
 SizzlingPlugins includes code Copyright (c) Valve Corporation and is licensed separately.
+
 SizzlingPlugins includes code Copyright (c) Daniel Stenberg, under [the curl license.](http://curl.haxx.se/docs/copyright.html)
 
 Source and Team Fortress are trademarks and/or registered trademarks of Valve Corporation.
