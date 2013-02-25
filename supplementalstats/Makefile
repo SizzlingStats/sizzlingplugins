@@ -1,11 +1,3 @@
-# Sample server plugin for SRC engine
-#
-# October 2004, alfred@valvesoftware.com
-#
-
-# From main makefile
-#======================================================
-#
 
 # this is the only option that you need to set
 # it should point to the dir that contains sizzlingplugins and hl2sdk-ob-valve
@@ -30,6 +22,7 @@ HL2SDK_INC = \
 SUPPLEMENTALSTATS_INC = \
 	-I$(SIZZLINGLIB_DIR)/include \
 	-I$(SIZZLINGPLUGINS_DIR)/common \
+	-I$(SIZZLINGPLUGINS_DIR)/external \
 	-I$(SUPPLEMENTALSTATS_DIR)
 
 ALL_INC = \
