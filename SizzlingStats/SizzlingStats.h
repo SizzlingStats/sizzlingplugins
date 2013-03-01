@@ -15,15 +15,12 @@
 #ifndef SIZZLING_STATS_H
 #define SIZZLING_STATS_H
 
-#include "tier1/utlmap.h"
-#include "tier1/utlvector.h"
-#include "tier1/utlhash.h"
-#include "mempool.h"
-
 #include "WebStatsHandler.h"
 #include "convar.h"
 #include "PluginDefines.h"
 #include "PlayerDataManager.h"
+
+#include "tier1/utlvector.h"
 
 class CFuncQueueThread;
 
@@ -138,9 +135,6 @@ private:
 
 	int				m_nCurrentRound;
 	CUtlVector<char> m_vecMedics; //ent index of medics
-	CUtlHashFast<playerAndExtra_t>	m_playerDataArchive;
-	// the vector is for freeing all of the mempool memory in the archive when we destruct
-	//CUtlVector<CUtlReference<playerAndExtra_t>>		m_playerDataArchiveVec;
 private:
 	CPlayerDataManager m_PlayerDataManager;
 #ifdef PUBLIC_RELEASE

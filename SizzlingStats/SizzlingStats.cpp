@@ -70,8 +70,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_iOldRedScore(0),
 								m_iOldBluScore(0),
 								m_nCurrentRound(0),
-								m_playerDataArchive(),
-								//m_playerDataArchiveVec(0, 32),
 								m_PlayerDataManager(),
 								m_pWebStatsHandler(NULL),
 								m_refHostname((IConVar*)NULL),
@@ -86,20 +84,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_bTournamentMatchRunning(false),
 								m_bFirstCapOfRound(false)
 {
-	m_playerDataArchive.Init(32);
-
-	// element 0 will never be used, element 33 might be used (in 33 slot servers)
-	// we are still allocating for element 0 anyways... who cares
-	//
-	// should we allocate in here? or should we wait until we insert players
-	// lets wait for now
-	/*for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		m_pPlayerData[i] = m_PlayerDataMemPool.Alloc();
-		m_pEntIndexToExtraData[i] = m_ExtraDataMemPool.Alloc();
-	}*/
-	//m_SteamidToPlayerDataMap.SetLessFunc( SCHelpers::FUIntCmp );
-	//m_entIndexToExtraDataMap.SetLessFunc( SCHelpers::FIntCmp );
 }
 #pragma warning( pop )
 
@@ -308,71 +292,6 @@ bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 	Msg( "SS_InsertPlayer\n" );
 	engineContext_t context = { playerinfomanager, pEngine };
 	return m_PlayerDataManager.InsertPlayer(context, pEdict);
-	
-/*
-	PROFILE_SCOPE( new_insert_player );
-	Msg( "SS_InsertPlayer\n" );
-	if ( !pEdict || pEdict->IsFree() )
-	{
-		SS_Msg("invalid edict, aborting insert\n");
-		return false;
-	}
-
-	IPlayerInfo *pPlayerInfo = playerinfomanager->GetPlayerInfo(pEdict);
-	if (pPlayerInfo)
-	{
-		if (!(pPlayerInfo->IsConnected()))
-		{
-			SS_Msg("error: player not yet connected, aborting insert\n");
-		}
-	}
-	else
-	{
-		SS_Msg("error: could not get player info, aborting insert\n");
-		return false;
-	}
-
-	const CSteamID *pSteamID = pEngine->GetClientSteamID(pEdict);
-	if (!pSteamID)
-	{
-		SS_Msg("error: client %s not authenticated with steam, aborting insert\n", pPlayerInfo->GetName());
-		return false;
-	}
-
-	//unsigned int accountId = pSteamID->GetAccountID();
-	// check if info is in the archive (hashmap)
-	// if it is, move the data to the ptr array
-	// null the entry in the hashmap
-	UtlHashFastHandle_t hashHandle = m_playerDataArchive.InvalidHandle();//.Find(accountId);
-	// if the data is not in our archive
-	if (hashHandle == m_playerDataArchive.InvalidHandle())
-	{
-		// for when we allocate at the beginning
-		//m_pPlayerData[pEngine->IndexOfEdict(pEdict)]->SetBaseData(pEdict, pPlayerInfo);
-		int entIndex = pEngine->IndexOfEdict(pEdict);
-		m_pPlayerData[entIndex] = m_PlayerDataMemPool.Alloc();
-		m_pPlayerData[entIndex]->SetBaseData(pEdict, pPlayerInfo);
-		m_pEntIndexToExtraData[entIndex] = m_ExtraDataMemPool.Alloc();
-
-		m_nCurrentPlayers += 1;
-		SS_Msg( "current players: %i\n", m_nCurrentPlayers );
-		SS_Msg( "Stats for player #%i: '%s' will be tracked\n", pSteamID->GetAccountID(), pPlayerInfo->GetName() );
-	}
-	else // we have an archive of the player
-	{
-		// if the hash handle is valid, i guess this pointer will be too
-		// TODO: need to think about how to restore stats if the person is rejoining a round
-		playerAndExtra &data = m_playerDataArchive.Element(hashHandle);
-		m_playerDataArchive.Remove(hashHandle);
-		// we need to remove the archive mempool pointers from the vector
-
-		int entIndex = pEngine->IndexOfEdict(pEdict);
-		m_pPlayerData[entIndex] = data.m_pPlayerData;
-		m_pPlayerData[entIndex]->SetBaseData(pEdict, pPlayerInfo);
-		m_pEntIndexToExtraData[entIndex] = data.m_pExtraData;
-	}
-	return true;
-*/
 }
 
 void SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
@@ -382,38 +301,6 @@ void SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
 	m_vecMedics.FindAndRemove(entindex);
 	engineContext_t context = { playerinfomanager, pEngine };
 	m_PlayerDataManager.RemovePlayer(context, pEdict);
-	
-/*
-	if ( !pEdict || pEdict->IsFree() )
-	{
-		SS_Msg("error: invalid edict, aborting delete\n");
-		return false;
-	}
-
-	const CSteamID *pSteamID = pEngine->GetClientSteamID(pEdict);
-	if (!pSteamID)
-	{
-		// TODO: verify that this can happen
-		SS_Msg("error: client not authenticated with steam, aborting delete\n");
-		return false;
-	}
-
-	int entIndex = pEngine->IndexOfEdict(pEdict);
-	//playerAndExtra data = {m_pPlayerData[entIndex], m_pEntIndexToExtraData[entIndex]};
-
-	// insert vs fastinsert, insert checks for duplicates
-	//m_playerDataArchive.FastInsert(pSteamID->GetAccountID(), data);
-	m_PlayerDataMemPool.Free(m_pPlayerData[entIndex]);
-	m_pPlayerData[entIndex] = NULL;
-	m_ExtraDataMemPool.Free(m_pEntIndexToExtraData[entIndex]);
-	m_pEntIndexToExtraData[entIndex] = NULL;
-
-	SS_Msg( "deleted data index #%i\n", entIndex );
-	SS_Msg( "size before delete: %i\n", m_nCurrentPlayers );
-	m_nCurrentPlayers -= 1;
-	SS_Msg( "size after delete: %i\n", m_nCurrentPlayers );
-	return true;
-*/
 }
 
 void SizzlingStats::SS_DeleteAllPlayerData()
@@ -422,36 +309,6 @@ void SizzlingStats::SS_DeleteAllPlayerData()
 	m_vecMedics.RemoveAll();
 	engineContext_t context = { playerinfomanager, pEngine };
 	m_PlayerDataManager.RemoveAllPlayers(context);
-	
-/*
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (m_pPlayerData[i])
-		{
-			m_PlayerDataMemPool.Free(m_pPlayerData[i]);
-			m_pPlayerData[i] = NULL;
-			m_ExtraDataMemPool.Free(m_pEntIndexToExtraData[i]);
-			m_pEntIndexToExtraData[i] = NULL;
-
-			SS_Msg( "deleted data index #%i\n", i );
-			SS_Msg( "size before delete: %i\n", m_nCurrentPlayers );
-			m_nCurrentPlayers -= 1;
-			SS_Msg( "size after delete: %i\n", m_nCurrentPlayers );
-		}
-	}
-	
-	m_playerDataArchive.RemoveAll();
-
-	// clear messes everything up
-	// need to reinit after a clear
-	// but init is protected
-	//m_PlayerDataMemPool.Clear();
-	//m_ExtraDataMemPool.Clear();
-	
-	SS_Msg( "all data successfully cleared\n" );
-
-	return true;
-*/
 }
 
 void SizzlingStats::SS_Msg( const char *pMsg, ... )
