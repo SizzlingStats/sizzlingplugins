@@ -17,8 +17,8 @@
 
 #include "mempool.h"
 #include "PlayerClassTracker.h"
-
-#define MAX_PLAYERS 34
+#include "utlhash.h"
+#include "shareddefs.h"
 
 class IPlayerInfoManager;
 class IVEngineServer;
@@ -48,6 +48,7 @@ public:
 	
 	bool InsertPlayer( engineContext_t &context, edict_t *pEdict );
 	void RemovePlayer( engineContext_t &context, edict_t *pEdict );
+	void RemoveArchivedPlayers( engineContext_t &context );
 	void RemoveAllPlayers( engineContext_t &context );
 	
 	playerAndExtra_t GetPlayerData( int entindex );
@@ -67,6 +68,7 @@ private:
 	extradata_t *m_pEntIndexToExtraData[MAX_PLAYERS];
 	CClassMemoryPool<SS_PlayerData> m_PlayerDataMemPool;
 	CClassMemoryPool<extradata_t> m_ExtraDataMemPool;
+	CUtlHashFast<playerAndExtra_t>	m_playerDataArchive;
 	int m_nPlayers;
 };
 
