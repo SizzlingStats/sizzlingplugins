@@ -296,6 +296,8 @@ void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, con
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 12 ); //vguimenu: 12
 	if (pBuffer)
 	{
+		// the string type of the panel
+		// some more are defined in viewport_panel_names.h
 		pBuffer->WriteString( "info" );
 
 		// will the panel be visible? 1 is yes, 0 is no
@@ -346,6 +348,8 @@ void CPlayerMessage::SingleUserEmptyVGUIMenu( int clientIndex )
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 12 ); //vguimenu: 12
 	if (pBuffer)
 	{
+		// the string type of the panel
+		// some more are defined in viewport_panel_names.h
 		pBuffer->WriteString( "info" );
 
 		// will the panel be visible? 1 is yes, 0 is no
