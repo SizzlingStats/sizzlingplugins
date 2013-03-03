@@ -54,7 +54,8 @@ ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32
 BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DNO_MALLOC_OVERRIDE=1
 SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
-SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections -Wl,--strip-all
+SHLIBLDFLAGS=-shared -static-libgcc
+#-Wl,--gc-sections -Wl,--strip-all
 
 CFLAGS=$(USER_CFLAGS) $(DEFINES) $(ARCH_CFLAGS) $(BASE_CFLAGS) -Usprintf=use_Q_snprintf_instead_of_sprintf -Ustrncpy=use_Q_strncpy_instead -UPROTECTED_THINGS_ENABLE
 
