@@ -29,7 +29,7 @@ int SRecipientFilter::GetRecipientIndex(int slot) const
 	return m_Recipient;
 }
 
-void SRecipientFilter::AddRecipient(int iPlayer)
+void SRecipientFilter::SetRecipient(int iPlayer)
 {
 	// Make sure the player is valid
 	edict_t* pPlayer = pEngine->PEntityOfEntIndex(iPlayer);

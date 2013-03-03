@@ -90,8 +90,7 @@ CBaseEntity *GetBaseFromID(int id);
 
 void ShowMenu( edict_t *pEntity, int buttons, int time, const char *pText) // STOLE IT FROM TONY AND MODIFIED IT LOL
 {
-	SRecipientFilter filter;
-	filter.AddRecipient( pEngine->IndexOfEdict( pEntity ) );
+	SRecipientFilter filter( pEngine->IndexOfEdict( pEntity ) );
 
 	int umsg = 9;	// showmenu is 9
 	if(umsg != -1)

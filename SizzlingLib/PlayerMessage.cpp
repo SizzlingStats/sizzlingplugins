@@ -53,19 +53,20 @@ extern IVEngineServer			*pEngine; // helper functions (messaging clients, loadin
 void CPlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
 {
 	// Create a filter and add this client to it
-	SRecipientFilter filter;
-	filter.AddRecipient( pEngine->IndexOfEdict( pEntity ) );
+	SRecipientFilter filter( pEngine->IndexOfEdict( pEntity ) );
 
 	// Start the usermessage and get a bf_write
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 3 );
+	if (pBuffer)
+	{
+		// Send the message
+		pBuffer->WriteByte( 0 );
+		pBuffer->WriteString( szMessage );
+		pBuffer->WriteByte( 0 );
 
-	// Send the message
-	pBuffer->WriteByte( 0 );
-	pBuffer->WriteString( szMessage );
-	pBuffer->WriteByte( 0 );
-
-	// End the message
-	pEngine->MessageEnd();
+		// End the message
+		pEngine->MessageEnd();
+	}
 
 	return;
 }
@@ -74,44 +75,44 @@ void CPlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage 
 {
 	edict_t *pEntity = pEngine->PEntityOfEntIndex( entindex );
 	// Create a filter and add this client to it
-	SRecipientFilter filter;
-	filter.AddRecipient( pEngine->IndexOfEdict( pEntity ) );
+	SRecipientFilter filter( pEngine->IndexOfEdict( pEntity ) );
 
 	// Start the usermessage and get a bf_write
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 3 );
+	if (pBuffer)
+	{
+		// Send the message
+		pBuffer->WriteByte( 0 );
+		pBuffer->WriteString( szMessage );
+		pBuffer->WriteByte( 0 );
 
-	// Send the message
-	pBuffer->WriteByte( 0 );
-	pBuffer->WriteString( szMessage );
-	pBuffer->WriteByte( 0 );
-
-	// End the message
-	pEngine->MessageEnd();
-
+		// End the message
+		pEngine->MessageEnd();
+	}
 	return;
 }
 
 void CPlayerMessage::SingleUserChatMessage( edict_t *pEntity, const char *szMessage, const char *szPrefix )
 {
 	// Create a filter and add this client to it
-	SRecipientFilter filter;
-	filter.AddRecipient( pEngine->IndexOfEdict( pEntity ) );
+	SRecipientFilter filter( pEngine->IndexOfEdict( pEntity ) );
 
 	// Start the usermessage and get a bf_write
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 3 );
+	if (pBuffer)
+	{
+		// Concat the prefix message and the actual message
+		char message[64] = "";
+		V_snprintf( message, 64, "%s%s\n", szPrefix, szMessage );
 
-	// Concat the prefix message and the actual message
-	char message[64] = "";
-	V_snprintf( message, 64, "%s%s\n", szPrefix, szMessage );
+		// Send the message
+		pBuffer->WriteByte( 0 );
+		pBuffer->WriteString( message );
+		pBuffer->WriteByte( 0 );
 
-	// Send the message
-	pBuffer->WriteByte( 0 );
-	pBuffer->WriteString( message );
-	pBuffer->WriteByte( 0 );
-
-	// End the message
-	pEngine->MessageEnd();
-
+		// End the message
+		pEngine->MessageEnd();
+	}
 	return;
 }
 
@@ -119,23 +120,24 @@ void CPlayerMessage::SingleUserChatMessage( int entindex, const char *szMessage,
 {
 	edict_t *pEntity = pEngine->PEntityOfEntIndex( entindex );
 	// Create a filter and add this client to it
-	SRecipientFilter filter;
-	filter.AddRecipient( pEngine->IndexOfEdict( pEntity ) );
+	SRecipientFilter filter( pEngine->IndexOfEdict( pEntity ) );
 
 	// Start the usermessage and get a bf_write
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 3 );
+	if (pBuffer)
+	{
+		// Concat the prefix message and the actual message
+		char message[64] = "";
+		V_snprintf( message, 64, "%s%s\n", szPrefix, szMessage );
 
-	// Concat the prefix message and the actual message
-	char message[64] = "";
-	V_snprintf( message, 64, "%s%s\n", szPrefix, szMessage );
+		// Send the message
+		pBuffer->WriteByte( 0 );
+		pBuffer->WriteString( message );
+		pBuffer->WriteByte( 0 );
 
-	// Send the message
-	pBuffer->WriteByte( 0 );
-	pBuffer->WriteString( message );
-	pBuffer->WriteByte( 0 );
-
-	// End the message
-	pEngine->MessageEnd();
+		// End the message
+		pEngine->MessageEnd();
+	}
 
 	return;
 }
@@ -148,14 +150,16 @@ void CPlayerMessage::AllUserChatMessage( const char *szMessage )
 
 	// Start the usermessage and get a bf_write
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 3 );
+	if (pBuffer)
+	{
+		// Send the message
+		pBuffer->WriteByte( 0 );
+		pBuffer->WriteString( szMessage );
+		pBuffer->WriteByte( 0 );
 
-	// Send the message
-	pBuffer->WriteByte( 0 );
-	pBuffer->WriteString( szMessage );
-	pBuffer->WriteByte( 0 );
-
-	// End the message
-	pEngine->MessageEnd();
+		// End the message
+		pEngine->MessageEnd();
+	}
 
 	return;
 }
@@ -168,18 +172,20 @@ void CPlayerMessage::AllUserChatMessage( const char *szMessage, const char *szPr
 
 	// Start the usermessage and get a bf_write
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 3 );
+	if (pBuffer)
+	{
+		// Concat the prefix message and the actual message
+		char message[255] = "";
+		V_snprintf( message, 255, "%s%s", szPrefix, szMessage );
 
-	// Concat the prefix message and the actual message
-	char message[255] = "";
-	V_snprintf( message, 255, "%s%s", szPrefix, szMessage );
+		// Send the message
+		pBuffer->WriteByte( 0 );
+		pBuffer->WriteString( message );
+		pBuffer->WriteByte( 0 );
 
-	// Send the message
-	pBuffer->WriteByte( 0 );
-	pBuffer->WriteString( message );
-	pBuffer->WriteByte( 0 );
-
-	// End the message
-	pEngine->MessageEnd();
+		// End the message
+		pEngine->MessageEnd();
+	}
 
 	return;
 }
@@ -190,8 +196,11 @@ void CPlayerMessage::AllUserHudReset()
 	filter.AddAllPlayers();
 
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 6 ); // ResetHUD: 6
+	if (pBuffer)
+	{
 		pBuffer->WriteByte( 0 );
-	pEngine->MessageEnd();
+		pEngine->MessageEnd();
+	}
 }
 
 void CPlayerMessage::AllUserHudMsg( const char *szMessage, colour rgba, float timeonscreen, float x, float y, int channel )
@@ -200,7 +209,8 @@ void CPlayerMessage::AllUserHudMsg( const char *szMessage, colour rgba, float ti
 	filter.AddAllPlayers();
 
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 21 ); //hudmsg: 21
-
+	if (pBuffer)
+	{
 		pBuffer->WriteByte( channel & 0xFF ); //TODO: find out why & 0xFF @_@
 
 		pBuffer->WriteFloat( x );
@@ -226,7 +236,8 @@ void CPlayerMessage::AllUserHudMsg( const char *szMessage, colour rgba, float ti
 
 		pBuffer->WriteString( szMessage );
 
-	pEngine->MessageEnd();
+		pEngine->MessageEnd();
+	}
 
 	return;
 
@@ -261,11 +272,13 @@ void CPlayerMessage::AllUserHudHintText( const char *szMessage )
 	filter.AddAllPlayers();
 
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 20 ); //keyhinttext: 20
+	if (pBuffer)
+	{
+		pBuffer->WriteByte( 1 ); // one string
+		pBuffer->WriteString( szMessage );
 
-	pBuffer->WriteByte( 1 ); // one string
-	pBuffer->WriteString( szMessage );
-
-	pEngine->MessageEnd();
+		pEngine->MessageEnd();
+	}
 
 	return;
 }
@@ -278,98 +291,100 @@ void CPlayerMessage::AllUserHudHintText( const char *szMessage )
 
 void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, const char *url, bool bVisible /*= true*/ )
 {
-	SRecipientFilter filter;
-	filter.AddRecipient( clientIndex );
+	SRecipientFilter filter( clientIndex );
 
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 12 ); //vguimenu: 12
-
-	pBuffer->WriteString( "info" );
-
-	// will the panel be visible? 1 is yes, 0 is no
-	pBuffer->WriteByte( bVisible ? 1 : 0 );
-
-	// number of entries in the following'table
-	pBuffer->WriteByte( 5 );
+	if (pBuffer)
 	{
-		// Title of the panel (printed on the top border of the window).
-		pBuffer->WriteString( "title" );
-		pBuffer->WriteString( title );
+		pBuffer->WriteString( "info" );
 
-		// Determines the way to treat the message body of the panel.
-		// the types are defined above
-		pBuffer->WriteString( "type" );
-		pBuffer->WriteString( MOTDPANEL_TYPE_URL );
+		// will the panel be visible? 1 is yes, 0 is no
+		pBuffer->WriteByte( bVisible ? 1 : 0 );
 
-		// Contents of the panel, it can be treated as an url, filename or plain text
-		// depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
-		pBuffer->WriteString( "msg" );							
-		pBuffer->WriteString( url );
+		// number of entries in the following'table
+		pBuffer->WriteByte( 5 );
+		{
+			// Title of the panel (printed on the top border of the window).
+			pBuffer->WriteString( "title" );
+			pBuffer->WriteString( title );
 
-		// 0 means use a small vgui window, 1 means a large (tf2 only)
-		pBuffer->WriteString( "customsvr" );
-		pBuffer->WriteString( "1" );
+			// Determines the way to treat the message body of the panel.
+			// the types are defined above
+			pBuffer->WriteString( "type" );
+			pBuffer->WriteString( MOTDPANEL_TYPE_URL );
 
-		// what to execute after the window is closed
-		//  0 for no command
-		//  1 for joingame
-		//  2 for changeteam
-		//  3 for impulse 101
-		//  4 for mapinfo
-		//  5 for closed_htmlpage
-		//  6 for chooseteam
-		pBuffer->WriteString( "cmd" );
-		pBuffer->WriteString( "5" ); 
+			// Contents of the panel, it can be treated as an url, filename or plain text
+			// depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
+			pBuffer->WriteString( "msg" );							
+			pBuffer->WriteString( url );
+
+			// 0 means use a small vgui window, 1 means a large (tf2 only)
+			pBuffer->WriteString( "customsvr" );
+			pBuffer->WriteString( "1" );
+
+			// what to execute after the window is closed
+			//  0 for no command
+			//  1 for joingame
+			//  2 for changeteam
+			//  3 for impulse 101
+			//  4 for mapinfo
+			//  5 for closed_htmlpage
+			//  6 for chooseteam
+			pBuffer->WriteString( "cmd" );
+			pBuffer->WriteString( "5" ); 
+		}
+		pEngine->MessageEnd();
 	}
-	pEngine->MessageEnd();
 
 	return;
 }
 
 void CPlayerMessage::SingleUserEmptyVGUIMenu( int clientIndex )
 {
-	SRecipientFilter filter;
-	filter.AddRecipient( clientIndex );
+	SRecipientFilter filter( clientIndex );
 
 	bf_write *pBuffer = pEngine->UserMessageBegin( &filter, 12 ); //vguimenu: 12
-
-	pBuffer->WriteString( "info" );
-
-	// will the panel be visible? 1 is yes, 0 is no
-	pBuffer->WriteByte( 0 );
-
-	// number of entries in the following 'table'
-	pBuffer->WriteByte( 5 );
+	if (pBuffer)
 	{
-		// Title of the panel (printed on the top border of the window).
-		pBuffer->WriteString( "title" );
-		pBuffer->WriteString( "" );
+		pBuffer->WriteString( "info" );
 
-		// Determines the way to treat the message body of the panel.
-		// the types are defined above
-		pBuffer->WriteString( "type" );
-		pBuffer->WriteString( MOTDPANEL_TYPE_URL );
+		// will the panel be visible? 1 is yes, 0 is no
+		pBuffer->WriteByte( 0 );
 
-		// Contents of the panel, it can be treated as an url, filename or plain text
-		// depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
-		pBuffer->WriteString( "msg" );							
-		pBuffer->WriteString( "about:blank" );
+		// number of entries in the following 'table'
+		pBuffer->WriteByte( 5 );
+		{
+			// Title of the panel (printed on the top border of the window).
+			pBuffer->WriteString( "title" );
+			pBuffer->WriteString( "" );
 
-		// 0 means use a small vgui window, 1 means a large (tf2 only)
-		pBuffer->WriteString( "customsvr" );
-		pBuffer->WriteString( "1" );
+			// Determines the way to treat the message body of the panel.
+			// the types are defined above
+			pBuffer->WriteString( "type" );
+			pBuffer->WriteString( MOTDPANEL_TYPE_URL );
 
-		// what to execute after the window is closed
-		//  0 for no command
-		//  1 for joingame
-		//  2 for changeteam
-		//  3 for impulse 101
-		//  4 for mapinfo
-		//  5 for closed_htmlpage
-		//  6 for chooseteam
-		pBuffer->WriteString( "cmd" );
-		pBuffer->WriteString( "0" ); 
+			// Contents of the panel, it can be treated as an url, filename or plain text
+			// depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
+			pBuffer->WriteString( "msg" );							
+			pBuffer->WriteString( "about:blank" );
+
+			// 0 means use a small vgui window, 1 means a large (tf2 only)
+			pBuffer->WriteString( "customsvr" );
+			pBuffer->WriteString( "1" );
+
+			// what to execute after the window is closed
+			//  0 for no command
+			//  1 for joingame
+			//  2 for changeteam
+			//  3 for impulse 101
+			//  4 for mapinfo
+			//  5 for closed_htmlpage
+			//  6 for chooseteam
+			pBuffer->WriteString( "cmd" );
+			pBuffer->WriteString( "0" ); 
+		}
+		pEngine->MessageEnd();
 	}
-	pEngine->MessageEnd();
 
 	return;
 }

@@ -18,7 +18,7 @@
 class SRecipientFilter : public IRecipientFilter		// a version of MRecipientFilter
 {														// that is optimized for 1 recipient
 public:
-	SRecipientFilter(void) {};
+	SRecipientFilter(int iPlayer = 0): m_Recipient(iPlayer) {};
 	~SRecipientFilter(void) {};
 
 	virtual bool	IsReliable( void ) const { return false; }
@@ -27,7 +27,7 @@ public:
 	virtual int		GetRecipientCount( void ) const { return 1; };
 	virtual int		GetRecipientIndex( int slot ) const;
 
-	void			AddRecipient(int iPlayer);
+	void			SetRecipient(int iPlayer);
 
 private:
 	int m_Recipient;
