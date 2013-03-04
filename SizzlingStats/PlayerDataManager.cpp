@@ -27,8 +27,9 @@ CPlayerDataManager::CPlayerDataManager():
 	m_ExtraDataMemPool(MAX_PLAYERS),
 	m_nPlayers(0)
 {
-	// sets the buckets to 255
-	m_playerDataArchive.Init(ABSOLUTE_PLAYER_LIMIT);
+	// sets the buckets to 64
+	// HAS TO BE A POWER OF 2
+	m_playerDataArchive.Init(64);
 }
 #pragma warning( pop )
 
