@@ -146,17 +146,17 @@ public:
 
 	virtual PLUGIN_RESULT ClientConnect( bool *bAllowConnect, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen )
 	{
-		PLUGIN_CONTINUE;
+		return PLUGIN_CONTINUE;
 	}
 
 	virtual PLUGIN_RESULT ClientCommand( edict_t *pEntity, const CCommand &args )
 	{
-		PLUGIN_CONTINUE;
+		return PLUGIN_CONTINUE;
 	}
 
 	virtual PLUGIN_RESULT NetworkIDValidated( const char *pszUserName, const char *pszNetworkID )
 	{
-		PLUGIN_CONTINUE;
+		return PLUGIN_CONTINUE;
 	}
 
 	virtual void OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue )

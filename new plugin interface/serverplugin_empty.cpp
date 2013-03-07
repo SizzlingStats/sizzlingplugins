@@ -75,6 +75,7 @@ const char *CEmptyServerPlugin::GetPluginDescription()
 
 bool CEmptyServerPlugin::SizzLoad(CreateInterfaceFn interfaceFactory, CreateInterfaceFn gameServerFactory)
 {
+	return true;
 }
 
 void CEmptyServerPlugin::SizzUnload()
