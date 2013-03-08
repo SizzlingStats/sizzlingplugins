@@ -115,6 +115,8 @@ public:
 	void SendGameStartEvent();
 	void SendGameOverEvent(double flMatchDuration);
 
+	void SetApiKey( const char *apikey );
+
 protected:
 	void SendStatsToWebInternal();
 	void SendGameStartEventInternal();
@@ -145,6 +147,10 @@ private:
 	CUtlVector<playerInfo_t>		m_playerInfo;
 	hostInfo_t						m_hostInfo;
 	responseInfo_t					m_responseInfo;
+	// this is protected with the hostInfo mutex, 
+	// but isn't in the hostinfo since it's only 
+	// sent once
+	char	m_apikey[37]; // 36 char + null
 };
 
 class CNullWebStatsHandler
@@ -303,12 +309,18 @@ inline void responseInfo_s::ResetMatchUrl()
 	matchUrlMutex.Unlock();
 }
 
-inline CWebStatsHandler::CWebStatsHandler()
+#pragma warning( push )
+#pragma warning( disable : 4351 ) // arrays will be default initialized
+
+inline CWebStatsHandler::CWebStatsHandler():
+	m_apikey()
 {
 	m_dataListAndChatMutex.Unlock();
 	m_hostInfoMutex.Unlock();
 	m_playerInfoMutex.Unlock();
 }
+
+#pragma warning( pop )
 
 inline CWebStatsHandler::~CWebStatsHandler()
 {
@@ -366,6 +378,13 @@ inline void CWebStatsHandler::SendGameStartEvent()
 inline void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 {
 	m_queue.EnqueueFunctor(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
+}
+
+inline void CWebStatsHandler::SetApiKey( const char *apikey )
+{
+	m_hostInfoMutex.Lock();
+	V_strncpy(m_apikey, apikey, sizeof(m_apikey));
+	m_hostInfoMutex.Unlock();
 }
 
 #endif // WEB_STATS_HANDLER_H

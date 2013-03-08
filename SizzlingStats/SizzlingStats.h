@@ -42,6 +42,8 @@ public:
 	void	ServerActivate();
 
 	void	GameFrame();
+
+	void	LoadConfig();
 	
 	void	PlayerHealed( int entindex, int amount );
 	void	MedPick( int entindex );

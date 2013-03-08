@@ -53,6 +53,12 @@ static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If non
 
 #endif
 
+// hidden convar apikey
+// set by a config on the server
+#define HIDDEN_CVAR_FLAGS FCVAR_HIDDEN | FCVAR_PROTECTED | FCVAR_UNLOGGED
+
+static ConVar apikey("sizz_stats_web_api_key", "", HIDDEN_CVAR_FLAGS, "");
+
 #pragma warning( push )
 #pragma warning( disable : 4351 )
 SizzlingStats::SizzlingStats(): m_aPropOffsets(),
@@ -101,6 +107,7 @@ void SizzlingStats::Load()
 	m_refHostIP.Init("hostip", false);
 	m_refIP.Init("ip", false);
 	m_refHostPort.Init("hostport", false);
+	LoadConfig();
 #ifndef PUBLIC_RELEASE
 	m_pWebStatsHandler = new CWebStatsHandler();
 #else
@@ -115,6 +122,7 @@ void SizzlingStats::Unload()
 
 void SizzlingStats::LevelInit(const char *pMapName)
 {
+	LoadConfig();
 }
 
 void SizzlingStats::ServerActivate()
@@ -124,6 +132,11 @@ void SizzlingStats::ServerActivate()
 
 void SizzlingStats::GameFrame()
 {
+}
+
+void SizzlingStats::LoadConfig()
+{
+	pEngine->ServerCommand( "exec " PLUGIN_CONFIG_FILE "\n" );
 }
 
 void SizzlingStats::PlayerHealed( int entindex, int amount )
@@ -370,6 +383,10 @@ void SizzlingStats::SS_TournamentMatchStarted()
 		}
 	}
 
+	// set the api key
+	m_pWebStatsHandler->SetApiKey(apikey.GetString());
+
+	// send the initial match info to the web
 	m_pWebStatsHandler->SendGameStartEvent();
 }
 

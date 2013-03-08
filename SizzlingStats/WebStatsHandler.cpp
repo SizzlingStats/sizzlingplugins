@@ -298,6 +298,7 @@ void CWebStatsHandler::createMatchPlayerInfo(CUtlBuffer &buff)
 
 			m_hostInfoMutex.Lock();
 			temp.InsertKV("hostname", m_hostInfo.m_hostname);
+			temp.InsertKV("apikey", m_apikey);
 			temp.InsertKV("map", m_hostInfo.m_mapname);
 			temp.InsertKV("bluname", m_hostInfo.m_bluname);
 			temp.InsertKV("redname", m_hostInfo.m_redname);
