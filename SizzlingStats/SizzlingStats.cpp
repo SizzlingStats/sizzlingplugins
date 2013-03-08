@@ -430,6 +430,8 @@ void SizzlingStats::SS_RoundEnded()
 #endif
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
 	SS_EndOfRound();
+	engineContext_t context = { playerinfomanager, pEngine };
+	m_PlayerDataManager.RemoveArchivedPlayers(context);
 }
 
 void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
