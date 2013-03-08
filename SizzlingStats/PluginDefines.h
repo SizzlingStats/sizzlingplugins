@@ -19,7 +19,7 @@
 	#define PLUGIN_VERSION "0.8.3.7"
 	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
 #else
-	#define PLUGIN_VERSION "0.9.0.8"
+	#define PLUGIN_VERSION "0.9.0.9"
 	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
 #endif
 //#define RELEASE_VERSION
