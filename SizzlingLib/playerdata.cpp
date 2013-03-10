@@ -57,7 +57,8 @@ void BasePlayerData::SetBaseData( edict_t *pEdict, IPlayerInfo *pInfo )
 // SS_PlayerData
 // ---------------------------------------------------------------------- //
 SS_PlayerData::SS_PlayerData():
-	m_BasePlayerData()
+	m_BasePlayerData(),
+	m_bCapFix(false)
 {
 }
 
