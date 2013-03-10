@@ -8,7 +8,7 @@ Various client and server plugins developed in C++ for Team Fortress(R) 2 and th
 ## Contact
 - - -
 
-IRC: [irc.gamesurge.net / #sizzlingplugins](irc://irc.gamesurge.net/sizzlingplugins)
+IRC: [irc.gamesurge.net / #sizzlingplugins](irc://irc.gamesurge.net/sizzlingchat)
 
 
 ## License 
