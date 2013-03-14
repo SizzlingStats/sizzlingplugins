@@ -893,10 +893,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 
 void CEmptyServerPlugin::GetGameRules()
 {
-	if ( !m_pTeamplayRoundBasedRules )
-	{
-		m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
-	}
+	m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
 }
 
 void CEmptyServerPlugin::GetPropOffsets()
@@ -907,7 +904,7 @@ void CEmptyServerPlugin::GetPropOffsets()
 	{
 		GetGameRules();
 	}
-		
+	
 	bool bError = false;
 	unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
 		GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
@@ -915,8 +912,8 @@ void CEmptyServerPlugin::GetPropOffsets()
 	int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
 	int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
 
-	m_iRoundState = ((int *)((unsigned char*)m_pTeamplayRoundBasedRules + roundstateoffset));
-	m_bInWaitingForPlayers = ((bool *)((unsigned char*)m_pTeamplayRoundBasedRules + waitingoffset));
+	m_iRoundState = ByteOffsetFromPointer<int>(m_pTeamplayRoundBasedRules, roundstateoffset);
+	m_bInWaitingForPlayers = ByteOffsetFromPointer<bool>(m_pTeamplayRoundBasedRules, waitingoffset);
 }
 
 #ifdef GetProp

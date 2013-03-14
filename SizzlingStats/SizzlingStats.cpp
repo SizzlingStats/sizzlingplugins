@@ -667,8 +667,8 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 		m_pWebStatsHandler->GetMatchUrl(temp, 128);
 		// send an invisible one to clear the html message if there is one
 		// then send the visible one
-		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp, false );
-		CPlayerMessage::SingleUserVGUIMenu( entindex, "SizzlingStats", temp, true );
+		CPlayerMessage::SingleUserBlankMotdPanel( entindex );
+		CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, true );
 	}
 	else
 	{

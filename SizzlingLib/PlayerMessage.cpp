@@ -289,7 +289,7 @@ void CPlayerMessage::AllUserHudHintText( const char *szMessage )
 #define MOTDPANEL_TYPE_FILE		"3"	/**< Treat msg as a filename to be openned */
           // ^^ FILE LOADS STUFF FROM THE CLIENT (bad)
 
-void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, const char *url, bool bVisible /*= true*/ )
+void CPlayerMessage::SingleUserMotdPanel( int clientIndex, const char *title, const char *url, bool bVisible /*= true*/ )
 {
 	SRecipientFilter filter( clientIndex );
 
@@ -341,7 +341,7 @@ void CPlayerMessage::SingleUserVGUIMenu( int clientIndex, const char *title, con
 	return;
 }
 
-void CPlayerMessage::SingleUserEmptyVGUIMenu( int clientIndex )
+void CPlayerMessage::SingleUserBlankMotdPanel( int clientIndex )
 {
 	SRecipientFilter filter( clientIndex );
 
