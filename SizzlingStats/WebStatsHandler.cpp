@@ -15,6 +15,9 @@
 #include "JsonUtils.h"
 #include "SC_helpers.h"
 
+#include "ThreadCallQueue.h"
+#include "eiface.h"
+
 void CWebStatsHandler::SetHostData( hostInfo_t const &info )
 {
 	m_hostInfoMutex.Lock();
@@ -161,6 +164,24 @@ size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, voi
 	}
 }
 
+static void LogSessionId( responseInfo_t *pInfo )
+{
+	if (pInfo)
+	{
+		char sessionid[64] = {};
+		pInfo->GetSessionId(sessionid, 64);
+
+		char temp[128] = {};
+		V_snprintf(temp, 128, "[SizzlingStats]: sessionid %s\n", sessionid);
+
+		extern IVEngineServer *pEngine;
+		if (pEngine)
+		{
+			pEngine->LogPrint(temp);
+		}
+	}
+}
+
 size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	const int maxSize = size*nmemb;
@@ -171,6 +192,9 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
 		const char *pStart = V_strstr(data, " ") + 1;
 		pInfo->SetSessionId(pStart, V_strlen(pStart)-1);
+
+		extern CTSCallQueue *g_pTSCallQueue;
+		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(&LogSessionId, pInfo));
 	}
 	else if ( V_strstr( data, "matchurl: " ) )
 	{
