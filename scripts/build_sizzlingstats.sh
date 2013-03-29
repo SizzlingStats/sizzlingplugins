@@ -98,7 +98,7 @@ hg update -R "$SDK_DIR" -C "$SDK_TAG" >/dev/null
 SDK_REV="$(hg parent -R "$SDK_DIR" | awk 'NR==1 {gsub(":","-"); print $2}')"
 SP_REV="$(hg parent -R "$SP_DIR" | awk 'NR==1 {gsub(":","-"); print $2}')"
 # Create output dir
-BUILD_DIR="$BUILDS_GO_HERE/ss$SP_REV-sdk$SDK_REV"
+BUILD_DIR="$BUILDS_GO_HERE/d$SP_REV-sdk$SDK_REV"
 # A Bash trick to create the build dir if it doesn't exist,
 #  but get an error if parent dirs don't exist.
 if [ -d "$BUILD_DIR" ]
@@ -164,6 +164,9 @@ if [[ $COMPILE_SUCCESS && (-d "$ORANGEBOX/tf") ]]; then
   mkdir -p "$ORANGEBOX/tf/addons/sizzlingplugins/sizzlingstats"
   # copy plugin
   cp "$BUILD_DIR/sizzlingstats.so" "$ORANGEBOX/tf/addons/sizzlingplugins/sizzlingstats/"
+  # copy vdf file
+  echo -e '"Plugin" {\n\t"file"  "../tf/addons/sizzlingplugins/sizzlingstats/sizzlingstats"\n}' \
+          > "$ORANGEBOX/tf/addons/sizzlingstats.vdf"
 
   # Update TF2 server
   if [ -f "$SERVER_UPDATE_SCRIPT" ]; then
@@ -182,6 +185,7 @@ if [[ $COMPILE_SUCCESS && (-d "$ORANGEBOX/tf") ]]; then
     echo -n "Launching TF2"
     # Create a detached screen and configure logging options
     screen -S "TF2$SP_REV" -d -m -s "$SERVER_START_SCRIPT"
+    sleep 1
     screen -S "TF2$SP_REV" -p 0 -X colon "logfile srcds.log$(printf \\r)"
     # Rate at which screen flushes the logfile buffer to the filesystem. Default 10s
     screen -S "TF2$SP_REV" -p 0 -X colon "logfile flush 4$(printf \\r)"
