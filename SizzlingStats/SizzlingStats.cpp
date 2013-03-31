@@ -355,6 +355,10 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 
 void SizzlingStats::SS_TournamentMatchStarted()
 {
+#ifndef PUBLIC_RELEASE
+	pEngine->ServerCommand( "log on\n" );
+	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
+#endif
 	Msg( "tournament match started\n" );
 	m_bTournamentMatchRunning = true;
 	m_flMatchDuration = Plat_FloatTime();
@@ -392,6 +396,9 @@ void SizzlingStats::SS_TournamentMatchStarted()
 
 void SizzlingStats::SS_TournamentMatchEnded()
 {
+#ifndef PUBLIC_RELEASE
+	pEngine->ServerCommand( "logaddress_del sizzlingstats.com:8006\n" );
+#endif
 	Msg( "tournament match ended\n" );
 	m_bTournamentMatchRunning = false;
 	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
