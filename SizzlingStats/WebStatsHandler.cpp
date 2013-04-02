@@ -150,7 +150,7 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
-	const int maxSize = size*nmemb;
+	const size_t maxSize = size*nmemb;
 	if ( pBuffer->GetBytesRemaining() >= maxSize )
 	{
 		pBuffer->Get( ptr, maxSize );
@@ -158,7 +158,7 @@ size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, voi
 	}
 	else
 	{
-		const int bytesRemaining = pBuffer->GetBytesRemaining();
+		const size_t bytesRemaining = pBuffer->GetBytesRemaining();
 		pBuffer->Get( ptr, bytesRemaining );
 		return bytesRemaining;
 	}
@@ -184,7 +184,7 @@ static void LogSessionId( responseInfo_t *pInfo )
 
 size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
-	const int maxSize = size*nmemb;
+	const size_t maxSize = size*nmemb;
 	char *data = (char*)ptr;
 
 	if ( V_strstr( data, "sessionid: " ) )
