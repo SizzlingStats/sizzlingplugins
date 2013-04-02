@@ -110,6 +110,7 @@ SIZZLINGLIB_OBJS = \
 	$(SIZZLIB_OBJ_DIR)/UserIdTracker.o
 
 SIZZLINGSTATS_OBJS = \
+	$(PLUGIN_OBJ_DIR)/LogStats.o \
 	$(PLUGIN_OBJ_DIR)/PlayerDataManager.o \
 	$(PLUGIN_OBJ_DIR)/serverplugin_empty.o \
 	$(PLUGIN_OBJ_DIR)/SizzlingStats.o \
