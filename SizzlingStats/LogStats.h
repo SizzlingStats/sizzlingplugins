@@ -29,7 +29,7 @@ public:
 	void ClientDisconnect( edict_t *pEdict );
 
 	void TournamentMatchStarted();
-	void TournamentMatchStopped();
+	void TournamentMatchEnded();
 
 	virtual void FireGameEvent( IGameEvent *event );
 

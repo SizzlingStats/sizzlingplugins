@@ -138,6 +138,9 @@ private:
 	void GetGameRules();
 	void GetPropOffsets();
 
+	void TournamentMatchStarted();
+	void TournamentMatchEnded();
+
 private:
 	CPluginContext m_PluginContext;
 	CLogStats m_logstats;
@@ -445,18 +448,14 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			{
 				if (m_bTournamentMatchStarted)
 				{
-					m_logstats.TournamentMatchStopped();
-					m_SizzlingStats.SS_TournamentMatchEnded();
-					m_bTournamentMatchStarted = false;
+					TournamentMatchEnded();
 				}
 			}
 			else
 			{
 				if (bTournamentMode && !m_bTournamentMatchStarted && (roundstate != GR_STATE_PREGAME))
 				{
-					m_logstats.TournamentMatchStarted();
-					m_SizzlingStats.SS_TournamentMatchStarted();
-					m_bTournamentMatchStarted = true;
+					TournamentMatchStarted();
 				}
 			}
 
@@ -513,8 +512,7 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 		//pEngine->LogPrint("LevelShutdown\n");
 		if (m_bTournamentMatchStarted)
 		{
-			m_SizzlingStats.SS_TournamentMatchEnded();
-			m_bTournamentMatchStarted = false;
+			TournamentMatchEnded();
 		}
 		m_pTeamplayRoundBasedRules = NULL;
 		m_SizzlingStats.SS_DeleteAllPlayerData();
@@ -925,6 +923,20 @@ void CEmptyServerPlugin::GetPropOffsets()
 
 	m_iRoundState = ByteOffsetFromPointer<int>(m_pTeamplayRoundBasedRules, roundstateoffset);
 	m_bInWaitingForPlayers = ByteOffsetFromPointer<bool>(m_pTeamplayRoundBasedRules, waitingoffset);
+}
+
+void CEmptyServerPlugin::TournamentMatchStarted()
+{
+	m_logstats.TournamentMatchStarted();
+	m_SizzlingStats.SS_TournamentMatchStarted();
+	m_bTournamentMatchStarted = true;
+}
+
+void CEmptyServerPlugin::TournamentMatchEnded()
+{
+	m_logstats.TournamentMatchEnded();
+	m_SizzlingStats.SS_TournamentMatchEnded();
+	m_bTournamentMatchStarted = false;
 }
 
 #ifdef GetProp

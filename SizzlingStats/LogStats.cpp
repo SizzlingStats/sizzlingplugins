@@ -160,7 +160,7 @@ void CLogStats::TournamentMatchStarted()
 	}
 }
 
-void CLogStats::TournamentMatchStopped()
+void CLogStats::TournamentMatchEnded()
 {
 	IVEngineServer *pEngine = m_context.GetEngine();
 	pEngine->LogPrint("[SizzlingStats]: Match Ended\n");
