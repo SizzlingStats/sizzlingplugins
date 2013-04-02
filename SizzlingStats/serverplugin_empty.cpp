@@ -37,9 +37,11 @@
 #endif
 
 #include "PluginDefines.h"
+#include "PluginContext.h"
 #include "autoupdate.h"
 #include "UserIdTracker.h"
 #include "ServerPluginHandler.h"
+#include "LogStats.h"
 
 #include "curl/curl.h"
 
@@ -137,6 +139,8 @@ private:
 	void GetPropOffsets();
 
 private:
+	CPluginContext m_PluginContext;
+	CLogStats m_logstats;
 	SizzlingStats m_SizzlingStats;
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
@@ -169,6 +173,7 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
+	m_logstats(m_PluginContext),
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
@@ -248,6 +253,9 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	}
 
 	gpGlobals = playerinfomanager->GetGlobalVars();
+
+	m_PluginContext.SetInterfaces(pEngine, gameeventmanager, playerinfomanager);
+	m_logstats.Load();
 
 	//GetGameRules();
 	GetPropOffsets();
@@ -341,6 +349,7 @@ void CEmptyServerPlugin::Unload( void )
 	m_SizzlingStats.SS_DeleteAllPlayerData();
 
 	m_SizzlingStats.Unload();
+	m_logstats.Unload();
 	
 	//UnhookProps();
 
@@ -393,6 +402,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	pEngine->LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	
 	m_SizzlingStats.LevelInit(pMapName);
+	m_logstats.LevelInit(pMapName);
 }
 
 //---------------------------------------------------------------------------------
@@ -435,6 +445,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			{
 				if (m_bTournamentMatchStarted)
 				{
+					m_logstats.TournamentMatchStopped();
 					m_SizzlingStats.SS_TournamentMatchEnded();
 					m_bTournamentMatchStarted = false;
 				}
@@ -443,6 +454,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			{
 				if (bTournamentMode && !m_bTournamentMatchStarted && (roundstate != GR_STATE_PREGAME))
 				{
+					m_logstats.TournamentMatchStarted();
 					m_SizzlingStats.SS_TournamentMatchStarted();
 					m_bTournamentMatchStarted = true;
 				}
@@ -519,8 +531,9 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 	if( !pEdict || pEdict->IsFree() )
 		return;
 
-	g_pUserIdTracker->ClientActive( pEdict );
+	int ent_index = g_pUserIdTracker->ClientActive( pEdict );
 	m_SizzlingStats.SS_InsertPlayer( pEdict );
+	m_logstats.ClientActive(pEdict, ent_index);
 }
 
 //---------------------------------------------------------------------------------
@@ -540,6 +553,7 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 		if( !pEdict || pEdict->IsFree() )
 			return;
 		m_SizzlingStats.SS_DeletePlayer( pEdict );
+		m_logstats.ClientDisconnect(pEdict);
 		g_pUserIdTracker->ClientDisconnect( pEdict );
 	}
 }
@@ -720,8 +734,9 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 		{
 			if (pServerEnts->EdictToBaseEntity(pEdict))
 			{
-				g_pUserIdTracker->ClientActive( pEdict );
+				int ent_index = g_pUserIdTracker->ClientActive( pEdict );
 				m_SizzlingStats.SS_InsertPlayer( pEdict );
+				m_logstats.ClientActive(pEdict, ent_index);
 			}
 		}
 	}
