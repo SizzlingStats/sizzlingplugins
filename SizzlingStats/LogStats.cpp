@@ -98,6 +98,7 @@ void CLogStats::Unload()
 	{
 		pGE->RemoveListener(this);
 		pEng->ServerCommand("sm plugins load supstats\n");
+		pEng->ServerExecute();
 	}
 }
 
@@ -164,6 +165,7 @@ void CLogStats::TournamentMatchStopped()
 	IVEngineServer *pEngine = m_context.GetEngine();
 	pEngine->LogPrint("[SizzlingStats]: Match Ended\n");
 	pEngine->ServerCommand( "logaddress_del sizzlingstats.com:8006\n" );
+	pEngine->ServerExecute();
 }
 
 void CLogStats::FireGameEvent( IGameEvent *event )
