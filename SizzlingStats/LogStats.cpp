@@ -3,6 +3,7 @@
 #include "PluginContext.h"
 #include "strtools.h"
 #include "UserIdTracker.h"
+#include "platform.h"
 
 struct playerInfo
 {
@@ -110,7 +111,7 @@ void CLogStats::LevelInit( const char *pMapName )
 
 	char maplog[64];
 	Q_snprintf( maplog, 64, "Loading map \"%s\"\n", pMapName );
-	WriteToLog( maplog );
+	pEng->LogPrint( maplog );
 }
 
 void CLogStats::ClientActive( edict_t *pEdict, int ent_index )
@@ -141,7 +142,9 @@ void CLogStats::ClientDisconnect( edict_t *pEdict )
 void CLogStats::TournamentMatchStarted()
 {
 	IVEngineServer *pEngine = m_context.GetEngine();
+	pEngine->ServerCommand( "log on\n" );
 	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
+	pEngine->ServerCommand("sm plugins unload supstats\n");
 	pEngine->ServerExecute();
 	pEngine->LogPrint( "[SizzlingStats]: Match Started\n" );
 	char temp[128];
@@ -152,10 +155,10 @@ void CLogStats::TournamentMatchStarted()
 		{
 			Q_strncpy(pInfo->name, pInfo->pPlayerInfo->GetName(), 32);
 			int userid = pEngine->GetPlayerUserId(pInfo->pEdict);
-			const char *teamname = teamNames[pInfo->teamid];
-			const char *classname = classNames[pInfo->classid];
+			const char *RESTRICT teamname = teamNames[pInfo->teamid];
+			const char *RESTRICT classname = classNames[pInfo->classid];
 			Q_snprintf(temp, 128, "[SizzlingStats]: player \"%s\"<%i><%s><%s> is role %s\n", pInfo->name, userid, pInfo->steamid, teamname, classname);
-			WriteToLog(temp);
+			pEngine->LogPrint(temp);
 		}
 	}
 }
@@ -170,7 +173,7 @@ void CLogStats::TournamentMatchEnded()
 
 void CLogStats::FireGameEvent( IGameEvent *event )
 {
-	const char * name = event->GetName();
+	const char *RESTRICT name = event->GetName();
 	IVEngineServer *pEngine = m_context.GetEngine();
 
 	if ( FStrEq( name, "player_hurt" ) )
@@ -192,14 +195,14 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 				Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
 			}
 
-			char log[128] = { '\0' };
+			char log[128];
 			Q_snprintf( log, 128, "\"%s<%d><%s><%s>\" triggered \"damage\" (damage \"%d\")\n",
 				pInfo.name,
 				attackerid,
 				pInfo.steamid,
 				teamNames[pInfo.teamid],
 				damageamount );
-			WriteToLog( log );
+			pEngine->LogPrint( log );
 			//L 03/21/2011 - 02:32:11: "rline<326><STEAM_0:1:796515><Blue>" triggered "damage" (damage "37")
 		}
 	}
@@ -229,7 +232,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			Q_snprintf( pInfo2.steamid, 64, "%s", pInfo2.pPlayerInfo->GetNetworkIDString() );
 		}
 					
-		char log[196] = { '\0' };
+		char log[196];
 		Q_snprintf( log, 196, "\"%s<%d><%s><%s>\" triggered \"healed\" against \"%s<%d><%s><%s>\" (healing \"%d\")\n", 
 			pInfo1.name,
 			healer,
@@ -240,7 +243,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo2.steamid,
 			teamNames[pInfo2.teamid],
 			event->GetInt( "amount" ) );
-		WriteToLog( log );
+		pEngine->LogPrint( log );
 		//L 03/21/2011 - 02:35:55: "HackLimit2. MixMixMixMix<333><STEAM_0:1:15579670><Blue>" triggered "healed" against "AI kaytee fbs!!<331><STEAM_0:0:9786107><Blue>" (healing "73")
 	}
 	else if ( FStrEq( name, "item_pickup" ) )
@@ -257,14 +260,14 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
 		}
 
-		char log[128] = { '\0' };
+		char log[128];
 		Q_snprintf( log, 128, "\"%s<%d><%s><%s>\" picked up item \"%s\"\n", 
 			pInfo.name,
 			userid,
 			pInfo.steamid,
 			teamNames[pInfo.teamid],
 			event->GetString( "item" ) );
-		WriteToLog( log );
+		pEngine->LogPrint( log );
 		//L 03/21/2011 - 02:35:56: "GooB<330><STEAM_0:1:23384772><Blue>" picked up item "tf_ammo_pack"
 	}
 	else if ( FStrEq( name, "player_spawn" ) )
@@ -281,14 +284,14 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
 		}
 
-		char log[128] = { '\0' };
+		char log[128];
 		Q_snprintf( log, 128, "\"%s<%d><%s><%s>\" spawned as \"%s\"\n", 
 			pInfo.name,
 			userid,
 			pInfo.steamid,
 			teamNames[ pInfo.teamid ],
 			classNames[ pInfo.classid ] );
-		WriteToLog( log );
+		pEngine->LogPrint( log );
 
 		        //LogToGame("\"%s<%d><%s><%s>\" spawned as \"%s\"",
           //        clientname,
@@ -315,10 +318,4 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 		int index = g_pUserIdTracker->GetEntIndex( userid );
 		Q_snprintf( m_entIndexToPlayerInfo[index].name, 32, "%s", event->GetString( "newname" ) );
 	}
-}
-
-void CLogStats::WriteToLog( const char *msg )
-{
-	IVEngineServer *pEng = m_context.GetEngine();
-	pEng->LogPrint(msg);
 }

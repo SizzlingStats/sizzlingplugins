@@ -34,9 +34,6 @@ public:
 	virtual void FireGameEvent( IGameEvent *event );
 
 private:
-	void WriteToLog( const char *msg );
-
-private:
 	const CPluginContext &m_context;
 	playerInfo *m_entIndexToPlayerInfo;
 };

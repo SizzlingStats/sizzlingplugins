@@ -782,7 +782,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 #endif
 	using namespace SCHelpers;
 
-	const char * name = event->GetName();
+	const char *RESTRICT name = event->GetName();
 
 	if ( m_bShouldRecord && FStrEq( name, "player_healed" ) )
 	{
@@ -852,7 +852,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		{
 			if ( event->GetInt("winreason") == Teamplay_GameRule_States::WINREASON_ALL_POINTS_CAPTURED )
 			{
-				const char *cappers = event->GetString("cappers");
+				const char *RESTRICT cappers = event->GetString("cappers");
 				int length = V_strlen(cappers);
 				m_SizzlingStats.CapFix( cappers, length );
 			}
@@ -872,7 +872,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( FStrEq( name, "player_say" ) )
 	{
-		const char *text = event->GetString( "text" );
+		const char *RESTRICT text = event->GetString( "text" );
 
 		if ( FStrEq( text, ".ss_credits" ) )
 		{
