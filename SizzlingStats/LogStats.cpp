@@ -93,7 +93,6 @@ bool CLogStats::Load()
 		pGE->AddListener( this, "player_changeclass", true );
 
 		pEng->ServerCommand( "log on\n" );
-		pEng->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
 		pEng->ServerCommand("sm plugins unload supstats\n");
 		pEng->ServerExecute();
 		return true;
@@ -152,7 +151,6 @@ void CLogStats::ClientDisconnect( edict_t *pEdict )
 void CLogStats::TournamentMatchStarted()
 {
 	IVEngineServer *pEngine = m_context.GetEngine();
-	pEngine->ServerCommand( "log on\n" );
 	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
 	pEngine->ServerCommand("sm plugins unload supstats\n");
 	pEngine->ServerExecute();
