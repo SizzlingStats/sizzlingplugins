@@ -83,7 +83,10 @@ public:
 	//	chat message to be sent to all users
 	void	SS_AllUserChatMessage( const char *szMessage );
 
-	void	SS_TournamentMatchStarted();
+	void	SS_TournamentMatchStarted( const char *RESTRICT hostname, 
+										const char *RESTRICT mapname, 
+										const char *RESTRICT bluname, 
+										const char *RESTRICT redname );
 
 	void	SS_TournamentMatchEnded();
 
@@ -144,9 +147,6 @@ private:
 #else
 	CWebStatsHandler *m_pWebStatsHandler;
 #endif
-	ConVarRef m_refHostname;
-	ConVarRef m_refBlueTeamName;
-	ConVarRef m_refRedTeamName;
 	ConVarRef m_refHostIP;
 	ConVarRef m_refIP;
 	ConVarRef m_refHostPort;

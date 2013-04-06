@@ -148,13 +148,20 @@ void CLogStats::ClientDisconnect( edict_t *pEdict )
 	m_entIndexToPlayerInfo[index].reset();
 }
 
-void CLogStats::TournamentMatchStarted()
+void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname, 
+									   const char *RESTRICT mapname, 
+									   const char *RESTRICT bluname, 
+									   const char *RESTRICT redname )
 {
 	IVEngineServer *pEngine = m_context.GetEngine();
 	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
 	pEngine->ServerCommand("sm plugins unload supstats\n");
 	pEngine->ServerExecute();
 	pEngine->LogPrint( "[SizzlingStats]: Match Started\n" );
+	//char temp[256];
+	// DELIMIT THE STRINGS
+	//Q_snprintf(temp, 256, "[SizzlingStats]: Match Started<%s><%s><%s><%s>\n", hostname, mapname, bluname, redname);
+	//pEngine->LogPrint(temp);
 	char temp[128];
 	for (int i = 0; i < 33; ++i)
 	{
@@ -175,6 +182,7 @@ void CLogStats::TournamentMatchEnded()
 {
 	IVEngineServer *pEngine = m_context.GetEngine();
 	pEngine->LogPrint("[SizzlingStats]: Match Ended\n");
+	pEngine->ServerExecute();
 	pEngine->ServerCommand( "logaddress_del sizzlingstats.com:8006\n" );
 	pEngine->ServerExecute();
 }

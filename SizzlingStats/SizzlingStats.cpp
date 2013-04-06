@@ -78,9 +78,6 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_nCurrentRound(0),
 								m_PlayerDataManager(),
 								m_pWebStatsHandler(NULL),
-								m_refHostname((IConVar*)NULL),
-								m_refBlueTeamName((IConVar*)NULL),
-								m_refRedTeamName((IConVar*)NULL),
 								m_refHostIP((IConVar*)NULL),
 								m_refIP((IConVar*)NULL),
 								m_refHostPort((IConVar*)NULL),
@@ -101,9 +98,6 @@ void SizzlingStats::Load()
 {
     GetPropOffsets();
 	GetEntities();
-	m_refHostname.Init("hostname", false);
-	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
-	m_refRedTeamName.Init("mp_tournament_redteamname", false);
 	m_refHostIP.Init("hostip", false);
 	m_refIP.Init("ip", false);
 	m_refHostPort.Init("hostport", false);
@@ -353,16 +347,19 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
 
-void SizzlingStats::SS_TournamentMatchStarted()
+void SizzlingStats::SS_TournamentMatchStarted( const char *RESTRICT hostname, 
+											  const char *RESTRICT mapname, 
+											  const char *RESTRICT bluname, 
+											  const char *RESTRICT redname )
 {
 	Msg( "tournament match started\n" );
 	m_bTournamentMatchRunning = true;
 	m_flMatchDuration = Plat_FloatTime();
 
-	V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
-	V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
-	V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
-	V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
+	V_strncpy(m_hostInfo.m_hostname, hostname, 64);
+	V_strncpy(m_hostInfo.m_mapname, mapname, 64);
+	V_strncpy(m_hostInfo.m_bluname, bluname, 32);
+	V_strncpy(m_hostInfo.m_redname, redname, 32);
 	m_hostInfo.m_hostip = m_refHostIP.GetInt();
 	V_strncpy(m_hostInfo.m_ip, m_refIP.GetString(), 32);
 	m_hostInfo.m_hostport = m_refHostPort.GetInt();
@@ -557,10 +554,10 @@ void SizzlingStats::SS_EndOfRound()
 
 	if (m_bTournamentMatchRunning)
 	{
-		V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
-		V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
-		V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
-		V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
+		//V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
+		//V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
+		//V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
+		//V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
 		m_hostInfo.m_roundduration = m_flRoundDuration;
 		m_pWebStatsHandler->SetHostData(m_hostInfo);
 		m_pWebStatsHandler->SendStatsToWeb();

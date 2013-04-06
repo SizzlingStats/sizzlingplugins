@@ -38,7 +38,10 @@ public:
 	void ClientActive( edict_t *pEdict, int ent_index );
 	void ClientDisconnect( edict_t *pEdict );
 
-	void TournamentMatchStarted();
+	void TournamentMatchStarted( const char *RESTRICT hostname, 
+								const char *RESTRICT mapname, 
+								const char *RESTRICT bluname, 
+								const char *RESTRICT redname );
 	void TournamentMatchEnded();
 
 	virtual void FireGameEvent( IGameEvent *event );
