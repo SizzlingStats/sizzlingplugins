@@ -22,7 +22,7 @@
 #define STATS_UPDATE_URL "sizzlingstats.com/api/stats/update"
 #define GAME_START_URL "sizzlingstats.com/api/stats/new"
 #define GAMEOVER_URL "sizzlingstats.com/api/stats/gameover"
-#define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.1"
+#define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.2"
 
 typedef struct chatInfo_s
 {

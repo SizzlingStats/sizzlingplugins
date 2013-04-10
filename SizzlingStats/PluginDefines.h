@@ -17,10 +17,10 @@
 
 #ifdef PUBLIC_RELEASE
 	#define PLUGIN_VERSION "0.8.3.7"
-	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
+	#define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
 #else
-	#define PLUGIN_VERSION "0.9.2.1"
-	#define URL_BASE "http://dl.dropbox.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
+	#define PLUGIN_VERSION "0.9.2.2"
+	#define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
 #endif
 //#define RELEASE_VERSION
 
