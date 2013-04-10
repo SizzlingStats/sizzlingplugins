@@ -43,6 +43,7 @@ public:
 								const char *RESTRICT bluname, 
 								const char *RESTRICT redname );
 	void TournamentMatchEnded();
+	void PreRoundFreezeStarted( bool bTournamentModeOn );
 
 	virtual void FireGameEvent( IGameEvent *event );
 

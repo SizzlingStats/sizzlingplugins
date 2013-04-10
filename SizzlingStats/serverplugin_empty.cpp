@@ -481,6 +481,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			case GR_STATE_PREROUND:
 				{
 					m_bShouldRecord = true; // start extra stats recording
+					m_logstats.PreRoundFreezeStarted(m_bTournamentMatchStarted);
 					m_SizzlingStats.SS_PreRoundFreeze();
 				}
 				break;

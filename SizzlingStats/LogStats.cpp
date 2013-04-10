@@ -187,6 +187,16 @@ void CLogStats::TournamentMatchEnded()
 	pEngine->ServerExecute();
 }
 
+void CLogStats::PreRoundFreezeStarted( bool bTournamentModeOn )
+{
+	if (bTournamentModeOn)
+	{
+		IVEngineServer *pEngine = m_context.GetEngine();
+		pEngine->ServerCommand("sm plugins unload supstats\n");
+		pEngine->ServerExecute();
+	}
+}
+
 void CLogStats::FireGameEvent( IGameEvent *event )
 {
 	const char *RESTRICT name = event->GetName();
