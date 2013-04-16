@@ -168,7 +168,15 @@ void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname,
 		playerInfo *pInfo = &m_entIndexToPlayerInfo[i];
 		if (pInfo->pEdict)
 		{
-			Q_strncpy(pInfo->name, pInfo->pPlayerInfo->GetName(), 32);
+			// possible null playerinfo?? might fix crashes
+			if (!pInfo->pPlayerInfo)
+			{
+				pEngine->LogPrint("SizzlingStats: Error \"playerinfo was null'\"");
+			}
+			else
+			{
+				Q_strncpy(pInfo->name, pInfo->pPlayerInfo->GetName(), 32);
+			}
 			int userid = pEngine->GetPlayerUserId(pInfo->pEdict);
 			const char *RESTRICT teamname = teamNames[pInfo->teamid];
 			const char *RESTRICT classname = classNames[pInfo->classid];
