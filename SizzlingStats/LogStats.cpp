@@ -168,14 +168,10 @@ void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname,
 		playerInfo *pInfo = &m_entIndexToPlayerInfo[i];
 		if (pInfo->pEdict)
 		{
-			// possible null playerinfo?? might fix crashes
+			// for testing to see if it can be null
 			if (!pInfo->pPlayerInfo)
 			{
-				pEngine->LogPrint("SizzlingStats: Error \"playerinfo was null\"");
-			}
-			else
-			{
-				Q_strncpy(pInfo->name, pInfo->pPlayerInfo->GetName(), 32);
+				pEngine->LogPrint("[SizzlingStat]s: Error \"playerinfo was null\"");
 			}
 			int userid = pEngine->GetPlayerUserId(pInfo->pEdict);
 			const char *RESTRICT teamname = teamNames[pInfo->teamid];
@@ -345,6 +341,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 		int userid = event->GetInt( "userid" );
 		int index = g_pUserIdTracker->GetEntIndex( userid );
 		m_entIndexToPlayerInfo[index].teamid = event->GetInt( "team" );
+		Q_snprintf( m_entIndexToPlayerInfo[index].name, 32, "%s", event->GetString( "name" ) );
 	}
 	else if ( FStrEq( name, "player_changename" ) )
 	{
