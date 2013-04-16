@@ -171,7 +171,7 @@ void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname,
 			// possible null playerinfo?? might fix crashes
 			if (!pInfo->pPlayerInfo)
 			{
-				pEngine->LogPrint("SizzlingStats: Error \"playerinfo was null'\"");
+				pEngine->LogPrint("SizzlingStats: Error \"playerinfo was null\"");
 			}
 			else
 			{
