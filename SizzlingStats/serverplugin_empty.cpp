@@ -406,8 +406,6 @@ const char *CEmptyServerPlugin::GetPluginDescription( void )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::LevelInit( char const *pMapName )
 {
-	m_bAlreadyLevelShutdown = false;
-
 	//pEngine->LogPrint(UTIL_VarArgs( "LevelInit: %s\n", pMapName ));
 	pEngine->LogPrint( "[SizzlingStats]: Attempting update.\n" );
 	m_pAutoUpdater->StartThread();
@@ -423,6 +421,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
+	m_bAlreadyLevelShutdown = false;
 	//GetGameRules();
 	GetPropOffsets();
 	m_SizzlingStats.ServerActivate();
