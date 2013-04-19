@@ -73,7 +73,7 @@ bool SizzDownloader::DownloadFileAndVerify( const char *url, unsigned int crc, C
 		else
 		{
 			++failureCount;
-			Msg( "failed to download file: %i time(s)\n" );
+			Msg( "failed to download file: %i time(s)\n", failureCount );
 			if  ( failureCount == 5 )
 			{
 				Msg( "aborting download due to 5 successive failures\n" );
