@@ -171,7 +171,7 @@ void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname,
 			// for testing to see if it can be null
 			if (!pInfo->pPlayerInfo)
 			{
-				pEngine->LogPrint("[SizzlingStat]s: Error \"playerinfo was null\"");
+				pEngine->LogPrint("[SizzlingStats]: Error \"playerinfo was null\"\n");
 			}
 			int userid = pEngine->GetPlayerUserId(pInfo->pEdict);
 			const char *RESTRICT teamname = teamNames[pInfo->teamid];
