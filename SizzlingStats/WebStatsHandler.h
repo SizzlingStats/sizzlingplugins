@@ -237,8 +237,6 @@ inline responseInfo_s::responseInfo_s():
 	matchUrl(),
 	sessionId()
 {
-	matchUrlMutex.Unlock();
-	sessionIdMutex.Unlock();
 }
 
 #pragma warning( pop )
@@ -315,9 +313,6 @@ inline void responseInfo_s::ResetMatchUrl()
 inline CWebStatsHandler::CWebStatsHandler():
 	m_apikey()
 {
-	m_dataListAndChatMutex.Unlock();
-	m_hostInfoMutex.Unlock();
-	m_playerInfoMutex.Unlock();
 }
 
 #pragma warning( pop )

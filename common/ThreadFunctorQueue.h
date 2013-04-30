@@ -21,7 +21,6 @@ public:
 	CSizzFuncQueueThread():
 		m_bJoining(false)
 	{
-		m_waitingForItems.Reset();
 	}
 
 	virtual ~CSizzFuncQueueThread()
