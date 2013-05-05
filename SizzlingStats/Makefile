@@ -29,10 +29,10 @@ ALL_INC = \
 	$(HL2SDK_INC) \
 	$(SIZZLINGSTATS_INC)
 
-CPLUS=/usr/bin/g++-4.4
-CLINK=/usr/bin/gcc-4.4
+CPLUS=/usr/bin/g++-4.7
+CLINK=/usr/bin/gcc-4.7
 
-LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so libcurl.so.4.2.0
+LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so
 
 BUILD_DIR=$(SIZZLINGSTATS_DIR)
 RELEASE_DIR=./Release
@@ -122,7 +122,6 @@ TIER0_OBJS = \
 all: 
 	$(MAKE) dirs
 	ln -sf $(SERVER_LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
-	ln -sf $(LIBS_DIR)/libcurl.so.4.2.0 libcurl.so.4.2.0
 	ln -sf $(SERVER_LIBS_DIR)/libtier0_srv.so libtier0_srv.so
 	$(MAKE) sizzlingstats_$(ARCH).$(SHLIBEXT)
 
@@ -137,7 +136,7 @@ dirs:
 	$(CHECK_DSP) $(SOURCE_DSP)
 
 sizzlingstats_$(ARCH).$(SHLIBEXT): $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS)
-	$(CLINK) $(DEBUG) -o $(BUILD_DIR)/$@ $(SHLIBLDFLAGS) $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS) $(CPP_LIB) $(LDFLAGS) $(CPP_LIB) $(HL2SDK_LIB_DIR)/mathlib_i486.a $(HL2SDK_LIB_DIR)/tier1_i486.a
+	$(CLINK) $(DEBUG) -o $(BUILD_DIR)/$@ $(SHLIBLDFLAGS) $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS) $(CPP_LIB) $(LDFLAGS) $(CPP_LIB) $(HL2SDK_LIB_DIR)/mathlib_i486.a $(HL2SDK_LIB_DIR)/tier1_i486.a $(LIBS_DIR)/libcurl.a
 
 $(PLUGIN_OBJ_DIR)/%.o: $(PLUGIN_SRC_DIR)/%.cpp
 	$(DO_CC)
