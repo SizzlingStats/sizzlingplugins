@@ -222,16 +222,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_pAutoUpdater->StartThread();
 
 	//AutoUpdate();
-	g_pFullFileSystem = (IFileSystem *)interfaceFactory("VFileSystem020", NULL);
+	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 	if (!g_pFullFileSystem)
 	{
-		Warning( "Unable to load VFileSystem020, trying VFileSystem022...\n" );
-		g_pFullFileSystem = (IFileSystem *)interfaceFactory("VFileSystem022", NULL);
-		if (!g_pFullFileSystem)
-		{
-			Warning( "Unable to load VFileSystem022, aborting load\n" );
-			return false;
-		}
+		Warning( "Unable to load g_pFullFileSystem, aborting load\n" );
+		return false;
 	}
 
 	if ( !cvar )
