@@ -31,7 +31,11 @@
  */
 
 #include "curlver.h"         /* libcurl version defines   */
-#include "curlbuild.h"       /* libcurl build definitions */
+#ifdef WIN32
+ #include "curlbuild_win32.h"       /* libcurl build definitions */
+#else
+ #include "curlbuild_linux.h"       /* libcurl build definitions */
+#endif
 #include "curlrules.h"       /* libcurl rules enforcement */
 
 /*
