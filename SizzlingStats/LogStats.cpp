@@ -15,6 +15,18 @@
 #include "UserIdTracker.h"
 #include "platform.h"
 
+#include "convar.h"
+
+static ConVar ss_logging("sizz_stats_disable_logging", "0", FCVAR_NONE, "If nonzero, 'suppstats' logging is disabled from SizzlingStats. Used to resolve conflicts from other logging plugins.");
+
+inline void WriteLog( IVEngineServer *pEngine, const char *msg )
+{
+	if (ss_logging.GetBool())
+	{
+		pEngine->LogPrint(msg);
+	}
+}
+
 struct playerInfo
 {
 	playerInfo()
@@ -120,7 +132,7 @@ void CLogStats::LevelInit( const char *pMapName )
 
 	char maplog[64];
 	Q_snprintf( maplog, 64, "Loading map \"%s\"\n", pMapName );
-	pEng->LogPrint( maplog );
+	WriteLog( pEng, maplog );
 }
 
 void CLogStats::ClientActive( edict_t *pEdict, int ent_index )
@@ -232,7 +244,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 				pInfo.steamid,
 				teamNames[pInfo.teamid],
 				damageamount );
-			pEngine->LogPrint( log );
+			WriteLog( pEngine, log );
 			//L 03/21/2011 - 02:32:11: "rline<326><STEAM_0:1:796515><Blue>" triggered "damage" (damage "37")
 		}
 	}
@@ -273,7 +285,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo2.steamid,
 			teamNames[pInfo2.teamid],
 			event->GetInt( "amount" ) );
-		pEngine->LogPrint( log );
+		WriteLog( pEngine, log );
 		//L 03/21/2011 - 02:35:55: "HackLimit2. MixMixMixMix<333><STEAM_0:1:15579670><Blue>" triggered "healed" against "AI kaytee fbs!!<331><STEAM_0:0:9786107><Blue>" (healing "73")
 	}
 	else if ( FStrEq( name, "item_pickup" ) )
@@ -297,7 +309,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo.steamid,
 			teamNames[pInfo.teamid],
 			event->GetString( "item" ) );
-		pEngine->LogPrint( log );
+		WriteLog( pEngine, log );
 		//L 03/21/2011 - 02:35:56: "GooB<330><STEAM_0:1:23384772><Blue>" picked up item "tf_ammo_pack"
 	}
 	else if ( FStrEq( name, "player_spawn" ) )
@@ -321,7 +333,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo.steamid,
 			teamNames[ pInfo.teamid ],
 			classNames[ pInfo.classid ] );
-		pEngine->LogPrint( log );
+		WriteLog( pEngine, log );
 
 		        //LogToGame("\"%s<%d><%s><%s>\" spawned as \"%s\"",
           //        clientname,
