@@ -6,7 +6,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\hl2sdk-ob-valve\common;$(SolutionDir)\..\hl2sdk-ob-valve\public;$(SolutionDir)\..\hl2sdk-ob-valve\public\tier0;$(SolutionDir)\..\hl2sdk-ob-valve\public\tier1;$(SolutionDir)\..\hl2sdk-ob-valve\game\server;$(SolutionDir)\..\hl2sdk-ob-valve\game\shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\..\hl2sdk-ob-valve\lib\common;$(SolutionDir)\..\hl2sdk-ob-valve\lib\public;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
