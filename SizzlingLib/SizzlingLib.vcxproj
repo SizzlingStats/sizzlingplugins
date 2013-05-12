@@ -86,16 +86,16 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
-    <Import Project="..\propertysheets\common.props" />
     <Import Project="..\propertysheets\debugproperties.props" />
+    <Import Project="..\propertysheets\common.props" />
+    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
     <Import Project="..\propertysheets\libcurl.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
-    <Import Project="..\propertysheets\common.props" />
     <Import Project="..\propertysheets\releaseproperties.props" />
+    <Import Project="..\propertysheets\common.props" />
+    <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
     <Import Project="..\propertysheets\libcurl.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -114,6 +114,9 @@
     </Link>
     <Lib />
     <Lib />
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -132,6 +135,9 @@
     <Lib />
     <Lib />
     <Lib />
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
