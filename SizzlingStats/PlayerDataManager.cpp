@@ -66,7 +66,7 @@ bool CPlayerDataManager::InsertPlayer( engineContext_t &context, edict_t *pEdict
 	// normalize with a -1 for array indexing
 	int ent_index = context.pEngine->IndexOfEdict(pEdict) - 1;
 
-	uint32 account_id = pSteamID->GetAccountID();
+	//uint32 account_id = pSteamID->GetAccountID();
 	UtlHashFastHandle_t hHash = m_playerDataArchive.InvalidHandle(); //m_playerDataArchive.Find(account_id);
 
 	// if the player is not in the hash map, ie. not archived
