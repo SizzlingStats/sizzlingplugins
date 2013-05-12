@@ -47,6 +47,8 @@ which do not fall under the previous license.
 
 SizzlingPlugins includes code Copyright (c) Valve Corporation and is licensed separately.
 
-SizzlingPlugins includes code Copyright (c) Daniel Stenberg, under [the curl license.](http://curl.haxx.se/docs/copyright.html)
+SizzlingPlugins includes code Copyright (c) Daniel Stenberg, under [the curl license](http://curl.haxx.se/docs/copyright.html).
+
+SizzlingPlugins includes code Copyright (c) Google Inc., under the [new BSD license](http://opensource.org/licenses/BSD-3-Clause).
 
 Source and Team Fortress are trademarks and/or registered trademarks of Valve Corporation.
