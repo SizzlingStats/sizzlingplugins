@@ -1,0 +1,37 @@
+
+/*========
+        This file is part of SizzlingPlugins.
+
+    Copyright (c) 2010-2013, Jordan Cristiano.
+    This file is subject to the terms and conditions 
+    defined in the file 'LICENSE', which is part of this
+    source code package.
+    
+*/
+
+package SizzEvent;
+
+message SizzEvent
+{
+	message EventData
+	{
+		enum DATA_TYPES
+		{
+			TYPE_STRING = 1;
+			TYPE_INT = 2;
+			TYPE_FLOAT = 3;
+		}
+
+		required string data_key = 1;
+		required bytes data_value = 2;
+
+		optional DATA_TYPES data_type = 3;
+		optional uint32 data_length = 4;
+	}
+
+	required uint32 message_version = 1;
+	required uint32 timestamp = 2;
+	required string name = 3;
+
+	repeated EventData event_data = 4;
+}

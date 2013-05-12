@@ -47,6 +47,7 @@
 
 #include "ConCommandHook.h"
 #include "teamplay_gamerule_states.h"
+#include "EventSender.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -143,6 +144,7 @@ private:
 
 private:
 	CPluginContext m_PluginContext;
+	CEventSender m_event_sender;
 	CLogStats m_logstats;
 	SizzlingStats m_SizzlingStats;
 	CConCommandHook m_SayHook;
@@ -312,6 +314,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//gameeventmanager->AddListener( this, "teamplay_suddendeath_end", true );
 	//gameeventmanager->AddListener( this, "teamplay_overtime_end", true );
 
+	m_event_sender.BeginConnection( "sizzlingstats.com:8007" );
 	m_SizzlingStats.Load();
 
 	LoadCurrentPlayers();
@@ -362,6 +365,7 @@ void CEmptyServerPlugin::Unload( void )
 	m_SizzlingStats.SS_DeleteAllPlayerData();
 
 	m_SizzlingStats.Unload();
+	m_event_sender.EndConnection();
 	m_logstats.Unload();
 	
 	//UnhookProps();
@@ -787,6 +791,10 @@ void CEmptyServerPlugin::CommandPostExecute( const CCommand &args, bool bWasComm
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 {
+	if (m_bTournamentMatchStarted)
+	{
+		m_event_sender.SendEvent(event, gpGlobals->tickcount);
+	}
 #ifdef COUNT_CYCLES
 	CTimeAdder Timer( &m_CycleCount );
 #endif
