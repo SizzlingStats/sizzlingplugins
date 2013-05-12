@@ -87,11 +87,17 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_bTournamentMatchRunning(false),
 								m_bFirstCapOfRound(false)
 {
+#ifndef PUBLIC_RELEASE
+	m_pWebStatsHandler = new CWebStatsHandler();
+#else
+	m_pWebStatsHandler = new CNullWebStatsHandler();
+#endif
 }
 #pragma warning( pop )
 
 SizzlingStats::~SizzlingStats()
 {
+	delete m_pWebStatsHandler;
 }
 
 void SizzlingStats::Load()
@@ -102,16 +108,12 @@ void SizzlingStats::Load()
 	m_refIP.Init("ip", false);
 	m_refHostPort.Init("hostport", false);
 	LoadConfig();
-#ifndef PUBLIC_RELEASE
-	m_pWebStatsHandler = new CWebStatsHandler();
-#else
-	m_pWebStatsHandler = new CNullWebStatsHandler();
-#endif
+	m_pWebStatsHandler->Initialize();
 }
 
 void SizzlingStats::Unload()
 {
-	delete m_pWebStatsHandler;
+	m_pWebStatsHandler->Shutdown();
 }
 
 void SizzlingStats::LevelInit(const char *pMapName)

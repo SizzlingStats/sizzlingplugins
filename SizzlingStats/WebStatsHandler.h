@@ -100,6 +100,9 @@ public:
 	CWebStatsHandler();
 	~CWebStatsHandler();
 
+	void Initialize();
+	void Shutdown();
+
 	void ClearPlayerStats();
 	void EnqueuePlayerStats(playerWebStats_t const &item);
 	void EnqueuePlayerInfo(playerInfo_t const &info);
@@ -158,6 +161,9 @@ class CNullWebStatsHandler
 public:
 	CNullWebStatsHandler() {}
 	~CNullWebStatsHandler() {}
+
+	void Initialize() {}
+	void Shutdown() {}
 
 	void ClearPlayerStats() {}
 	void EnqueuePlayerStats(playerWebStats_t const &item) {}
@@ -319,6 +325,15 @@ inline CWebStatsHandler::CWebStatsHandler():
 
 inline CWebStatsHandler::~CWebStatsHandler()
 {
+}
+
+inline void CWebStatsHandler::Initialize()
+{
+}
+
+inline void CWebStatsHandler::Shutdown()
+{
+	m_queue.JoinQueue();
 }
 
 inline void CWebStatsHandler::ClearPlayerStats()
