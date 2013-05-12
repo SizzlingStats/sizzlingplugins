@@ -28,7 +28,7 @@ namespace SCHelpers
 {
 	inline bool FStrCmp( const char * const &pStr1, const char * const &pStr2 )
 	{
-		return ( V_strcmp( pStr1, pStr2 ) < 0 ) ? true : false;
+		return ( V_strcmp( pStr1, pStr2 ) == 0 );
 	}
 
 	inline bool FUIntCmp( const unsigned int &num1, const unsigned int &num2 )
