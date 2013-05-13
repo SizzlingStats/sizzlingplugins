@@ -398,9 +398,10 @@ namespace SCHelpers
 			for (int i = 0; i < numFields; ++i)
 			{
 				typedescription_t *pTypeDesc = &pDatamap->dataDesc[i];
-				if (pTypeDesc)
+				// TODO: check if FIELD_VOID types can have additional data tables inside
+				if (pTypeDesc/* && (pTypeDesc->fieldType != FIELD_VOID)*/)
 				{
-					if ( FStrEq(pTypeDesc->fieldName, szVarName) )
+					if ( pTypeDesc->fieldName && FStrEq(pTypeDesc->fieldName, szVarName) )
 					{
 						return pTypeDesc->fieldOffset[TD_OFFSET_NORMAL];
 					}
