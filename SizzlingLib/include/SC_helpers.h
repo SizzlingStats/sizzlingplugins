@@ -23,6 +23,8 @@ class CTeamplayRoundBasedRules;
 struct datamap_t;
 struct typedescription_t;
 class CBaseHandle;
+class IGameEventManager2;
+class IGameEventListener2;
 
 namespace SCHelpers
 {
@@ -132,6 +134,8 @@ namespace SCHelpers
 	int GetDatamapVarOffset( datamap_t *pDatamap, const char *szVarName );
 
 	int GetOffsetForDatamapVar( const CBaseEntity *pEntity, const char *szVarName );
+
+	void RegisterForAllEvents( IGameEventManager2 *pEventMgr, IGameEventListener2 *pListener, bool bServerSize = true );
 
 } // namespace SCHelpers
 
