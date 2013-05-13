@@ -20,11 +20,9 @@
 #endif
 
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_enum_reflection.h>
-#include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
 namespace SizzEvent {
@@ -47,19 +45,9 @@ const SizzEvent_EventData_DATA_TYPES SizzEvent_EventData_DATA_TYPES_DATA_TYPES_M
 const SizzEvent_EventData_DATA_TYPES SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MAX = SizzEvent_EventData_DATA_TYPES_TYPE_FLOAT;
 const int SizzEvent_EventData_DATA_TYPES_DATA_TYPES_ARRAYSIZE = SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* SizzEvent_EventData_DATA_TYPES_descriptor();
-inline const ::std::string& SizzEvent_EventData_DATA_TYPES_Name(SizzEvent_EventData_DATA_TYPES value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    SizzEvent_EventData_DATA_TYPES_descriptor(), value);
-}
-inline bool SizzEvent_EventData_DATA_TYPES_Parse(
-    const ::std::string& name, SizzEvent_EventData_DATA_TYPES* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<SizzEvent_EventData_DATA_TYPES>(
-    SizzEvent_EventData_DATA_TYPES_descriptor(), name, value);
-}
 // ===================================================================
 
-class SizzEvent_EventData : public ::google::protobuf::Message {
+class SizzEvent_EventData : public ::google::protobuf::MessageLite {
  public:
   SizzEvent_EventData();
   virtual ~SizzEvent_EventData();
@@ -71,24 +59,24 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const SizzEvent_EventData& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const SizzEvent_EventData* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(SizzEvent_EventData* other);
 
   // implements Message ----------------------------------------------
 
   SizzEvent_EventData* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const SizzEvent_EventData& from);
   void MergeFrom(const SizzEvent_EventData& from);
   void Clear();
@@ -99,7 +87,6 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -107,7 +94,7 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -124,17 +111,6 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
     SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MAX;
   static const int DATA_TYPES_ARRAYSIZE =
     SizzEvent_EventData_DATA_TYPES_DATA_TYPES_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  DATA_TYPES_descriptor() {
-    return SizzEvent_EventData_DATA_TYPES_descriptor();
-  }
-  static inline const ::std::string& DATA_TYPES_Name(DATA_TYPES value) {
-    return SizzEvent_EventData_DATA_TYPES_Name(value);
-  }
-  static inline bool DATA_TYPES_Parse(const ::std::string& name,
-      DATA_TYPES* value) {
-    return SizzEvent_EventData_DATA_TYPES_Parse(name, value);
-  }
 
   // accessors -------------------------------------------------------
 
@@ -187,8 +163,6 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
   inline void set_has_data_length();
   inline void clear_has_data_length();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* data_key_;
   ::std::string* data_value_;
   int data_type_;
@@ -197,7 +171,11 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_SizzEvent_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_SizzEvent_2eproto();
+  #endif
   friend void protobuf_AssignDesc_SizzEvent_2eproto();
   friend void protobuf_ShutdownFile_SizzEvent_2eproto();
 
@@ -206,7 +184,7 @@ class SizzEvent_EventData : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class SizzEvent : public ::google::protobuf::Message {
+class SizzEvent : public ::google::protobuf::MessageLite {
  public:
   SizzEvent();
   virtual ~SizzEvent();
@@ -218,24 +196,24 @@ class SizzEvent : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const SizzEvent& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const SizzEvent* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(SizzEvent* other);
 
   // implements Message ----------------------------------------------
 
   SizzEvent* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const SizzEvent& from);
   void MergeFrom(const SizzEvent& from);
   void Clear();
@@ -246,7 +224,6 @@ class SizzEvent : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -254,7 +231,7 @@ class SizzEvent : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -309,8 +286,6 @@ class SizzEvent : public ::google::protobuf::Message {
   inline void set_has_name();
   inline void clear_has_name();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::uint32 message_version_;
   ::google::protobuf::uint32 timestamp_;
   ::std::string* name_;
@@ -319,7 +294,11 @@ class SizzEvent : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_SizzEvent_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_SizzEvent_2eproto();
+  #endif
   friend void protobuf_AssignDesc_SizzEvent_2eproto();
   friend void protobuf_ShutdownFile_SizzEvent_2eproto();
 
@@ -665,19 +644,6 @@ SizzEvent::mutable_event_data() {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace SizzEvent
-
-#ifndef SWIG
-namespace google {
-namespace protobuf {
-
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::SizzEvent::SizzEvent_EventData_DATA_TYPES>() {
-  return ::SizzEvent::SizzEvent_EventData_DATA_TYPES_descriptor();
-}
-
-}  // namespace google
-}  // namespace protobuf
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

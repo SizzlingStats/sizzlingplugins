@@ -10,115 +10,27 @@
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
 namespace SizzEvent {
 
-namespace {
-
-const ::google::protobuf::Descriptor* SizzEvent_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SizzEvent_reflection_ = NULL;
-const ::google::protobuf::Descriptor* SizzEvent_EventData_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  SizzEvent_EventData_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* SizzEvent_EventData_DATA_TYPES_descriptor_ = NULL;
-
-}  // namespace
-
-
-void protobuf_AssignDesc_SizzEvent_2eproto() {
-  protobuf_AddDesc_SizzEvent_2eproto();
-  const ::google::protobuf::FileDescriptor* file =
-    ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
-      "SizzEvent.proto");
-  GOOGLE_CHECK(file != NULL);
-  SizzEvent_descriptor_ = file->message_type(0);
-  static const int SizzEvent_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent, message_version_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent, timestamp_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent, name_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent, event_data_),
-  };
-  SizzEvent_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SizzEvent_descriptor_,
-      SizzEvent::default_instance_,
-      SizzEvent_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(SizzEvent));
-  SizzEvent_EventData_descriptor_ = SizzEvent_descriptor_->nested_type(0);
-  static const int SizzEvent_EventData_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent_EventData, data_key_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent_EventData, data_value_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent_EventData, data_type_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent_EventData, data_length_),
-  };
-  SizzEvent_EventData_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      SizzEvent_EventData_descriptor_,
-      SizzEvent_EventData::default_instance_,
-      SizzEvent_EventData_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent_EventData, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SizzEvent_EventData, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(SizzEvent_EventData));
-  SizzEvent_EventData_DATA_TYPES_descriptor_ = SizzEvent_EventData_descriptor_->enum_type(0);
-}
-
-namespace {
-
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
-inline void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_SizzEvent_2eproto);
-}
-
-void protobuf_RegisterTypes(const ::std::string&) {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SizzEvent_descriptor_, &SizzEvent::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    SizzEvent_EventData_descriptor_, &SizzEvent_EventData::default_instance());
-}
-
-}  // namespace
-
 void protobuf_ShutdownFile_SizzEvent_2eproto() {
   delete SizzEvent::default_instance_;
-  delete SizzEvent_reflection_;
   delete SizzEvent_EventData::default_instance_;
-  delete SizzEvent_EventData_reflection_;
 }
 
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+void protobuf_AddDesc_SizzEvent_2eproto_impl() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+#else
 void protobuf_AddDesc_SizzEvent_2eproto() {
   static bool already_here = false;
   if (already_here) return;
   already_here = true;
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\017SizzEvent.proto\022\tSizzEvent\"\275\002\n\tSizzEve"
-    "nt\022\027\n\017message_version\030\001 \002(\r\022\021\n\ttimestamp"
-    "\030\002 \002(\r\022\014\n\004name\030\003 \002(\t\0222\n\nevent_data\030\004 \003(\013"
-    "2\036.SizzEvent.SizzEvent.EventData\032\301\001\n\tEve"
-    "ntData\022\020\n\010data_key\030\001 \002(\t\022\022\n\ndata_value\030\002"
-    " \002(\014\022<\n\tdata_type\030\003 \001(\0162).SizzEvent.Sizz"
-    "Event.EventData.DATA_TYPES\022\023\n\013data_lengt"
-    "h\030\004 \001(\r\";\n\nDATA_TYPES\022\017\n\013TYPE_STRING\020\001\022\014"
-    "\n\010TYPE_INT\020\002\022\016\n\nTYPE_FLOAT\020\003", 348);
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
-    "SizzEvent.proto", &protobuf_RegisterTypes);
+#endif
   SizzEvent::default_instance_ = new SizzEvent();
   SizzEvent_EventData::default_instance_ = new SizzEvent_EventData();
   SizzEvent::default_instance_->InitAsDefaultInstance();
@@ -126,19 +38,23 @@ void protobuf_AddDesc_SizzEvent_2eproto() {
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_SizzEvent_2eproto);
 }
 
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_SizzEvent_2eproto_once_);
+void protobuf_AddDesc_SizzEvent_2eproto() {
+  ::google::protobuf::::google::protobuf::GoogleOnceInit(&protobuf_AddDesc_SizzEvent_2eproto_once_,
+                 &protobuf_AddDesc_SizzEvent_2eproto_impl);
+}
+#else
 // Force AddDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_SizzEvent_2eproto {
   StaticDescriptorInitializer_SizzEvent_2eproto() {
     protobuf_AddDesc_SizzEvent_2eproto();
   }
 } static_descriptor_initializer_SizzEvent_2eproto_;
+#endif
 
 // ===================================================================
 
-const ::google::protobuf::EnumDescriptor* SizzEvent_EventData_DATA_TYPES_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return SizzEvent_EventData_DATA_TYPES_descriptor_;
-}
 bool SizzEvent_EventData_DATA_TYPES_IsValid(int value) {
   switch(value) {
     case 1:
@@ -166,7 +82,7 @@ const int SizzEvent_EventData::kDataLengthFieldNumber;
 #endif  // !_MSC_VER
 
 SizzEvent_EventData::SizzEvent_EventData()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -174,7 +90,7 @@ void SizzEvent_EventData::InitAsDefaultInstance() {
 }
 
 SizzEvent_EventData::SizzEvent_EventData(const SizzEvent_EventData& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -199,7 +115,11 @@ void SizzEvent_EventData::SharedDtor() {
   if (data_value_ != &::google::protobuf::internal::kEmptyString) {
     delete data_value_;
   }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -208,13 +128,12 @@ void SizzEvent_EventData::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* SizzEvent_EventData::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return SizzEvent_EventData_descriptor_;
-}
-
 const SizzEvent_EventData& SizzEvent_EventData::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_SizzEvent_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_SizzEvent_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -240,7 +159,6 @@ void SizzEvent_EventData::Clear() {
     data_length_ = 0u;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool SizzEvent_EventData::MergePartialFromCodedStream(
@@ -255,9 +173,6 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_data_key()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->data_key().data(), this->data_key().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -290,8 +205,6 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
                  input, &value)));
           if (::SizzEvent::SizzEvent_EventData_DATA_TYPES_IsValid(value)) {
             set_data_type(static_cast< ::SizzEvent::SizzEvent_EventData_DATA_TYPES >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -322,8 +235,7 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -336,9 +248,6 @@ void SizzEvent_EventData::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // required string data_key = 1;
   if (has_data_key()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->data_key().data(), this->data_key().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       1, this->data_key(), output);
   }
@@ -360,47 +269,6 @@ void SizzEvent_EventData::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->data_length(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* SizzEvent_EventData::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required string data_key = 1;
-  if (has_data_key()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->data_key().data(), this->data_key().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        1, this->data_key(), target);
-  }
-
-  // required bytes data_value = 2;
-  if (has_data_value()) {
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        2, this->data_value(), target);
-  }
-
-  // optional .SizzEvent.SizzEvent.EventData.DATA_TYPES data_type = 3;
-  if (has_data_type()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->data_type(), target);
-  }
-
-  // optional uint32 data_length = 4;
-  if (has_data_length()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->data_length(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int SizzEvent_EventData::ByteSize() const {
@@ -435,27 +303,15 @@ int SizzEvent_EventData::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void SizzEvent_EventData::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const SizzEvent_EventData* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const SizzEvent_EventData*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void SizzEvent_EventData::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const SizzEvent_EventData*>(&from));
 }
 
 void SizzEvent_EventData::MergeFrom(const SizzEvent_EventData& from) {
@@ -474,13 +330,6 @@ void SizzEvent_EventData::MergeFrom(const SizzEvent_EventData& from) {
       set_data_length(from.data_length());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void SizzEvent_EventData::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void SizzEvent_EventData::CopyFrom(const SizzEvent_EventData& from) {
@@ -502,17 +351,12 @@ void SizzEvent_EventData::Swap(SizzEvent_EventData* other) {
     std::swap(data_type_, other->data_type_);
     std::swap(data_length_, other->data_length_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata SizzEvent_EventData::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = SizzEvent_EventData_descriptor_;
-  metadata.reflection = SizzEvent_EventData_reflection_;
-  return metadata;
+::std::string SizzEvent_EventData::GetTypeName() const {
+  return "SizzEvent.SizzEvent.EventData";
 }
 
 
@@ -526,7 +370,7 @@ const int SizzEvent::kEventDataFieldNumber;
 #endif  // !_MSC_VER
 
 SizzEvent::SizzEvent()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -534,7 +378,7 @@ void SizzEvent::InitAsDefaultInstance() {
 }
 
 SizzEvent::SizzEvent(const SizzEvent& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -555,7 +399,11 @@ void SizzEvent::SharedDtor() {
   if (name_ != &::google::protobuf::internal::kEmptyString) {
     delete name_;
   }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -564,13 +412,12 @@ void SizzEvent::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* SizzEvent::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return SizzEvent_descriptor_;
-}
-
 const SizzEvent& SizzEvent::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_SizzEvent_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_SizzEvent_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -592,7 +439,6 @@ void SizzEvent::Clear() {
   }
   event_data_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool SizzEvent::MergePartialFromCodedStream(
@@ -639,9 +485,6 @@ bool SizzEvent::MergePartialFromCodedStream(
          parse_name:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -670,8 +513,7 @@ bool SizzEvent::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -694,59 +536,16 @@ void SizzEvent::SerializeWithCachedSizes(
 
   // required string name = 3;
   if (has_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       3, this->name(), output);
   }
 
   // repeated .SizzEvent.SizzEvent.EventData event_data = 4;
   for (int i = 0; i < this->event_data_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       4, this->event_data(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* SizzEvent::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required uint32 message_version = 1;
-  if (has_message_version()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->message_version(), target);
-  }
-
-  // required uint32 timestamp = 2;
-  if (has_timestamp()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->timestamp(), target);
-  }
-
-  // required string name = 3;
-  if (has_name()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->name(), target);
-  }
-
-  // repeated .SizzEvent.SizzEvent.EventData event_data = 4;
-  for (int i = 0; i < this->event_data_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        4, this->event_data(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int SizzEvent::ByteSize() const {
@@ -783,27 +582,15 @@ int SizzEvent::ByteSize() const {
         this->event_data(i));
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void SizzEvent::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const SizzEvent* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const SizzEvent*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void SizzEvent::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const SizzEvent*>(&from));
 }
 
 void SizzEvent::MergeFrom(const SizzEvent& from) {
@@ -820,13 +607,6 @@ void SizzEvent::MergeFrom(const SizzEvent& from) {
       set_name(from.name());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void SizzEvent::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void SizzEvent::CopyFrom(const SizzEvent& from) {
@@ -851,17 +631,12 @@ void SizzEvent::Swap(SizzEvent* other) {
     std::swap(name_, other->name_);
     event_data_.Swap(&other->event_data_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata SizzEvent::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = SizzEvent_descriptor_;
-  metadata.reflection = SizzEvent_reflection_;
-  return metadata;
+::std::string SizzEvent::GetTypeName() const {
+  return "SizzEvent.SizzEvent";
 }
 
 

@@ -11,6 +11,8 @@
 
 package SizzEvent;
 
+option optimize_for = LITE_RUNTIME;
+
 message SizzEvent
 {
 	message EventData
