@@ -349,6 +349,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::Unload( void )
 {
+	if (m_bTournamentMatchStarted)
+	{
+		TournamentMatchEnded();
+	}
+
 	m_SayHook.Unhook();
 	m_SayTeamHook.Unhook();
 	m_SwitchTeamsHook.Unhook();
