@@ -85,13 +85,10 @@ void CEventSender::SendEventInternal( std::shared_ptr<SizzEvent::SizzEvent> pEve
 	AUTO_LOCK(m_connection_lock);
 	if (m_connection.IsConnected())
 	{
-		m_send_buff.EnsureCapacity(pEvent->ByteSize());
-		int size = m_send_buff.NumAllocated();
+		int size = pEvent->ByteSize();
+		m_send_buff.EnsureCapacity(size);
 		pEvent->SerializeToArray(m_send_buff.Base(), size);
-
 		m_connection.Send(m_send_buff.Base(), size, 10);
-		std::string asdf(m_send_buff.Base(), size);
-		Msg("%s\n", asdf.c_str()); 
 	}
 	else
 	{
