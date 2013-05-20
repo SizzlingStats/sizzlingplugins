@@ -19,6 +19,18 @@
 #define FOR_EACH_SUBKEY( kvRoot, kvSubKey ) \
 for ( KeyValues * kvSubKey = kvRoot->GetFirstSubKey(); kvSubKey != NULL; kvSubKey = kvSubKey->GetNextKey() )
 
+enum EVENT_DATA_TYPES
+{
+	EVENT_TYPE_NONE = 0,
+	EVENT_TYPE_STRING,	// null terminated string
+	EVENT_TYPE_FLOAT,	// 4 bytes
+	EVENT_TYPE_LONG,	// 4 bytes
+	EVENT_TYPE_SHORT,	// 2 bytes
+	EVENT_TYPE_BYTE,	// 1 byte
+	EVENT_TYPE_BOOL,	// 1 byte for simplicity
+	NUM_EVENT_TYPES
+};
+
 bool CEventSender::BeginConnection( const char *url )
 {
 	AUTO_LOCK(m_connection_lock);
@@ -33,50 +45,72 @@ void CEventSender::EndConnection()
 
 void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 {
-	KeyValues *kv = *SCHelpers::ByteOffsetFromPointer<KeyValues*>(pEvent, 8);
-	if (kv)
+	// these are the event data keyvalues
+	//static const int KV_VALUES_OFFSET = 8;
+	//KeyValues *kv = *SCHelpers::ByteOffsetFromPointer<KeyValues*>(pEvent, KV_VALUES_OFFSET);
+
+	static const int EVENT_DESC_OFFSET = 4;
+	static const int KV_TYPES_OFFSET = 36;
+
+	// these are the event data TYPE keyvalues
+	char *event_desc = *SCHelpers::ByteOffsetFromPointer<char*>(pEvent, EVENT_DESC_OFFSET);
+	KeyValues *kv_types = *SCHelpers::ByteOffsetFromPointer<KeyValues*>(event_desc, KV_TYPES_OFFSET);
+	
+	if (kv_types && SCHelpers::FStrCmp("descriptor", kv_types->GetName()))
 	{
-		const char *name = kv->GetName();
-		if (SCHelpers::FStrCmp(pEvent->GetName(), name))
+		std::shared_ptr<SizzEvent::SizzEvent> pSizzEvent(new SizzEvent::SizzEvent());
+		pSizzEvent->set_event_id(1);
+			
+		FOR_EACH_SUBKEY(kv_types, kvSubKey)
 		{
-			std::shared_ptr<SizzEvent::SizzEvent> pSizzEvent(new SizzEvent::SizzEvent());
+			SizzEvent::SizzEvent_EventData *pData = pSizzEvent->add_event_data();
 
-			pSizzEvent->set_message_version(1);
-			pSizzEvent->set_timestamp(server_tick);
-			pSizzEvent->set_name(name);
-		
-			FOR_EACH_SUBKEY(kv, kvSubKey)
+			int type = kvSubKey->GetInt();
+			const char *value_name = kvSubKey->GetName();
+			switch (type)
 			{
-				SizzEvent::SizzEvent_EventData *pData = pSizzEvent->add_event_data();
-				pData->set_data_key(kvSubKey->GetName());
-
-				KeyValues::types_t type = kvSubKey->GetDataType();
-				switch (type)
+			case EVENT_TYPE_STRING:
 				{
-				case KeyValues::TYPE_STRING:
-					{
-						pData->set_data_value(kvSubKey->GetString());
-					}
-					break;
-				case KeyValues::TYPE_INT:
-					{
-						int num = kvSubKey->GetInt();
-						pData->set_data_value(&num, sizeof(int));
-					}
-					break;
-				case KeyValues::TYPE_FLOAT:
-					{
-						float num = kvSubKey->GetFloat();
-						pData->set_data_value(&num, sizeof(float));
-					}
-					break;
-				default:
-					break;
+					const char *val = pEvent->GetString(value_name);
+					pData->set_value_string(val);
 				}
+				break;
+			case EVENT_TYPE_FLOAT:
+				{
+					float val =  pEvent->GetFloat(value_name);
+					pData->set_value_float(val);
+				}
+				break;
+			case EVENT_TYPE_LONG:
+				{
+					int val = pEvent->GetInt(value_name);
+					pData->set_value_float(val);
+				}
+				break;
+			case EVENT_TYPE_SHORT:
+				{
+					short val = pEvent->GetInt(value_name);
+					pData->set_value_short(val);
+				}
+				break;
+			case EVENT_TYPE_BYTE:
+				{
+					char val = pEvent->GetInt(value_name);
+					pData->set_value_byte(val);
+				}
+				break;
+			case EVENT_TYPE_BOOL:
+				{
+					bool val = pEvent->GetBool(value_name);
+					pData->set_value_bool(val);
+				}
+				break;
+			default:
+				break;
 			}
-
-			m_send_queue.EnqueueFunctor(CreateFunctor(this, &CEventSender::SendEventInternal, pSizzEvent));
 		}
+			
+		m_send_queue.EnqueueFunctor(CreateFunctor(this, &CEventSender::SendEventInternal, pSizzEvent));
 	}
 }
 

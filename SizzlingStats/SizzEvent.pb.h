@@ -35,16 +35,6 @@ void protobuf_ShutdownFile_SizzEvent_2eproto();
 class SizzEvent;
 class SizzEvent_EventData;
 
-enum SizzEvent_EventData_DATA_TYPES {
-  SizzEvent_EventData_DATA_TYPES_TYPE_STRING = 1,
-  SizzEvent_EventData_DATA_TYPES_TYPE_INT = 2,
-  SizzEvent_EventData_DATA_TYPES_TYPE_FLOAT = 3
-};
-bool SizzEvent_EventData_DATA_TYPES_IsValid(int value);
-const SizzEvent_EventData_DATA_TYPES SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MIN = SizzEvent_EventData_DATA_TYPES_TYPE_STRING;
-const SizzEvent_EventData_DATA_TYPES SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MAX = SizzEvent_EventData_DATA_TYPES_TYPE_FLOAT;
-const int SizzEvent_EventData_DATA_TYPES_DATA_TYPES_ARRAYSIZE = SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MAX + 1;
-
 // ===================================================================
 
 class SizzEvent_EventData : public ::google::protobuf::MessageLite {
@@ -98,78 +88,79 @@ class SizzEvent_EventData : public ::google::protobuf::MessageLite {
 
   // nested types ----------------------------------------------------
 
-  typedef SizzEvent_EventData_DATA_TYPES DATA_TYPES;
-  static const DATA_TYPES TYPE_STRING = SizzEvent_EventData_DATA_TYPES_TYPE_STRING;
-  static const DATA_TYPES TYPE_INT = SizzEvent_EventData_DATA_TYPES_TYPE_INT;
-  static const DATA_TYPES TYPE_FLOAT = SizzEvent_EventData_DATA_TYPES_TYPE_FLOAT;
-  static inline bool DATA_TYPES_IsValid(int value) {
-    return SizzEvent_EventData_DATA_TYPES_IsValid(value);
-  }
-  static const DATA_TYPES DATA_TYPES_MIN =
-    SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MIN;
-  static const DATA_TYPES DATA_TYPES_MAX =
-    SizzEvent_EventData_DATA_TYPES_DATA_TYPES_MAX;
-  static const int DATA_TYPES_ARRAYSIZE =
-    SizzEvent_EventData_DATA_TYPES_DATA_TYPES_ARRAYSIZE;
-
   // accessors -------------------------------------------------------
 
-  // required string data_key = 1;
-  inline bool has_data_key() const;
-  inline void clear_data_key();
-  static const int kDataKeyFieldNumber = 1;
-  inline const ::std::string& data_key() const;
-  inline void set_data_key(const ::std::string& value);
-  inline void set_data_key(const char* value);
-  inline void set_data_key(const char* value, size_t size);
-  inline ::std::string* mutable_data_key();
-  inline ::std::string* release_data_key();
-  inline void set_allocated_data_key(::std::string* data_key);
+  // optional string value_string = 1;
+  inline bool has_value_string() const;
+  inline void clear_value_string();
+  static const int kValueStringFieldNumber = 1;
+  inline const ::std::string& value_string() const;
+  inline void set_value_string(const ::std::string& value);
+  inline void set_value_string(const char* value);
+  inline void set_value_string(const char* value, size_t size);
+  inline ::std::string* mutable_value_string();
+  inline ::std::string* release_value_string();
+  inline void set_allocated_value_string(::std::string* value_string);
 
-  // required bytes data_value = 2;
-  inline bool has_data_value() const;
-  inline void clear_data_value();
-  static const int kDataValueFieldNumber = 2;
-  inline const ::std::string& data_value() const;
-  inline void set_data_value(const ::std::string& value);
-  inline void set_data_value(const char* value);
-  inline void set_data_value(const void* value, size_t size);
-  inline ::std::string* mutable_data_value();
-  inline ::std::string* release_data_value();
-  inline void set_allocated_data_value(::std::string* data_value);
+  // optional float value_float = 2;
+  inline bool has_value_float() const;
+  inline void clear_value_float();
+  static const int kValueFloatFieldNumber = 2;
+  inline float value_float() const;
+  inline void set_value_float(float value);
 
-  // optional .SizzEvent.SizzEvent.EventData.DATA_TYPES data_type = 3;
-  inline bool has_data_type() const;
-  inline void clear_data_type();
-  static const int kDataTypeFieldNumber = 3;
-  inline ::SizzEvent::SizzEvent_EventData_DATA_TYPES data_type() const;
-  inline void set_data_type(::SizzEvent::SizzEvent_EventData_DATA_TYPES value);
+  // optional int32 value_long = 3;
+  inline bool has_value_long() const;
+  inline void clear_value_long();
+  static const int kValueLongFieldNumber = 3;
+  inline ::google::protobuf::int32 value_long() const;
+  inline void set_value_long(::google::protobuf::int32 value);
 
-  // optional uint32 data_length = 4;
-  inline bool has_data_length() const;
-  inline void clear_data_length();
-  static const int kDataLengthFieldNumber = 4;
-  inline ::google::protobuf::uint32 data_length() const;
-  inline void set_data_length(::google::protobuf::uint32 value);
+  // optional int32 value_short = 4;
+  inline bool has_value_short() const;
+  inline void clear_value_short();
+  static const int kValueShortFieldNumber = 4;
+  inline ::google::protobuf::int32 value_short() const;
+  inline void set_value_short(::google::protobuf::int32 value);
+
+  // optional int32 value_byte = 5;
+  inline bool has_value_byte() const;
+  inline void clear_value_byte();
+  static const int kValueByteFieldNumber = 5;
+  inline ::google::protobuf::int32 value_byte() const;
+  inline void set_value_byte(::google::protobuf::int32 value);
+
+  // optional bool value_bool = 6;
+  inline bool has_value_bool() const;
+  inline void clear_value_bool();
+  static const int kValueBoolFieldNumber = 6;
+  inline bool value_bool() const;
+  inline void set_value_bool(bool value);
 
   // @@protoc_insertion_point(class_scope:SizzEvent.SizzEvent.EventData)
  private:
-  inline void set_has_data_key();
-  inline void clear_has_data_key();
-  inline void set_has_data_value();
-  inline void clear_has_data_value();
-  inline void set_has_data_type();
-  inline void clear_has_data_type();
-  inline void set_has_data_length();
-  inline void clear_has_data_length();
+  inline void set_has_value_string();
+  inline void clear_has_value_string();
+  inline void set_has_value_float();
+  inline void clear_has_value_float();
+  inline void set_has_value_long();
+  inline void clear_has_value_long();
+  inline void set_has_value_short();
+  inline void clear_has_value_short();
+  inline void set_has_value_byte();
+  inline void clear_has_value_byte();
+  inline void set_has_value_bool();
+  inline void clear_has_value_bool();
 
-  ::std::string* data_key_;
-  ::std::string* data_value_;
-  int data_type_;
-  ::google::protobuf::uint32 data_length_;
+  ::std::string* value_string_;
+  float value_float_;
+  ::google::protobuf::int32 value_long_;
+  ::google::protobuf::int32 value_short_;
+  ::google::protobuf::int32 value_byte_;
+  bool value_bool_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_SizzEvent_2eproto_impl();
@@ -239,36 +230,17 @@ class SizzEvent : public ::google::protobuf::MessageLite {
 
   // accessors -------------------------------------------------------
 
-  // required uint32 message_version = 1;
-  inline bool has_message_version() const;
-  inline void clear_message_version();
-  static const int kMessageVersionFieldNumber = 1;
-  inline ::google::protobuf::uint32 message_version() const;
-  inline void set_message_version(::google::protobuf::uint32 value);
+  // optional uint32 event_id = 1;
+  inline bool has_event_id() const;
+  inline void clear_event_id();
+  static const int kEventIdFieldNumber = 1;
+  inline ::google::protobuf::uint32 event_id() const;
+  inline void set_event_id(::google::protobuf::uint32 value);
 
-  // required uint32 timestamp = 2;
-  inline bool has_timestamp() const;
-  inline void clear_timestamp();
-  static const int kTimestampFieldNumber = 2;
-  inline ::google::protobuf::uint32 timestamp() const;
-  inline void set_timestamp(::google::protobuf::uint32 value);
-
-  // required string name = 3;
-  inline bool has_name() const;
-  inline void clear_name();
-  static const int kNameFieldNumber = 3;
-  inline const ::std::string& name() const;
-  inline void set_name(const ::std::string& value);
-  inline void set_name(const char* value);
-  inline void set_name(const char* value, size_t size);
-  inline ::std::string* mutable_name();
-  inline ::std::string* release_name();
-  inline void set_allocated_name(::std::string* name);
-
-  // repeated .SizzEvent.SizzEvent.EventData event_data = 4;
+  // repeated .SizzEvent.SizzEvent.EventData event_data = 2;
   inline int event_data_size() const;
   inline void clear_event_data();
-  static const int kEventDataFieldNumber = 4;
+  static const int kEventDataFieldNumber = 2;
   inline const ::SizzEvent::SizzEvent_EventData& event_data(int index) const;
   inline ::SizzEvent::SizzEvent_EventData* mutable_event_data(int index);
   inline ::SizzEvent::SizzEvent_EventData* add_event_data();
@@ -279,20 +251,14 @@ class SizzEvent : public ::google::protobuf::MessageLite {
 
   // @@protoc_insertion_point(class_scope:SizzEvent.SizzEvent)
  private:
-  inline void set_has_message_version();
-  inline void clear_has_message_version();
-  inline void set_has_timestamp();
-  inline void clear_has_timestamp();
-  inline void set_has_name();
-  inline void clear_has_name();
+  inline void set_has_event_id();
+  inline void clear_has_event_id();
 
-  ::google::protobuf::uint32 message_version_;
-  ::google::protobuf::uint32 timestamp_;
-  ::std::string* name_;
   ::google::protobuf::RepeatedPtrField< ::SizzEvent::SizzEvent_EventData > event_data_;
+  ::google::protobuf::uint32 event_id_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
   #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   friend void  protobuf_AddDesc_SizzEvent_2eproto_impl();
@@ -312,310 +278,213 @@ class SizzEvent : public ::google::protobuf::MessageLite {
 
 // SizzEvent_EventData
 
-// required string data_key = 1;
-inline bool SizzEvent_EventData::has_data_key() const {
+// optional string value_string = 1;
+inline bool SizzEvent_EventData::has_value_string() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void SizzEvent_EventData::set_has_data_key() {
+inline void SizzEvent_EventData::set_has_value_string() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void SizzEvent_EventData::clear_has_data_key() {
+inline void SizzEvent_EventData::clear_has_value_string() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void SizzEvent_EventData::clear_data_key() {
-  if (data_key_ != &::google::protobuf::internal::kEmptyString) {
-    data_key_->clear();
+inline void SizzEvent_EventData::clear_value_string() {
+  if (value_string_ != &::google::protobuf::internal::kEmptyString) {
+    value_string_->clear();
   }
-  clear_has_data_key();
+  clear_has_value_string();
 }
-inline const ::std::string& SizzEvent_EventData::data_key() const {
-  return *data_key_;
+inline const ::std::string& SizzEvent_EventData::value_string() const {
+  return *value_string_;
 }
-inline void SizzEvent_EventData::set_data_key(const ::std::string& value) {
-  set_has_data_key();
-  if (data_key_ == &::google::protobuf::internal::kEmptyString) {
-    data_key_ = new ::std::string;
+inline void SizzEvent_EventData::set_value_string(const ::std::string& value) {
+  set_has_value_string();
+  if (value_string_ == &::google::protobuf::internal::kEmptyString) {
+    value_string_ = new ::std::string;
   }
-  data_key_->assign(value);
+  value_string_->assign(value);
 }
-inline void SizzEvent_EventData::set_data_key(const char* value) {
-  set_has_data_key();
-  if (data_key_ == &::google::protobuf::internal::kEmptyString) {
-    data_key_ = new ::std::string;
+inline void SizzEvent_EventData::set_value_string(const char* value) {
+  set_has_value_string();
+  if (value_string_ == &::google::protobuf::internal::kEmptyString) {
+    value_string_ = new ::std::string;
   }
-  data_key_->assign(value);
+  value_string_->assign(value);
 }
-inline void SizzEvent_EventData::set_data_key(const char* value, size_t size) {
-  set_has_data_key();
-  if (data_key_ == &::google::protobuf::internal::kEmptyString) {
-    data_key_ = new ::std::string;
+inline void SizzEvent_EventData::set_value_string(const char* value, size_t size) {
+  set_has_value_string();
+  if (value_string_ == &::google::protobuf::internal::kEmptyString) {
+    value_string_ = new ::std::string;
   }
-  data_key_->assign(reinterpret_cast<const char*>(value), size);
+  value_string_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* SizzEvent_EventData::mutable_data_key() {
-  set_has_data_key();
-  if (data_key_ == &::google::protobuf::internal::kEmptyString) {
-    data_key_ = new ::std::string;
+inline ::std::string* SizzEvent_EventData::mutable_value_string() {
+  set_has_value_string();
+  if (value_string_ == &::google::protobuf::internal::kEmptyString) {
+    value_string_ = new ::std::string;
   }
-  return data_key_;
+  return value_string_;
 }
-inline ::std::string* SizzEvent_EventData::release_data_key() {
-  clear_has_data_key();
-  if (data_key_ == &::google::protobuf::internal::kEmptyString) {
+inline ::std::string* SizzEvent_EventData::release_value_string() {
+  clear_has_value_string();
+  if (value_string_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
   } else {
-    ::std::string* temp = data_key_;
-    data_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    ::std::string* temp = value_string_;
+    value_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
-inline void SizzEvent_EventData::set_allocated_data_key(::std::string* data_key) {
-  if (data_key_ != &::google::protobuf::internal::kEmptyString) {
-    delete data_key_;
+inline void SizzEvent_EventData::set_allocated_value_string(::std::string* value_string) {
+  if (value_string_ != &::google::protobuf::internal::kEmptyString) {
+    delete value_string_;
   }
-  if (data_key) {
-    set_has_data_key();
-    data_key_ = data_key;
+  if (value_string) {
+    set_has_value_string();
+    value_string_ = value_string;
   } else {
-    clear_has_data_key();
-    data_key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    clear_has_value_string();
+    value_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   }
 }
 
-// required bytes data_value = 2;
-inline bool SizzEvent_EventData::has_data_value() const {
+// optional float value_float = 2;
+inline bool SizzEvent_EventData::has_value_float() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void SizzEvent_EventData::set_has_data_value() {
+inline void SizzEvent_EventData::set_has_value_float() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void SizzEvent_EventData::clear_has_data_value() {
+inline void SizzEvent_EventData::clear_has_value_float() {
   _has_bits_[0] &= ~0x00000002u;
 }
-inline void SizzEvent_EventData::clear_data_value() {
-  if (data_value_ != &::google::protobuf::internal::kEmptyString) {
-    data_value_->clear();
-  }
-  clear_has_data_value();
+inline void SizzEvent_EventData::clear_value_float() {
+  value_float_ = 0;
+  clear_has_value_float();
 }
-inline const ::std::string& SizzEvent_EventData::data_value() const {
-  return *data_value_;
+inline float SizzEvent_EventData::value_float() const {
+  return value_float_;
 }
-inline void SizzEvent_EventData::set_data_value(const ::std::string& value) {
-  set_has_data_value();
-  if (data_value_ == &::google::protobuf::internal::kEmptyString) {
-    data_value_ = new ::std::string;
-  }
-  data_value_->assign(value);
-}
-inline void SizzEvent_EventData::set_data_value(const char* value) {
-  set_has_data_value();
-  if (data_value_ == &::google::protobuf::internal::kEmptyString) {
-    data_value_ = new ::std::string;
-  }
-  data_value_->assign(value);
-}
-inline void SizzEvent_EventData::set_data_value(const void* value, size_t size) {
-  set_has_data_value();
-  if (data_value_ == &::google::protobuf::internal::kEmptyString) {
-    data_value_ = new ::std::string;
-  }
-  data_value_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SizzEvent_EventData::mutable_data_value() {
-  set_has_data_value();
-  if (data_value_ == &::google::protobuf::internal::kEmptyString) {
-    data_value_ = new ::std::string;
-  }
-  return data_value_;
-}
-inline ::std::string* SizzEvent_EventData::release_data_value() {
-  clear_has_data_value();
-  if (data_value_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = data_value_;
-    data_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void SizzEvent_EventData::set_allocated_data_value(::std::string* data_value) {
-  if (data_value_ != &::google::protobuf::internal::kEmptyString) {
-    delete data_value_;
-  }
-  if (data_value) {
-    set_has_data_value();
-    data_value_ = data_value;
-  } else {
-    clear_has_data_value();
-    data_value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
+inline void SizzEvent_EventData::set_value_float(float value) {
+  set_has_value_float();
+  value_float_ = value;
 }
 
-// optional .SizzEvent.SizzEvent.EventData.DATA_TYPES data_type = 3;
-inline bool SizzEvent_EventData::has_data_type() const {
+// optional int32 value_long = 3;
+inline bool SizzEvent_EventData::has_value_long() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void SizzEvent_EventData::set_has_data_type() {
+inline void SizzEvent_EventData::set_has_value_long() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void SizzEvent_EventData::clear_has_data_type() {
+inline void SizzEvent_EventData::clear_has_value_long() {
   _has_bits_[0] &= ~0x00000004u;
 }
-inline void SizzEvent_EventData::clear_data_type() {
-  data_type_ = 1;
-  clear_has_data_type();
+inline void SizzEvent_EventData::clear_value_long() {
+  value_long_ = 0;
+  clear_has_value_long();
 }
-inline ::SizzEvent::SizzEvent_EventData_DATA_TYPES SizzEvent_EventData::data_type() const {
-  return static_cast< ::SizzEvent::SizzEvent_EventData_DATA_TYPES >(data_type_);
+inline ::google::protobuf::int32 SizzEvent_EventData::value_long() const {
+  return value_long_;
 }
-inline void SizzEvent_EventData::set_data_type(::SizzEvent::SizzEvent_EventData_DATA_TYPES value) {
-  assert(::SizzEvent::SizzEvent_EventData_DATA_TYPES_IsValid(value));
-  set_has_data_type();
-  data_type_ = value;
+inline void SizzEvent_EventData::set_value_long(::google::protobuf::int32 value) {
+  set_has_value_long();
+  value_long_ = value;
 }
 
-// optional uint32 data_length = 4;
-inline bool SizzEvent_EventData::has_data_length() const {
+// optional int32 value_short = 4;
+inline bool SizzEvent_EventData::has_value_short() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void SizzEvent_EventData::set_has_data_length() {
+inline void SizzEvent_EventData::set_has_value_short() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void SizzEvent_EventData::clear_has_data_length() {
+inline void SizzEvent_EventData::clear_has_value_short() {
   _has_bits_[0] &= ~0x00000008u;
 }
-inline void SizzEvent_EventData::clear_data_length() {
-  data_length_ = 0u;
-  clear_has_data_length();
+inline void SizzEvent_EventData::clear_value_short() {
+  value_short_ = 0;
+  clear_has_value_short();
 }
-inline ::google::protobuf::uint32 SizzEvent_EventData::data_length() const {
-  return data_length_;
+inline ::google::protobuf::int32 SizzEvent_EventData::value_short() const {
+  return value_short_;
 }
-inline void SizzEvent_EventData::set_data_length(::google::protobuf::uint32 value) {
-  set_has_data_length();
-  data_length_ = value;
+inline void SizzEvent_EventData::set_value_short(::google::protobuf::int32 value) {
+  set_has_value_short();
+  value_short_ = value;
+}
+
+// optional int32 value_byte = 5;
+inline bool SizzEvent_EventData::has_value_byte() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void SizzEvent_EventData::set_has_value_byte() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void SizzEvent_EventData::clear_has_value_byte() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void SizzEvent_EventData::clear_value_byte() {
+  value_byte_ = 0;
+  clear_has_value_byte();
+}
+inline ::google::protobuf::int32 SizzEvent_EventData::value_byte() const {
+  return value_byte_;
+}
+inline void SizzEvent_EventData::set_value_byte(::google::protobuf::int32 value) {
+  set_has_value_byte();
+  value_byte_ = value;
+}
+
+// optional bool value_bool = 6;
+inline bool SizzEvent_EventData::has_value_bool() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void SizzEvent_EventData::set_has_value_bool() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void SizzEvent_EventData::clear_has_value_bool() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void SizzEvent_EventData::clear_value_bool() {
+  value_bool_ = false;
+  clear_has_value_bool();
+}
+inline bool SizzEvent_EventData::value_bool() const {
+  return value_bool_;
+}
+inline void SizzEvent_EventData::set_value_bool(bool value) {
+  set_has_value_bool();
+  value_bool_ = value;
 }
 
 // -------------------------------------------------------------------
 
 // SizzEvent
 
-// required uint32 message_version = 1;
-inline bool SizzEvent::has_message_version() const {
+// optional uint32 event_id = 1;
+inline bool SizzEvent::has_event_id() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void SizzEvent::set_has_message_version() {
+inline void SizzEvent::set_has_event_id() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void SizzEvent::clear_has_message_version() {
+inline void SizzEvent::clear_has_event_id() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void SizzEvent::clear_message_version() {
-  message_version_ = 0u;
-  clear_has_message_version();
+inline void SizzEvent::clear_event_id() {
+  event_id_ = 0u;
+  clear_has_event_id();
 }
-inline ::google::protobuf::uint32 SizzEvent::message_version() const {
-  return message_version_;
+inline ::google::protobuf::uint32 SizzEvent::event_id() const {
+  return event_id_;
 }
-inline void SizzEvent::set_message_version(::google::protobuf::uint32 value) {
-  set_has_message_version();
-  message_version_ = value;
-}
-
-// required uint32 timestamp = 2;
-inline bool SizzEvent::has_timestamp() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void SizzEvent::set_has_timestamp() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void SizzEvent::clear_has_timestamp() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void SizzEvent::clear_timestamp() {
-  timestamp_ = 0u;
-  clear_has_timestamp();
-}
-inline ::google::protobuf::uint32 SizzEvent::timestamp() const {
-  return timestamp_;
-}
-inline void SizzEvent::set_timestamp(::google::protobuf::uint32 value) {
-  set_has_timestamp();
-  timestamp_ = value;
+inline void SizzEvent::set_event_id(::google::protobuf::uint32 value) {
+  set_has_event_id();
+  event_id_ = value;
 }
 
-// required string name = 3;
-inline bool SizzEvent::has_name() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void SizzEvent::set_has_name() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void SizzEvent::clear_has_name() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void SizzEvent::clear_name() {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
-    name_->clear();
-  }
-  clear_has_name();
-}
-inline const ::std::string& SizzEvent::name() const {
-  return *name_;
-}
-inline void SizzEvent::set_name(const ::std::string& value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void SizzEvent::set_name(const char* value) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
-    name_ = new ::std::string;
-  }
-  name_->assign(value);
-}
-inline void SizzEvent::set_name(const char* value, size_t size) {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
-    name_ = new ::std::string;
-  }
-  name_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* SizzEvent::mutable_name() {
-  set_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
-    name_ = new ::std::string;
-  }
-  return name_;
-}
-inline ::std::string* SizzEvent::release_name() {
-  clear_has_name();
-  if (name_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = name_;
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void SizzEvent::set_allocated_name(::std::string* name) {
-  if (name_ != &::google::protobuf::internal::kEmptyString) {
-    delete name_;
-  }
-  if (name) {
-    set_has_name();
-    name_ = name;
-  } else {
-    clear_has_name();
-    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
-}
-
-// repeated .SizzEvent.SizzEvent.EventData event_data = 4;
+// repeated .SizzEvent.SizzEvent.EventData event_data = 2;
 inline int SizzEvent::event_data_size() const {
   return event_data_.size();
 }
