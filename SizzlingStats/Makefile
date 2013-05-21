@@ -110,9 +110,11 @@ SIZZLINGLIB_OBJS = \
 	$(SIZZLIB_OBJ_DIR)/UserIdTracker.o
 
 SIZZLINGSTATS_OBJS = \
+	$(PLUGIN_OBJ_DIR)/EventSender.o \
 	$(PLUGIN_OBJ_DIR)/LogStats.o \
 	$(PLUGIN_OBJ_DIR)/PlayerDataManager.o \
 	$(PLUGIN_OBJ_DIR)/serverplugin_empty.o \
+	$(PLUGIN_OBJ_DIR)/SizzEvent.pb.o \
 	$(PLUGIN_OBJ_DIR)/SizzlingStats.o \
 	$(PLUGIN_OBJ_DIR)/WebStatsHandler.o
 
@@ -123,7 +125,7 @@ all:
 	$(MAKE) dirs
 	ln -sf $(SERVER_LIBS_DIR)/libvstdlib_srv.so libvstdlib_srv.so
 	ln -sf $(SERVER_LIBS_DIR)/libtier0_srv.so libtier0_srv.so
-	$(MAKE) sizzlingstats_$(ARCH).$(SHLIBEXT)
+	$(MAKE) sizzlingstats.$(SHLIBEXT)
 
 dirs:
 	-mkdir -p $(BUILD_OBJ_DIR)
@@ -135,10 +137,13 @@ dirs:
 	-mkdir -p $(TIER0_OBJ_DIR)
 	$(CHECK_DSP) $(SOURCE_DSP)
 
-sizzlingstats_$(ARCH).$(SHLIBEXT): $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS)
-	$(CLINK) $(DEBUG) -o $(BUILD_DIR)/$@ $(SHLIBLDFLAGS) $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS) $(CPP_LIB) $(LDFLAGS) $(CPP_LIB) $(HL2SDK_LIB_DIR)/mathlib_i486.a $(HL2SDK_LIB_DIR)/tier1_i486.a $(LIBS_DIR)/libcurl.a
+sizzlingstats.$(SHLIBEXT): $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS)
+	$(CLINK) $(DEBUG) -o $(BUILD_DIR)/$@ $(SHLIBLDFLAGS) $(SIZZLINGSTATS_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS) $(CPP_LIB) $(LDFLAGS) $(CPP_LIB) $(HL2SDK_LIB_DIR)/mathlib_i486.a $(HL2SDK_LIB_DIR)/tier1_i486.a $(LIBS_DIR)/libcurl.a $(LIBS_DIR)/libprotobuf-lite.a
 
 $(PLUGIN_OBJ_DIR)/%.o: $(PLUGIN_SRC_DIR)/%.cpp
+	$(DO_CC)
+
+$(PLUGIN_OBJ_DIR)/%.o: $(PLUGIN_SRC_DIR)/%.cc
 	$(DO_CC)
 
 $(SIZZLIB_OBJ_DIR)/%.o: $(SIZZLIB_SRC_DIR)/%.cpp
@@ -158,5 +163,5 @@ default: all
 clean:
 	-rm -rf $(PLUGIN_OBJ_DIR_RELEASE)
 	-rm -rf $(PLUGIN_OBJ_DIR_DEBUG)
-	-rm -f sizzlingstats_$(ARCH).$(SHLIBEXT)
+	-rm -f sizzlingstats.$(SHLIBEXT)
 
