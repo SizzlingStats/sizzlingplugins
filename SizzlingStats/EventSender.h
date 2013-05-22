@@ -45,7 +45,13 @@ public:
 
 			curl_easy_perform(m_pCurl);
 			curl_easy_getinfo(m_pCurl, CURLINFO_LASTSOCKET, &m_socket);
-			return (m_socket != 0);
+			
+			bool success = (m_socket != -1);
+			if (!success)
+			{
+				Disconnect();
+			}
+			return success;
 		}
 		return false;
 	}
@@ -55,7 +61,8 @@ public:
 		if (m_pCurl)
 		{
 			curl_easy_cleanup(m_pCurl);
-			m_socket = 0;
+			m_pCurl = nullptr;
+			m_socket = -1;
 		}
 	}
 
