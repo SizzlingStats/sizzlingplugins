@@ -25,7 +25,7 @@ class CTCPSocket
 public:
 	CTCPSocket():
 		m_pCurl(nullptr),
-		m_socket(0)
+		m_socket(static_cast<unsigned int>(-1))
 	{
 	}
 
@@ -62,7 +62,7 @@ public:
 		{
 			curl_easy_cleanup(m_pCurl);
 			m_pCurl = nullptr;
-			m_socket = -1;
+			m_socket = static_cast<unsigned int>(-1);
 		}
 	}
 
