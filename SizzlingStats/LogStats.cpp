@@ -21,7 +21,7 @@ static ConVar ss_logging("sizz_stats_disable_logging", "0", FCVAR_NONE, "If nonz
 
 inline void WriteLog( IVEngineServer *pEngine, const char *msg )
 {
-	if (ss_logging.GetBool())
+	if (!ss_logging.GetBool())
 	{
 		pEngine->LogPrint(msg);
 	}
