@@ -53,6 +53,7 @@
     <ClInclude Include="include\SizzlingProtect.h" />
     <ClInclude Include="include\SRecipientFilter.h" />
     <ClInclude Include="include\ThreadCallQueue.h" />
+    <ClInclude Include="include\threading.h" />
     <ClInclude Include="include\UserIdTracker.h" />
     <ClInclude Include="include\VFuncs.h" />
   </ItemGroup>

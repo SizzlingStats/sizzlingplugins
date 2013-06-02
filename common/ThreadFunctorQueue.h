@@ -14,6 +14,7 @@
 
 #include "functors.h"
 #include "tier0/tslist.h"
+#include "threading.h"
 
 class CSizzFuncQueueThread: public CThread
 {
@@ -138,7 +139,7 @@ private:
 
 private:
 	CTSQueue<CFunctor*> m_queue;
-	CThreadEvent m_waitingForItems;
+	sizz::CThreadEvent m_waitingForItems;
 	bool m_bJoining;
 };
 
