@@ -89,14 +89,6 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 			// the new version runs the updater which checks for plugin_old
 			// and deletes it.
 		}
-		else
-		{
-			return;
-		}
-	}
-	else
-	{
-		return;
 	}
 }
 
