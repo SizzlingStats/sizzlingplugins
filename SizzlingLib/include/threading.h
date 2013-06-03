@@ -68,7 +68,7 @@ namespace sizz
 		std::unique_lock<std::mutex> lock(m_mutex);
 		if (!m_set)
 		{
-			m_cond.wait(lock, [&]{ return !m_set; });
+			m_cond.wait(lock, [&]{ return m_set; });
 		}
 	}
 }
