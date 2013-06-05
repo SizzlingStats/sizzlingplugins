@@ -58,7 +58,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 	
 	if (kv_types && SCHelpers::FStrCmp("descriptor", kv_types->GetName()))
 	{
-		std::shared_ptr<SizzEvent::SizzEvent> pSizzEvent(new SizzEvent::SizzEvent());
+		std::shared_ptr<SizzEvent::SizzEvent> pSizzEvent = std::make_shared<SizzEvent::SizzEvent>();
 		pSizzEvent->set_event_id(1);
 			
 		FOR_EACH_SUBKEY(kv_types, kvSubKey)
@@ -114,7 +114,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 	}
 }
 
-void CEventSender::SendEventInternal( std::shared_ptr<SizzEvent::SizzEvent> pEvent )
+void CEventSender::SendEventInternal( const std::shared_ptr<SizzEvent::SizzEvent> &pEvent )
 {
 	AUTO_LOCK(m_connection_lock);
 	if (m_connection.IsConnected())

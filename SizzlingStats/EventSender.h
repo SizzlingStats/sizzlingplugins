@@ -135,7 +135,7 @@ public:
 	void SendEvent( IGameEvent *pEvent, unsigned int server_tick );
 
 private:
-	void SendEventInternal( std::shared_ptr<SizzEvent::SizzEvent> pEvent );
+	void SendEventInternal( const std::shared_ptr<SizzEvent::SizzEvent> &pEvent );
 
 private:
 	CSizzFuncQueueThread m_send_queue;
