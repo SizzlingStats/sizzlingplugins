@@ -165,3 +165,12 @@ clean:
 	-rm -rf $(PLUGIN_OBJ_DIR_DEBUG)
 	-rm -f sizzlingstats.$(SHLIBEXT)
 
+prereq:
+	sudo apt-get install g++-4.7
+	sudo apt-get install g++-4.7-multilib
+
+info:
+	export LD_LIBRARY_PATH="./../lib/linux:$LD_LIBRARY_PATH"
+	ldd -d sizzlingstats.$(SHLIBEXT)
+	readelf -h sizzlingstats.$(SHLIBEXT)
+
