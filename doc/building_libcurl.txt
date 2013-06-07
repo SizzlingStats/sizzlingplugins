@@ -1,7 +1,7 @@
 1. download latest libcurl
 
 2. configure libcurl with:
-./configure --prefix=$HOME/devel/libcurl --disable-dict --disable-ftp --disable-imap --disable-ldap --disable-ldaps --disable-pop3 --disable-proxy --disable-rtsp --disable-shared --disable-smtp --disable-telnet --disable-tftp --disable-zlib --without-ca-bundle --without-gnutls --without-libidn --without-librtmp --without-libssh2 --without-nss --without-ssl --without-zlib CPPFLAGS="-D_FORTIFY_SOURCE=0"
+./configure --prefix=$HOME/devel/libcurl --disable-dict --disable-ftp --disable-imap --disable-ldap --disable-ldaps --disable-pop3 --disable-proxy --disable-rtsp --disable-shared --disable-smtp --disable-telnet --disable-tftp --disable-zlib --without-ca-bundle --without-gnutls --without-libidn --without-librtmp --without-libssh2 --without-nss --without-ssl --without-zlib CPPFLAGS="-D_FORTIFY_SOURCE=0 -D_GNU_SOURCE"
 
 3. go to libcurl_root/lib/curl_config.h and comment out the define for HAVE_CLOCK_GETTIME_MONOTONIC
 
