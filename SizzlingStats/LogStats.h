@@ -52,4 +52,26 @@ private:
 	playerInfo *m_entIndexToPlayerInfo;
 };
 
+class CNullLogStats
+{
+public:
+	CNullLogStats( const CPluginContext &plugin_context ) {}
+	~CNullLogStats() {}
+
+	bool Load() { return true; }
+	void Unload() {}
+
+	void LevelInit( const char *pMapName ) {}
+
+	void ClientActive( edict_t *pEdict, int ent_index ) {}
+	void ClientDisconnect( edict_t *pEdict ) {}
+
+	void TournamentMatchStarted( const char *RESTRICT hostname, 
+								const char *RESTRICT mapname, 
+								const char *RESTRICT bluname, 
+								const char *RESTRICT redname ) {}
+	void TournamentMatchEnded() {}
+	void PreRoundFreezeStarted( bool bTournamentModeOn ) {}
+};
+
 #endif // LOG_STATS_H

@@ -150,7 +150,7 @@ private:
 #ifdef PROTO_STATS
 	CEventSender m_event_sender;
 #endif
-	CLogStats m_logstats;
+	CNullLogStats m_logstats;
 	SizzlingStats m_SizzlingStats;
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
