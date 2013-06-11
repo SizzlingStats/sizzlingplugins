@@ -125,9 +125,9 @@ void CEventSender::SendEventInternal( const std::shared_ptr<SizzEvent::SizzEvent
 		m_send_buff.EnsureCapacity(size);
 		pEvent->SerializeToArray(m_send_buff.Base(), size);
 		m_connection.Send(m_send_buff.Base(), size, 10);
-	}
+	}/* TODO: replace this with retry try count
 	else
 	{
 		m_send_queue.EnqueueFunctor(CreateFunctor(this, &CEventSender::SendEventInternal, pEvent));
-	}
+	}*/
 }
