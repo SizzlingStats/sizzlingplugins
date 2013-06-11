@@ -166,7 +166,7 @@ void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname,
 									   const char *RESTRICT redname )
 {
 	IVEngineServer *pEngine = m_context.GetEngine();
-	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
+	//pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
 	pEngine->ServerCommand("sm plugins unload supstats\n");
 	pEngine->ServerExecute();
 	pEngine->LogPrint( "[SizzlingStats]: Match Started\n" );
