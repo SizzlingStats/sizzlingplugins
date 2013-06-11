@@ -98,7 +98,7 @@ hg update -R "$SDK_DIR" -C "$SDK_TAG" >/dev/null
 SDK_REV="$(hg parent -R "$SDK_DIR" | awk 'NR==1 {gsub(":","-"); print $2}')"
 SP_REV="$(hg parent -R "$SP_DIR" | awk 'NR==1 {gsub(":","-"); print $2}')"
 # Create output dir
-BUILD_DIR="$BUILDS_GO_HERE/d$SP_REV-sdk$SDK_REV"
+BUILD_DIR="$BUILDS_GO_HERE/r$SP_REV-sdk$SDK_REV"
 # A Bash trick to create the build dir if it doesn't exist,
 #  but get an error if parent dirs don't exist.
 if [ -d "$BUILD_DIR" ]
@@ -131,7 +131,7 @@ echo "Building SizzlingStats..."
   hg diff -R "$SP_DIR"
   # Build it.
   make clean --directory="$SS_DIR"
-  make -j8 --directory="$SS_DIR" DEBUGBUILD=true \
+  make -j8 --directory="$SS_DIR" \
        SIZZLINGPLUGINS_DIR="$SP_DIR" HL2SDK_DIR="$SDK_DIR"
   # Check for existence of sizzlingstats_i486.so
   if [[ (! -e "$SS") || (! -f "$SS") || (! -s "$SS") ]]
