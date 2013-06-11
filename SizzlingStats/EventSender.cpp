@@ -59,49 +59,51 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 	if (kv_types && SCHelpers::FStrCmp("descriptor", kv_types->GetName()))
 	{
 		std::shared_ptr<SizzEvent::SizzEvent> pSizzEvent = std::make_shared<SizzEvent::SizzEvent>();
-		pSizzEvent->set_event_id(1);
+		pSizzEvent->set_event_timestamp(server_tick);
+		pSizzEvent->set_event_name(pEvent->GetName());
 			
 		FOR_EACH_SUBKEY(kv_types, kvSubKey)
 		{
 			SizzEvent::SizzEvent_EventData *pData = pSizzEvent->add_event_data();
 
 			int type = kvSubKey->GetInt();
-			const char *value_name = kvSubKey->GetName();
+			const char *key_name = kvSubKey->GetName();
+			pData->set_key_name(key_name);
 			switch (type)
 			{
 			case EVENT_TYPE_STRING:
 				{
-					const char *val = pEvent->GetString(value_name);
+					const char *val = pEvent->GetString(key_name);
 					pData->set_value_string(val);
 				}
 				break;
 			case EVENT_TYPE_FLOAT:
 				{
-					float val =  pEvent->GetFloat(value_name);
+					float val =  pEvent->GetFloat(key_name);
 					pData->set_value_float(val);
 				}
 				break;
 			case EVENT_TYPE_LONG:
 				{
-					int val = pEvent->GetInt(value_name);
+					int val = pEvent->GetInt(key_name);
 					pData->set_value_float(val);
 				}
 				break;
 			case EVENT_TYPE_SHORT:
 				{
-					short val = pEvent->GetInt(value_name);
+					short val = pEvent->GetInt(key_name);
 					pData->set_value_short(val);
 				}
 				break;
 			case EVENT_TYPE_BYTE:
 				{
-					char val = pEvent->GetInt(value_name);
+					char val = pEvent->GetInt(key_name);
 					pData->set_value_byte(val);
 				}
 				break;
 			case EVENT_TYPE_BOOL:
 				{
-					bool val = pEvent->GetBool(value_name);
+					bool val = pEvent->GetBool(key_name);
 					pData->set_value_bool(val);
 				}
 				break;
