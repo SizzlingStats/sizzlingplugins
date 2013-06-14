@@ -664,15 +664,25 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex )
 	{
 		char temp[128] = {};
 		m_pWebStatsHandler->GetMatchUrl(temp, 128);
-		// send an invisible one to clear the html message if there is one
-		// then send the visible one
-		CPlayerMessage::SingleUserBlankMotdPanel( entindex );
 		CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, true );
 	}
 	else
 	{
 		CPlayerMessage::SingleUserChatMessage( entindex, "\x03No match stats to view.\n" );
 	}
+}
+
+void SizzlingStats::SS_HideHtmlStats( int entindex )
+{
+	// send a blank/invisible html page to clear 
+	// the visible one if it's open, but make it 
+	// match the ss url so the site is still cached
+	char temp[128] = "about:config";
+	if (m_pWebStatsHandler->HasMatchUrl())
+	{
+		m_pWebStatsHandler->GetMatchUrl(temp, 128);
+	}
+	CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, false );
 }
 
 #endif

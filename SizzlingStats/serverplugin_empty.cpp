@@ -619,7 +619,6 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientConnect( bool *bAllowConnect, edict_t *p
 //---------------------------------------------------------------------------------
 PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CCommand &args )
 {
-#ifdef DEV_COMMANDS_ON
 	using namespace SCHelpers;
 	const char *pcmd = args[0];
 
@@ -629,54 +628,65 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	}
 
 	int entindex = pEngine->IndexOfEdict(pEntity);
-
-	if ( FStrEq( pcmd, "gibuber" ) )
+	if (entindex > 0)
 	{
-		if ( entindex > 0 )
+		if ( FStrEq(pcmd, "sizz_show_stats") )
 		{
-			m_SizzlingStats.GiveUber( entindex );
+			m_SizzlingStats.SS_ShowHtmlStats(entindex);
 		}
-	}
-	else if ( FStrEq( pcmd, "tryend" ) )
-	{
-		m_SizzlingStats.SS_EndOfRound();
-	}
-	else if ( FStrEq( pcmd, "testupdatestats" ) )
-	{
-		m_SizzlingStats.SS_UploadStats();
-	}
-	else if ( FStrEq( pcmd, "testthreading" ) )
-	{
-		m_SizzlingStats.SS_TestThreading();
-	}
-	else if ( FStrEq( pcmd, "menutest" ) )
-	{
-		KeyValues *kv = new KeyValues( "menu" );
-		kv->SetString( "title", "You've got options, hit ESC" );
-		kv->SetInt( "level", 1 );
-		kv->SetColor( "color", Color( 255, 0, 0, 255 ));
-		kv->SetInt( "time", 20 );
-		kv->SetString( "msg", "Pick an option\nOr don't." );
+		else if ( FStrEq(pcmd, "sizz_hide_stats") )
+		{
+			m_SizzlingStats.SS_HideHtmlStats(entindex);
+		}
+#ifdef DEV_COMMANDS_ON
+		else if ( FStrEq( pcmd, "gibuber" ) )
+		{
+			if ( entindex > 0 )
+			{
+				m_SizzlingStats.GiveUber( entindex );
+			}
+		}
+		else if ( FStrEq( pcmd, "tryend" ) )
+		{
+			m_SizzlingStats.SS_EndOfRound();
+		}
+		else if ( FStrEq( pcmd, "testupdatestats" ) )
+		{
+			m_SizzlingStats.SS_UploadStats();
+		}
+		else if ( FStrEq( pcmd, "testthreading" ) )
+		{
+			m_SizzlingStats.SS_TestThreading();
+		}
+		else if ( FStrEq( pcmd, "menutest" ) )
+		{
+			KeyValues *kv = new KeyValues( "menu" );
+			kv->SetString( "title", "You've got options, hit ESC" );
+			kv->SetInt( "level", 1 );
+			kv->SetColor( "color", Color( 255, 0, 0, 255 ));
+			kv->SetInt( "time", 20 );
+			kv->SetString( "msg", "Pick an option\nOr don't." );
 				
-		for( int i = 1; i < 9; i++ )
-		{
-			char num[10], msg[10], cmd[10];
-			Q_snprintf( num, sizeof(num), "%i", i );
-			Q_snprintf( msg, sizeof(msg), "Option %i", i );
-			Q_snprintf( cmd, sizeof(cmd), "option%i", i );
+			for( int i = 1; i < 9; i++ )
+			{
+				char num[10], msg[10], cmd[10];
+				Q_snprintf( num, sizeof(num), "%i", i );
+				Q_snprintf( msg, sizeof(msg), "Option %i", i );
+				Q_snprintf( cmd, sizeof(cmd), "option%i", i );
 
-			KeyValues *item1 = kv->FindKey( num, true );
-			item1->SetString( "msg", msg );
-			item1->SetString( "command", cmd );
-		}
+				KeyValues *item1 = kv->FindKey( num, true );
+				item1->SetString( "msg", msg );
+				item1->SetString( "command", cmd );
+			}
 
-		if ( entindex > 0 )
-		{
-			helpers->CreateMessage( pEngine->PEntityOfEntIndex(entindex), DIALOG_MENU, kv, this );
+			if ( entindex > 0 )
+			{
+				helpers->CreateMessage( pEngine->PEntityOfEntIndex(entindex), DIALOG_MENU, kv, this );
+			}
+			kv->deleteThis();
 		}
-		kv->deleteThis();
-	}
 #endif
+	}
 	return PLUGIN_CONTINUE;
 }
 

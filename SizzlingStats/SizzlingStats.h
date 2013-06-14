@@ -116,6 +116,8 @@ public:
 
 	void	SS_ShowHtmlStats( int entindex );
 
+	void	SS_HideHtmlStats( int endindex );
+
 	//	gets the prop offest
 	void	GetPropOffsets();
 
