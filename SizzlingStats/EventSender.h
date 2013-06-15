@@ -36,7 +36,7 @@ public:
 
 	bool Connect( const char *url )
 	{
-		if (!m_pCurl && (m_pCurl = curl_easy_init()))
+		if (url && !m_pCurl && ((m_pCurl = curl_easy_init()) != nullptr))
 		{
 			curl_easy_setopt(m_pCurl, CURLOPT_URL, url);
 			curl_easy_setopt(m_pCurl, CURLOPT_CONNECT_ONLY, 1L);

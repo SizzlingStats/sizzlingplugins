@@ -151,14 +151,14 @@ size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, voi
 {
 	CUtlBuffer *pBuffer = static_cast<CUtlBuffer*>(userdata);
 	const size_t maxSize = size*nmemb;
-	if ( pBuffer->GetBytesRemaining() >= maxSize )
+	const size_t bytesRemaining = pBuffer->GetBytesRemaining();
+	if ( bytesRemaining >= maxSize )
 	{
 		pBuffer->Get( ptr, maxSize );
 		return maxSize;
 	}
 	else
 	{
-		const size_t bytesRemaining = pBuffer->GetBytesRemaining();
 		pBuffer->Get( ptr, bytesRemaining );
 		return bytesRemaining;
 	}
