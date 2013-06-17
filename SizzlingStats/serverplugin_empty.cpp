@@ -1,4 +1,3 @@
-
 /*========
         This file is part of SizzlingPlugins.
 
@@ -933,7 +932,8 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 					FStrEq( text, ".showstats" ) || 
 					FStrEq( text, ".sizzlingstats" ) || 
 					FStrEq( text, ".ss_showstats" ) || 
-					FStrEq( text, ".doritos" ) )
+					FStrEq( text, ".doritos" ) ||
+					FStrEq( text, ".gg" ) )
 		{
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
