@@ -55,8 +55,34 @@ struct StaticDescriptorInitializer_SizzEvent_2eproto {
 
 // ===================================================================
 
+bool SizzEvent_EventData_DATA_TYPE_IsValid(int value) {
+  switch(value) {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#ifndef _MSC_VER
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_STRING;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_FLOAT;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_LONG;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_SHORT;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_BYTE;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_BOOL;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::DATA_TYPE_MIN;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::DATA_TYPE_MAX;
+const int SizzEvent_EventData::DATA_TYPE_ARRAYSIZE;
+#endif  // _MSC_VER
 #ifndef _MSC_VER
 const int SizzEvent_EventData::kKeyNameFieldNumber;
+const int SizzEvent_EventData::kValueTypeFieldNumber;
 const int SizzEvent_EventData::kValueStringFieldNumber;
 const int SizzEvent_EventData::kValueFloatFieldNumber;
 const int SizzEvent_EventData::kValueLongFieldNumber;
@@ -82,6 +108,7 @@ SizzEvent_EventData::SizzEvent_EventData(const SizzEvent_EventData& from)
 void SizzEvent_EventData::SharedCtor() {
   _cached_size_ = 0;
   key_name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  value_type_ = 1;
   value_string_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   value_float_ = 0;
   value_long_ = 0;
@@ -137,6 +164,7 @@ void SizzEvent_EventData::Clear() {
         key_name_->clear();
       }
     }
+    value_type_ = 1;
     if (has_value_string()) {
       if (value_string_ != &::google::protobuf::internal::kEmptyString) {
         value_string_->clear();
@@ -166,12 +194,31 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(18)) goto parse_value_string;
+        if (input->ExpectTag(16)) goto parse_value_type;
         break;
       }
 
-      // optional string value_string = 2;
+      // optional .SizzEvent.SizzEvent.EventData.DATA_TYPE value_type = 2;
       case 2: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_value_type:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          if (::SizzEvent::SizzEvent_EventData_DATA_TYPE_IsValid(value)) {
+            set_value_type(static_cast< ::SizzEvent::SizzEvent_EventData_DATA_TYPE >(value));
+          }
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(26)) goto parse_value_string;
+        break;
+      }
+
+      // optional string value_string = 3;
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_value_string:
@@ -180,12 +227,12 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(29)) goto parse_value_float;
+        if (input->ExpectTag(37)) goto parse_value_float;
         break;
       }
 
-      // optional float value_float = 3;
-      case 3: {
+      // optional float value_float = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32) {
          parse_value_float:
@@ -196,12 +243,12 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_value_long;
+        if (input->ExpectTag(40)) goto parse_value_long;
         break;
       }
 
-      // optional int32 value_long = 4;
-      case 4: {
+      // optional int32 value_long = 5;
+      case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_value_long:
@@ -212,12 +259,12 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(40)) goto parse_value_short;
+        if (input->ExpectTag(48)) goto parse_value_short;
         break;
       }
 
-      // optional int32 value_short = 5;
-      case 5: {
+      // optional int32 value_short = 6;
+      case 6: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_value_short:
@@ -228,12 +275,12 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(48)) goto parse_value_byte;
+        if (input->ExpectTag(56)) goto parse_value_byte;
         break;
       }
 
-      // optional int32 value_byte = 6;
-      case 6: {
+      // optional int32 value_byte = 7;
+      case 7: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_value_byte:
@@ -244,12 +291,12 @@ bool SizzEvent_EventData::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(56)) goto parse_value_bool;
+        if (input->ExpectTag(64)) goto parse_value_bool;
         break;
       }
 
-      // optional bool value_bool = 7;
-      case 7: {
+      // optional bool value_bool = 8;
+      case 8: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_value_bool:
@@ -287,35 +334,41 @@ void SizzEvent_EventData::SerializeWithCachedSizes(
       1, this->key_name(), output);
   }
 
-  // optional string value_string = 2;
+  // optional .SizzEvent.SizzEvent.EventData.DATA_TYPE value_type = 2;
+  if (has_value_type()) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      2, this->value_type(), output);
+  }
+
+  // optional string value_string = 3;
   if (has_value_string()) {
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      2, this->value_string(), output);
+      3, this->value_string(), output);
   }
 
-  // optional float value_float = 3;
+  // optional float value_float = 4;
   if (has_value_float()) {
-    ::google::protobuf::internal::WireFormatLite::WriteFloat(3, this->value_float(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(4, this->value_float(), output);
   }
 
-  // optional int32 value_long = 4;
+  // optional int32 value_long = 5;
   if (has_value_long()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(4, this->value_long(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->value_long(), output);
   }
 
-  // optional int32 value_short = 5;
+  // optional int32 value_short = 6;
   if (has_value_short()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(5, this->value_short(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->value_short(), output);
   }
 
-  // optional int32 value_byte = 6;
+  // optional int32 value_byte = 7;
   if (has_value_byte()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(6, this->value_byte(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(7, this->value_byte(), output);
   }
 
-  // optional bool value_bool = 7;
+  // optional bool value_bool = 8;
   if (has_value_bool()) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(7, this->value_bool(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBool(8, this->value_bool(), output);
   }
 
 }
@@ -331,40 +384,46 @@ int SizzEvent_EventData::ByteSize() const {
           this->key_name());
     }
 
-    // optional string value_string = 2;
+    // optional .SizzEvent.SizzEvent.EventData.DATA_TYPE value_type = 2;
+    if (has_value_type()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::EnumSize(this->value_type());
+    }
+
+    // optional string value_string = 3;
     if (has_value_string()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
           this->value_string());
     }
 
-    // optional float value_float = 3;
+    // optional float value_float = 4;
     if (has_value_float()) {
       total_size += 1 + 4;
     }
 
-    // optional int32 value_long = 4;
+    // optional int32 value_long = 5;
     if (has_value_long()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->value_long());
     }
 
-    // optional int32 value_short = 5;
+    // optional int32 value_short = 6;
     if (has_value_short()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->value_short());
     }
 
-    // optional int32 value_byte = 6;
+    // optional int32 value_byte = 7;
     if (has_value_byte()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
           this->value_byte());
     }
 
-    // optional bool value_bool = 7;
+    // optional bool value_bool = 8;
     if (has_value_bool()) {
       total_size += 1 + 1;
     }
@@ -386,6 +445,9 @@ void SizzEvent_EventData::MergeFrom(const SizzEvent_EventData& from) {
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_key_name()) {
       set_key_name(from.key_name());
+    }
+    if (from.has_value_type()) {
+      set_value_type(from.value_type());
     }
     if (from.has_value_string()) {
       set_value_string(from.value_string());
@@ -422,6 +484,7 @@ bool SizzEvent_EventData::IsInitialized() const {
 void SizzEvent_EventData::Swap(SizzEvent_EventData* other) {
   if (other != this) {
     std::swap(key_name_, other->key_name_);
+    std::swap(value_type_, other->value_type_);
     std::swap(value_string_, other->value_string_);
     std::swap(value_float_, other->value_float_);
     std::swap(value_long_, other->value_long_);
@@ -547,12 +610,12 @@ bool SizzEvent::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_event_data;
+        if (input->ExpectTag(26)) goto parse_event_data;
         break;
       }
 
-      // repeated .SizzEvent.SizzEvent.EventData event_data = 4;
-      case 4: {
+      // repeated .SizzEvent.SizzEvent.EventData event_data = 3;
+      case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_event_data:
@@ -561,7 +624,7 @@ bool SizzEvent::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(34)) goto parse_event_data;
+        if (input->ExpectTag(26)) goto parse_event_data;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -594,10 +657,10 @@ void SizzEvent::SerializeWithCachedSizes(
       2, this->event_name(), output);
   }
 
-  // repeated .SizzEvent.SizzEvent.EventData event_data = 4;
+  // repeated .SizzEvent.SizzEvent.EventData event_data = 3;
   for (int i = 0; i < this->event_data_size(); i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessage(
-      4, this->event_data(i), output);
+      3, this->event_data(i), output);
   }
 
 }
@@ -621,7 +684,7 @@ int SizzEvent::ByteSize() const {
     }
 
   }
-  // repeated .SizzEvent.SizzEvent.EventData event_data = 4;
+  // repeated .SizzEvent.SizzEvent.EventData event_data = 3;
   total_size += 1 * this->event_data_size();
   for (int i = 0; i < this->event_data_size(); i++) {
     total_size +=

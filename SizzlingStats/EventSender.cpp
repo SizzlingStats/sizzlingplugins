@@ -67,6 +67,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 			SizzEvent::SizzEvent_EventData *pData = pSizzEvent->add_event_data();
 
 			int type = kvSubKey->GetInt();
+			pData->set_value_type(static_cast<SizzEvent::SizzEvent_EventData_DATA_TYPE>(type));
 			const char *key_name = kvSubKey->GetName();
 			pData->set_key_name(key_name);
 			switch (type)

@@ -17,18 +17,29 @@ message SizzEvent
 {
 	message EventData
 	{
+		enum DATA_TYPE
+		{
+			TYPE_STRING = 1;
+			TYPE_FLOAT = 2;
+			TYPE_LONG = 3;
+			TYPE_SHORT = 4;
+			TYPE_BYTE = 5;
+			TYPE_BOOL = 6;
+		}
+		
 		optional string key_name = 1;
 		
-		optional string value_string = 2;
-		optional float value_float = 3;
-		optional int32 value_long = 4;
-		optional int32 value_short = 5;
-		optional int32 value_byte = 6;
-		optional bool value_bool = 7;
+		optional DATA_TYPE value_type = 2;
+		optional string value_string = 3;
+		optional float value_float = 4;
+		optional int32 value_long = 5;
+		optional int32 value_short = 6;
+		optional int32 value_byte = 7;
+		optional bool value_bool = 8;
 	}
 
 	optional uint32 event_timestamp = 1;
 	optional string event_name = 2;
 
-	repeated EventData event_data = 4;
+	repeated EventData event_data = 3;
 }
