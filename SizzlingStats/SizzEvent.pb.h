@@ -36,16 +36,16 @@ class SizzEvent;
 class SizzEvent_EventData;
 
 enum SizzEvent_EventData_DATA_TYPE {
-  SizzEvent_EventData_DATA_TYPE_TYPE_STRING = 1,
-  SizzEvent_EventData_DATA_TYPE_TYPE_FLOAT = 2,
-  SizzEvent_EventData_DATA_TYPE_TYPE_LONG = 3,
-  SizzEvent_EventData_DATA_TYPE_TYPE_SHORT = 4,
-  SizzEvent_EventData_DATA_TYPE_TYPE_BYTE = 5,
-  SizzEvent_EventData_DATA_TYPE_TYPE_BOOL = 6
+  SizzEvent_EventData_DATA_TYPE_valueString = 1,
+  SizzEvent_EventData_DATA_TYPE_valueFloat = 2,
+  SizzEvent_EventData_DATA_TYPE_valueLong = 3,
+  SizzEvent_EventData_DATA_TYPE_valueShort = 4,
+  SizzEvent_EventData_DATA_TYPE_valueByte = 5,
+  SizzEvent_EventData_DATA_TYPE_valueBool = 6
 };
 bool SizzEvent_EventData_DATA_TYPE_IsValid(int value);
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData_DATA_TYPE_DATA_TYPE_MIN = SizzEvent_EventData_DATA_TYPE_TYPE_STRING;
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData_DATA_TYPE_DATA_TYPE_MAX = SizzEvent_EventData_DATA_TYPE_TYPE_BOOL;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData_DATA_TYPE_DATA_TYPE_MIN = SizzEvent_EventData_DATA_TYPE_valueString;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData_DATA_TYPE_DATA_TYPE_MAX = SizzEvent_EventData_DATA_TYPE_valueBool;
 const int SizzEvent_EventData_DATA_TYPE_DATA_TYPE_ARRAYSIZE = SizzEvent_EventData_DATA_TYPE_DATA_TYPE_MAX + 1;
 
 // ===================================================================
@@ -102,12 +102,12 @@ class SizzEvent_EventData : public ::google::protobuf::MessageLite {
   // nested types ----------------------------------------------------
 
   typedef SizzEvent_EventData_DATA_TYPE DATA_TYPE;
-  static const DATA_TYPE TYPE_STRING = SizzEvent_EventData_DATA_TYPE_TYPE_STRING;
-  static const DATA_TYPE TYPE_FLOAT = SizzEvent_EventData_DATA_TYPE_TYPE_FLOAT;
-  static const DATA_TYPE TYPE_LONG = SizzEvent_EventData_DATA_TYPE_TYPE_LONG;
-  static const DATA_TYPE TYPE_SHORT = SizzEvent_EventData_DATA_TYPE_TYPE_SHORT;
-  static const DATA_TYPE TYPE_BYTE = SizzEvent_EventData_DATA_TYPE_TYPE_BYTE;
-  static const DATA_TYPE TYPE_BOOL = SizzEvent_EventData_DATA_TYPE_TYPE_BOOL;
+  static const DATA_TYPE valueString = SizzEvent_EventData_DATA_TYPE_valueString;
+  static const DATA_TYPE valueFloat = SizzEvent_EventData_DATA_TYPE_valueFloat;
+  static const DATA_TYPE valueLong = SizzEvent_EventData_DATA_TYPE_valueLong;
+  static const DATA_TYPE valueShort = SizzEvent_EventData_DATA_TYPE_valueShort;
+  static const DATA_TYPE valueByte = SizzEvent_EventData_DATA_TYPE_valueByte;
+  static const DATA_TYPE valueBool = SizzEvent_EventData_DATA_TYPE_valueBool;
   static inline bool DATA_TYPE_IsValid(int value) {
     return SizzEvent_EventData_DATA_TYPE_IsValid(value);
   }

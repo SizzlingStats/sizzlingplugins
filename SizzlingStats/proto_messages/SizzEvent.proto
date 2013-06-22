@@ -19,12 +19,13 @@ message SizzEvent
 	{
 		enum DATA_TYPE
 		{
-			TYPE_STRING = 1;
-			TYPE_FLOAT = 2;
-			TYPE_LONG = 3;
-			TYPE_SHORT = 4;
-			TYPE_BYTE = 5;
-			TYPE_BOOL = 6;
+			// specially named for json parsing on the web
+			valueString = 1;
+			valueFloat = 2;
+			valueLong = 3;
+			valueShort = 4;
+			valueByte = 5;
+			valueBool = 6;
 		}
 		
 		optional string key_name = 1;

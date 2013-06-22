@@ -87,7 +87,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 			case EVENT_TYPE_LONG:
 				{
 					int val = pEvent->GetInt(key_name);
-					pData->set_value_float(val);
+					pData->set_value_long(val);
 				}
 				break;
 			case EVENT_TYPE_SHORT:

@@ -70,12 +70,12 @@ bool SizzEvent_EventData_DATA_TYPE_IsValid(int value) {
 }
 
 #ifndef _MSC_VER
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_STRING;
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_FLOAT;
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_LONG;
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_SHORT;
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_BYTE;
-const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::TYPE_BOOL;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::valueString;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::valueFloat;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::valueLong;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::valueShort;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::valueByte;
+const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::valueBool;
 const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::DATA_TYPE_MIN;
 const SizzEvent_EventData_DATA_TYPE SizzEvent_EventData::DATA_TYPE_MAX;
 const int SizzEvent_EventData::DATA_TYPE_ARRAYSIZE;
