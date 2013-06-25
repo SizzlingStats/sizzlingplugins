@@ -31,6 +31,11 @@ enum EVENT_DATA_TYPES
 	NUM_EVENT_TYPES
 };
 
+void CSizzEvent::SetName( const char *name )
+{
+	m_pEvent->set_event_name(name);
+}
+
 bool CEventSender::BeginConnection( const char *url )
 {
 	AUTO_LOCK(m_connection_lock);
@@ -41,6 +46,16 @@ void CEventSender::EndConnection()
 {
 	AUTO_LOCK(m_connection_lock);
 	m_connection.Disconnect();
+}
+
+SizzEvent::SizzEvent *CEventSender::AllocEvent()
+{
+	return new SizzEvent::SizzEvent();
+}
+
+void CEventSender::SendEvent( CSizzEvent *pEvent )
+{
+	m_send_queue.EnqueueFunctor(CreateFunctor(this, &CEventSender::SendEventInternal, pEvent->GetEvent()));
 }
 
 void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
@@ -58,7 +73,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 	
 	if (kv_types && SCHelpers::FStrCmp("descriptor", kv_types->GetName()))
 	{
-		std::shared_ptr<SizzEvent::SizzEvent> pSizzEvent = std::make_shared<SizzEvent::SizzEvent>();
+		SizzEvent::SizzEvent *pSizzEvent = new SizzEvent::SizzEvent();
 		pSizzEvent->set_event_timestamp(server_tick);
 		pSizzEvent->set_event_name(pEvent->GetName());
 			
@@ -117,7 +132,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 	}
 }
 
-void CEventSender::SendEventInternal( const std::shared_ptr<SizzEvent::SizzEvent> &pEvent )
+void CEventSender::SendEventInternal( const SizzEvent::SizzEvent *pEvent )
 {
 	AUTO_LOCK(m_connection_lock);
 	if (m_connection.IsConnected())
@@ -131,4 +146,5 @@ void CEventSender::SendEventInternal( const std::shared_ptr<SizzEvent::SizzEvent
 	{
 		m_send_queue.EnqueueFunctor(CreateFunctor(this, &CEventSender::SendEventInternal, pEvent));
 	}*/
+	delete pEvent;
 }

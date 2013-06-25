@@ -15,10 +15,6 @@
 #include "curlconnection.h"
 #include "utlmemory.h"
 #include "strtools.h"
-#include <memory>
-
-class IGameEvent;
-namespace SizzEvent { class SizzEvent; }
 
 class CTCPSocket
 {
@@ -126,16 +122,46 @@ private:
 	curl_socket_t m_socket;
 };
 
+class IGameEvent;
+class CEventSender;
+namespace SizzEvent { class SizzEvent; }
+
+class CSizzEvent
+{
+public:
+	CSizzEvent( SizzEvent::SizzEvent *pEvent ):
+		m_pEvent(pEvent)
+	{
+		assert(pEvent);
+	}
+
+	void SetName( const char *name );
+
+	// TODO: add set value methods when needed
+
+	SizzEvent::SizzEvent *GetEvent() const
+	{
+		return m_pEvent;
+	}
+
+private:
+	SizzEvent::SizzEvent *m_pEvent;
+};
+
 class CEventSender
 {
 public:
 	bool BeginConnection( const char *url );
 	void EndConnection();
 
+	static SizzEvent::SizzEvent *AllocEvent();
+
+	// sends and frees the event
+	void SendEvent( CSizzEvent *pEvent );
 	void SendEvent( IGameEvent *pEvent, unsigned int server_tick );
 
 private:
-	void SendEventInternal( const std::shared_ptr<SizzEvent::SizzEvent> &pEvent );
+	void SendEventInternal( const SizzEvent::SizzEvent *pEvent );
 
 private:
 	CSizzFuncQueueThread m_send_queue;
