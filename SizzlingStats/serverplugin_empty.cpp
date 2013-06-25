@@ -154,6 +154,8 @@ private:
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
 	CConCommandHook m_SwitchTeamsHook;
+	CConCommandHook m_PauseHook;
+	CConCommandHook m_UnpauseHook;
 	ConVarRef m_refTournamentMode;
 	ConVarRef m_refHostname;
 	ConVarRef m_refBlueTeamName;
@@ -190,6 +192,8 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_SayHook(),
 	m_SayTeamHook(),
 	m_SwitchTeamsHook(),
+	m_PauseHook(),
+	m_UnpauseHook(),
 	m_refTournamentMode((IConVar*)NULL),
 	m_refHostname((IConVar*)NULL),
 	m_refBlueTeamName((IConVar*)NULL),
@@ -338,6 +342,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_SayHook.Hook(this, cvar, "say");
 	m_SayTeamHook.Hook(this, cvar, "say_team");
 	m_SwitchTeamsHook.Hook(this, cvar, "mp_switchteams");
+	m_PauseHook.Hook(this, cvar, "pause");
+	m_UnpauseHook.Hook(this, cvar, "unpause");
 
 	m_refTournamentMode.Init("mp_tournament", false);
 	m_refHostname.Init("hostname", false);
@@ -362,6 +368,8 @@ void CEmptyServerPlugin::Unload( void )
 	m_SayHook.Unhook();
 	m_SayTeamHook.Unhook();
 	m_SwitchTeamsHook.Unhook();
+	m_PauseHook.Unhook();
+	m_UnpauseHook.Unhook();
 	if (pEngine)
 	{
 		pEngine->LogPrint("Unload\n");
@@ -794,10 +802,35 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 				m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), true );
 			}
 		}
+
 		if ( FStrEq( szCommand, "mp_switchteams" ) )
 		{
 			//Msg( "teams switched\n" );
 		}
+#ifdef PROTO_STATS
+		else if ( FStrEq( szCommand, "pause" ) )
+		{
+			bool paused = pEngine->IsPaused();
+			if (!paused)
+			{
+				CSizzEvent event(m_event_sender.AllocEvent());
+				event.SetName("pause");
+
+				m_event_sender.SendEvent(&event);
+			}
+		}
+		else if ( FStrEq( szCommand, "unpause" ) )
+		{
+			bool paused = pEngine->IsPaused();
+			if (paused)
+			{
+				CSizzEvent event(m_event_sender.AllocEvent());
+				event.SetName("unpause");
+
+				m_event_sender.SendEvent(&event);
+			}
+		}
+#endif
 	}
 
 	// dispatch the command
