@@ -4,11 +4,27 @@
 BASE_DIR = ../..
 
 SIZZLINGPLUGINS_DIR = $(BASE_DIR)/sizzlingplugins
-LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/linux/client
+
 HL2SDK_DIR = $(BASE_DIR)/hl2sdk-ob-valve
-HL2SDK_LIB_DIR = $(HL2SDK_DIR)/lib/linux
+
 SIZZLINGRECORD_DIR = $(SIZZLINGPLUGINS_DIR)/SizzlingRecord
 SIZZLINGLIB_DIR = $(SIZZLINGPLUGINS_DIR)/SizzlingLib
+
+PLUGIN_EXT=
+LIBS_SUBDIR=
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	PLUGIN_EXT = so
+	LIBS_SUBDIR = linux
+	HL2SDK_LIB_DIR = $(HL2SDK_DIR)/lib/$(LIBS_SUBDIR)
+	LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/$(LIBS_SUBDIR)/client
+endif
+ifeq ($(UNAME_S),Darwin)
+	PLUGIN_EXT = dylib
+	LIBS_SUBDIR = mac
+	HL2SDK_LIB_DIR = $(HL2SDK_DIR)/lib/$(LIBS_SUBDIR)
+	LIBS_DIR = $(SIZZLINGPLUGINS_DIR)/lib/$(LIBS_SUBDIR)
+endif
 
 HL2SDK_INC = \
 	-I$(HL2SDK_DIR)/common \
@@ -28,10 +44,10 @@ ALL_INC = \
 	$(HL2SDK_INC) \
 	$(SIZZLINGRECORD_INC)
 
-CPLUS=/usr/bin/g++-4.4
-CLINK=/usr/bin/gcc-4.4
+CPLUS=/usr/bin/clang
+CLINK=/usr/bin/clang
 
-LDFLAGS=-m32 -lm -ldl libtier0.so libvstdlib.so
+LDFLAGS=-m32 -lm -ldl libtier0.$(PLUGIN_EXT) libvstdlib.$(PLUGIN_EXT)
 
 BUILD_DIR=$(SIZZLINGRECORD_DIR)
 RELEASE_DIR=./Release
@@ -51,7 +67,6 @@ ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32
 
 # -fpermissive is so gcc 3.4.x doesn't complain about some template stuff
 BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DNO_MALLOC_OVERRIDE=1
-SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
 SHLIBLDFLAGS=-shared -static-libgcc -Wl,--gc-sections -Wl,--strip-all
 
@@ -100,7 +115,7 @@ all:
 	$(MAKE) dirs
 	ln -sf $(LIBS_DIR)/libvstdlib.so libvstdlib.so
 	ln -sf $(LIBS_DIR)/libtier0.so libtier0.so
-	$(MAKE) sizzlingrecord_$(ARCH).$(SHLIBEXT)
+	$(MAKE) sizzlingrecord_$(ARCH).$(PLUGIN_EXT)
 
 dirs:
 	-mkdir -p $(BUILD_OBJ_DIR)
@@ -112,7 +127,7 @@ dirs:
 	-mkdir -p $(TIER0_OBJ_DIR)
 	$(CHECK_DSP) $(SOURCE_DSP)
 
-sizzlingrecord_$(ARCH).$(SHLIBEXT): $(SIZZLINGRECORD_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS)
+sizzlingrecord_$(ARCH).$(PLUGIN_EXT): $(SIZZLINGRECORD_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS)
 	$(CLINK) $(DEBUG) -o $(BUILD_DIR)/$@ $(SHLIBLDFLAGS) $(SIZZLINGRECORD_OBJS) $(SIZZLINGLIB_OBJS) $(TIER0_OBJS) $(CPP_LIB) $(LDFLAGS) $(CPP_LIB) $(HL2SDK_LIB_DIR)/mathlib_i486.a $(HL2SDK_LIB_DIR)/tier1_i486.a
 
 $(PLUGIN_OBJ_DIR)/%.o: $(PLUGIN_SRC_DIR)/%.cpp
@@ -135,5 +150,5 @@ default: all
 clean:
 	-rm -rf $(PLUGIN_OBJ_DIR_RELEASE)
 	-rm -rf $(PLUGIN_OBJ_DIR_DEBUG)
-	-rm -f sizzlingrecord_$(ARCH).$(SHLIBEXT)
+	-rm -f sizzlingrecord_$(ARCH).$(PLUGIN_EXT)
 
