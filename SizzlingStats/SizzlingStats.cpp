@@ -169,10 +169,19 @@ void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class 
 
 void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 {
-	const char *pSteamId = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData->GetPlayerInfo()->GetNetworkIDString();
-	// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
-	// so subtracting gets the time since the match started
-	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
+	SS_PlayerData *player_data = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData;
+	if (player_data)
+	{
+		const char *pSteamId = player_data->GetPlayerInfo()->GetNetworkIDString();
+		// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
+		// so subtracting gets the time since the match started
+		m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
+	}
+	else
+	{
+		// TODO: error
+		// this happened once somehow
+	}
 }
 
 void SizzlingStats::TeamCapped( int team_index )
