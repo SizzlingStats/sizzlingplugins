@@ -166,6 +166,6 @@ private:
 private:
 	CSizzFuncQueueThread m_send_queue;
 	CTCPSocket m_connection;
-	CThreadMutex m_connection_lock;
+	sizz::CThreadMutex m_connection_lock;
 	CUtlMemory<char> m_send_buff;
 };

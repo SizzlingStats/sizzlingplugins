@@ -38,13 +38,13 @@ void CSizzEvent::SetName( const char *name )
 
 bool CEventSender::BeginConnection( const char *url )
 {
-	AUTO_LOCK(m_connection_lock);
+	sizz::CAutoLock lk(m_connection_lock);
 	return m_connection.Connect(url);
 }
 
 void CEventSender::EndConnection()
 {
-	AUTO_LOCK(m_connection_lock);
+	sizz::CAutoLock lk(m_connection_lock);
 	m_connection.Disconnect();
 }
 
@@ -134,7 +134,7 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 
 void CEventSender::SendEventInternal( const SizzEvent::SizzEvent *pEvent )
 {
-	AUTO_LOCK(m_connection_lock);
+	sizz::CAutoLock lk(m_connection_lock);
 	if (m_connection.IsConnected())
 	{
 		int size = pEvent->ByteSize();

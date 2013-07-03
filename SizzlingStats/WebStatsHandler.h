@@ -88,8 +88,8 @@ typedef struct responseInfo_s
 	void ResetMatchUrl();
 
 private:
-	CThreadMutex	matchUrlMutex;
-	CThreadMutex	sessionIdMutex;
+	sizz::CThreadMutex	matchUrlMutex;
+	sizz::CThreadMutex	sessionIdMutex;
 	char			matchUrl[128];
 	char			sessionId[64];
 } responseInfo_t;
@@ -142,9 +142,9 @@ private:
 
 private:
 	CSizzFuncQueueThread			m_queue;
-	CThreadMutex					m_dataListAndChatMutex;
-	CThreadMutex					m_hostInfoMutex;
-	CThreadMutex					m_playerInfoMutex;
+	sizz::CThreadMutex					m_dataListAndChatMutex;
+	sizz::CThreadMutex					m_hostInfoMutex;
+	sizz::CThreadMutex					m_playerInfoMutex;
 	CUtlVector<chatInfo_t>			m_chatLog;
 	CUtlVector<playerWebStats_t>	m_webStats;
 	CUtlVector<playerInfo_t>		m_playerInfo;

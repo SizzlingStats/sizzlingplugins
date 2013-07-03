@@ -16,6 +16,64 @@
 
 namespace sizz
 {
+	class CThreadMutex
+	{
+	public:
+		// locks the mutex
+		void Lock();
+
+		// unlocks the mutex
+		void Unlock();
+
+		// tries to lock the mutex
+		// returns immediately on any condition
+		// returns true if locked, false if not locked
+		bool TryLock();
+
+	private:
+		std::mutex m_mutex;
+	};
+
+	inline void CThreadMutex::Lock()
+	{
+		m_mutex.lock();
+	}
+
+	inline void CThreadMutex::Unlock()
+	{
+		m_mutex.unlock();
+	}
+
+	inline bool CThreadMutex::TryLock()
+	{
+		m_mutex.try_lock();
+	}
+
+	class CAutoLock
+	{
+	public:
+		CAutoLock( CThreadMutex &mutex );
+		~CAutoLock();
+
+	private:
+		CAutoLock( const CAutoLock &other );
+		CAutoLock &operator=( const CAutoLock &other );
+
+	private:
+		CThreadMutex &m_mutex;
+	};
+
+	inline CAutoLock::CAutoLock( CThreadMutex &mutex ):
+		m_mutex(mutex)
+	{
+		m_mutex.Lock();
+	}
+
+	inline CAutoLock::~CAutoLock()
+	{
+		m_mutex.Unlock();
+	}
+
 	class CThreadEvent
 	{
 	public:
