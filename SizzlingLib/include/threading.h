@@ -13,6 +13,7 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <thread>
 
 namespace sizz
 {
@@ -128,5 +129,56 @@ namespace sizz
 		{
 			m_cond.wait(lock, [&]{ return m_set; });
 		}
+	}
+
+	class CThread
+	{
+	public:
+		virtual ~CThread();
+
+		void Start();
+
+		void Stop();
+
+		void Join();
+
+		bool IsAlive() const;
+
+	protected:
+		virtual int Run() = 0;
+
+	private:
+		std::thread m_thread;
+	};
+
+	inline CThread::~CThread()
+	{
+		Join();
+	}
+
+	inline void CThread::Start()
+	{
+		if (!IsAlive())
+		{
+			m_thread = std::thread(std::mem_fun(&CThread::Run), this);
+		}
+	}
+
+	inline void CThread::Stop()
+	{
+		Join();
+	}
+
+	inline void CThread::Join()
+	{
+		if (IsAlive())
+		{
+			m_thread.join();
+		}
+	}
+
+	inline bool CThread::IsAlive() const
+	{
+		return m_thread.joinable();
 	}
 }

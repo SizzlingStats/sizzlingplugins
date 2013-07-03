@@ -16,7 +16,7 @@
 #define AUTOUPDATE_H
 
 #include "downloader.h"
-#include "threadtools.h"
+#include "threading.h"
 
 typedef struct autoUpdateInfo_s
 {
@@ -78,7 +78,7 @@ private:
 	bool m_bWaitingForUnload;
 };
 
-class CAutoUpdateThread: public CThread
+class CAutoUpdateThread: public sizz::CThread
 {
 public:
 	CAutoUpdateThread( autoUpdateInfo_t const &info, const char *pUpdateInfo[] ):
@@ -93,10 +93,7 @@ public:
 
 	void StartThread()
 	{
-		if (IsAlive())
-		{
-			Join();
-		}
+		Join();
 		Start();
 	}
 

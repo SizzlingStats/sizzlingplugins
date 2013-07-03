@@ -12,7 +12,7 @@
 #include "ThreadFunctorQueue.h"
 #include "convar.h"
 
-class CQueueTest: public CThread
+class CQueueTest: public sizz::CThread
 {
 public:
 	CQueueTest():

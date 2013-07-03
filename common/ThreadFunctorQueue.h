@@ -16,7 +16,7 @@
 #include "tier0/tslist.h"
 #include "threading.h"
 
-class CSizzFuncQueueThread: public CThread
+class CSizzFuncQueueThread: public sizz::CThread
 {
 public:
 	CSizzFuncQueueThread():
@@ -121,11 +121,6 @@ public:
 	}
 
 private:
-	virtual bool Join( unsigned timeout = TT_INFINITE )
-	{
-		return CThread::Join(timeout);
-	}
-
 	void ProcessFunctors()
 	{
 		CFunctor *pFunc = NULL;
