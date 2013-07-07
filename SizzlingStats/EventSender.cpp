@@ -138,9 +138,11 @@ void CEventSender::SendEventInternal( const SizzEvent::SizzEvent *pEvent )
 	if (m_connection.IsConnected())
 	{
 		int size = pEvent->ByteSize();
-		m_send_buff.EnsureCapacity(size);
-		pEvent->SerializeToArray(m_send_buff.Base(), size);
-		m_connection.Send(m_send_buff.Base(), size, 10);
+		int total_size = size + sizeof(short);
+		m_send_buff.EnsureCapacity(total_size);
+		*reinterpret_cast<short*>(m_send_buff.Base()) = BigShort(static_cast<short>(size));
+		pEvent->SerializeToArray(m_send_buff.Base() + sizeof(short), size);
+		m_connection.Send(m_send_buff.Base(), total_size, 10);
 	}/* TODO: replace this with retry try count
 	else
 	{
