@@ -23,7 +23,7 @@ namespace sizz
 	class CString
 	{
 	public:
-		CString( const char *str = nullptr );
+		CString( const char *str );
 		CString( const char *str, uint32_t length );
 		CString( const CString &other );
 		CString( CString &&other );
@@ -41,7 +41,7 @@ namespace sizz
 		uint32_t m_length;
 	};
 
-	inline CString::CString( const char *str /*= nullptr*/ )
+	inline CString::CString( const char *str )
 	{
 		CopyString(str);
 	}
