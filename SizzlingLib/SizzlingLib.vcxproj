@@ -51,6 +51,7 @@
     <ClInclude Include="include\ServerPluginHandler.h" />
     <ClInclude Include="include\SizzFileSystem.h" />
     <ClInclude Include="include\SizzlingProtect.h" />
+    <ClInclude Include="include\sizzstring.h" />
     <ClInclude Include="include\SRecipientFilter.h" />
     <ClInclude Include="include\ThreadCallQueue.h" />
     <ClInclude Include="include\threading.h" />
