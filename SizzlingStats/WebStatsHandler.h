@@ -78,12 +78,12 @@ typedef struct responseInfo_s
 {
 	responseInfo_s();
 
-	void SetSessionId( const char *id, int lengthToCopy );
+	void SetSessionId( const char *id );
 	void GetSessionId( char *str, int maxlen );
 	void ResetSessionId();
 	bool HasSessionId();
 	bool HasMatchUrl();
-	void SetMatchUrl( const char *url, int lengthToCopy );
+	void SetMatchUrl( const char *url );
 	void GetMatchUrl( char *str, int maxlen );
 	void ResetMatchUrl();
 
@@ -247,11 +247,10 @@ inline responseInfo_s::responseInfo_s():
 
 #pragma warning( pop )
 
-inline void responseInfo_s::SetSessionId( const char *id, int lengthToCopy )
+inline void responseInfo_s::SetSessionId( const char *id )
 {
-	int size = lengthToCopy > 64 ? 64 : lengthToCopy;
 	sessionIdMutex.Lock();
-	V_strncpy(sessionId, id, size);
+	V_strncpy(sessionId, id, sizeof(sessionId));
 	sessionIdMutex.Unlock();
 }
 
@@ -288,11 +287,10 @@ inline bool responseInfo_s::HasMatchUrl()
 	return result;
 }
 
-inline void responseInfo_s::SetMatchUrl( const char *url, int lengthToCopy )
+inline void responseInfo_s::SetMatchUrl( const char *url )
 {
-	int size = lengthToCopy > 128 ? 128 : lengthToCopy;
 	matchUrlMutex.Lock();
-	V_strncpy(matchUrl, url, size);
+	V_strncpy(matchUrl, url, sizeof(matchUrl));
 	matchUrlMutex.Unlock();
 }
 

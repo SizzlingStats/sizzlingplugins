@@ -191,7 +191,14 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 	{
 		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
 		const char *pStart = V_strstr(data, " ") + 1;
-		pInfo->SetSessionId(pStart, V_strlen(pStart)-1);
+		int length = V_strlen(pStart) - 2; // -2 bytes for '\n' and '\r'
+		
+		// keep the 2 bytes stripped when 
+		// passing to V_strncpy
+		char sessionid[64];
+		length = length > sizeof(sessionid)-1 ? sizeof(sessionid)-1 : length;
+		V_strncpy(sessionid, pStart, length+1);
+		pInfo->SetSessionId(sessionid);
 
 		extern CTSCallQueue *g_pTSCallQueue;
 		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(&LogSessionId, pInfo));
@@ -200,7 +207,14 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 	{
 		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
 		const char *pStart = V_strstr(data, " ") + 1;
-		pInfo->SetMatchUrl(pStart, V_strlen(pStart)-1);
+		int length = V_strlen(pStart) - 2; // -2 bytes for '\n' and '\r'
+
+		// keep the 2 bytes stripped when 
+		// passing to V_strncpy
+		char matchurl[128];
+		length = length > sizeof(matchurl)-1 ? sizeof(matchurl)-1 : length;
+		V_strncpy(matchurl, pStart, length+1);
+		pInfo->SetMatchUrl(matchurl);
 	}
 		
 	return maxSize;
