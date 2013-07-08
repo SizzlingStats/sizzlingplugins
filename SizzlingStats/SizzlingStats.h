@@ -19,6 +19,7 @@
 #include "convar.h"
 #include "PluginDefines.h"
 #include "PlayerDataManager.h"
+#include "sizzstring.h"
 
 #include "tier1/utlvector.h"
 
@@ -114,11 +115,18 @@ public:
 
 	void	SS_UploadStats();
 
-	void	SS_ShowHtmlStats( int entindex );
+	void	SS_ShowHtmlStats( int entindex, bool reload_page );
 
 	void	SS_HideHtmlStats( int endindex );
 
-	//	gets the prop offest
+private:
+	void	OnSessionIdReceived( sizz::CString sessionid );
+	void	LogSessionId( sizz::CString str );
+
+	void	OnMatchUrlReceived( sizz::CString matchurl );
+	void	CacheSiteOnPlayer( sizz::CString match_url );
+
+	//	gets the prop offests
 	void	GetPropOffsets();
 
 	void	GetEntities();

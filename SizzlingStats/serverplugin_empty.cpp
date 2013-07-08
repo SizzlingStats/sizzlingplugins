@@ -639,7 +639,7 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	{
 		if ( FStrEq(pcmd, "sizz_show_stats") )
 		{
-			m_SizzlingStats.SS_ShowHtmlStats(entindex);
+			m_SizzlingStats.SS_ShowHtmlStats(entindex, false);
 		}
 		else if ( FStrEq(pcmd, "sizz_hide_stats") )
 		{
@@ -970,7 +970,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		{
 			int userid = event->GetInt( "userid" );
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
-			m_SizzlingStats.SS_ShowHtmlStats( entindex );
+			m_SizzlingStats.SS_ShowHtmlStats( entindex, true );
 		}
 #endif
 	}

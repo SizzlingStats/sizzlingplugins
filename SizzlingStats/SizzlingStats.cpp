@@ -29,6 +29,8 @@
 #include "eiface.h"
 #include "game/server/iplayerinfo.h"
 
+#include <functional>
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -109,6 +111,10 @@ void SizzlingStats::Load()
 	m_refHostPort.Init("hostport", false);
 	LoadConfig();
 	m_pWebStatsHandler->Initialize();
+
+	using namespace std::placeholders;
+	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, _1));
+	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, _1));
 }
 
 void SizzlingStats::Unload()
@@ -666,14 +672,25 @@ void SizzlingStats::SS_UploadStats()
 	g_pThreadPool->AddCall(threadstuff);
 }
 
-void SizzlingStats::SS_ShowHtmlStats( int entindex )
+#endif
+
+void SizzlingStats::SS_ShowHtmlStats( int entindex, bool reload_page )
 {
 	//V_snprintf(temp, 256, "%s/sizzlingstats/asdf.html", web_hostname.GetString());
 	if (m_pWebStatsHandler->HasMatchUrl())
 	{
-		char temp[128] = {};
-		m_pWebStatsHandler->GetMatchUrl(temp, 128);
-		CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, true );
+		// reload the page when using the ".ss" method
+		// don't reload the page when using the script to show stats
+		if (reload_page)
+		{
+			char temp[128] = {};
+			m_pWebStatsHandler->GetMatchUrl(temp, 128);
+			CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, true );
+		}
+		else
+		{
+			CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", "", true );
+		}
 	}
 	else
 	{
@@ -686,15 +703,42 @@ void SizzlingStats::SS_HideHtmlStats( int entindex )
 	// send a blank/invisible html page to clear 
 	// the visible one if it's open, but make it 
 	// match the ss url so the site is still cached
-	char temp[128] = "about:config";
-	if (m_pWebStatsHandler->HasMatchUrl())
-	{
-		m_pWebStatsHandler->GetMatchUrl(temp, 128);
-	}
-	CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, false );
+	CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", "", false );
 }
 
-#endif
+void SizzlingStats::OnSessionIdReceived( sizz::CString sessionid )
+{
+	extern CTSCallQueue *g_pTSCallQueue;
+	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, sessionid));
+}
+
+void SizzlingStats::LogSessionId( sizz::CString str )
+{
+	const char *sessionid = str.ToCString();
+	char temp[128] = {};
+	V_snprintf(temp, 128, "[SizzlingStats]: sessionid %s\n", sessionid);
+	pEngine->LogPrint(temp);
+}
+
+
+void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
+{
+	extern CTSCallQueue *g_pTSCallQueue;
+	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::CacheSiteOnPlayer, matchurl));
+}
+
+void SizzlingStats::CacheSiteOnPlayer( sizz::CString match_url )
+{
+	const char *url = match_url.ToCString();
+	for (int i = 1; i < MAX_PLAYERS; ++i)
+	{
+		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
+		if (data.m_pPlayerData)
+		{
+			CPlayerMessage::SingleUserMotdPanel(i, "SizzlingStats", url, false);
+		}
+	}
+}
 
 void SizzlingStats::GetPropOffsets()
 {

@@ -63,7 +63,7 @@ void CWebStatsHandler::SendStatsToWebInternal()
 		connection.SetBodyReadFunction(read_callback);
 		connection.SetBodyReadUserdata(&postString);
 		connection.SetHeaderReadFunction(header_read_callback);
-		connection.SetHeaderReadUserdata(&m_responseInfo);
+		connection.SetHeaderReadUserdata(this);
 
 		connection.Perform();
 		connection.Close();
@@ -94,7 +94,7 @@ void CWebStatsHandler::SendGameStartEventInternal()
 
 		connection.SetBodyReadUserdata(&postString);
 		connection.SetHeaderReadFunction(header_read_callback);
-		connection.SetHeaderReadUserdata(&m_responseInfo);
+		connection.SetHeaderReadUserdata(this);
 
 		connection.Perform();
 		connection.Close();
@@ -164,24 +164,6 @@ size_t CWebStatsHandler::read_callback(void *ptr, size_t size, size_t nmemb, voi
 	}
 }
 
-static void LogSessionId( responseInfo_t *pInfo )
-{
-	if (pInfo)
-	{
-		char sessionid[64] = {};
-		pInfo->GetSessionId(sessionid, 64);
-
-		char temp[128] = {};
-		V_snprintf(temp, 128, "[SizzlingStats]: sessionid %s\n", sessionid);
-
-		extern IVEngineServer *pEngine;
-		if (pEngine)
-		{
-			pEngine->LogPrint(temp);
-		}
-	}
-}
-
 size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	const size_t maxSize = size*nmemb;
@@ -189,7 +171,7 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 
 	if ( V_strstr( data, "sessionid: " ) )
 	{
-		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
+		
 		const char *pStart = V_strstr(data, " ") + 1;
 		int length = V_strlen(pStart) - 2; // -2 bytes for '\n' and '\r'
 		
@@ -198,14 +180,12 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 		char sessionid[64];
 		length = length > sizeof(sessionid)-1 ? sizeof(sessionid)-1 : length;
 		V_strncpy(sessionid, pStart, length+1);
-		pInfo->SetSessionId(sessionid);
 
-		extern CTSCallQueue *g_pTSCallQueue;
-		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(&LogSessionId, pInfo));
+		CWebStatsHandler *pWebStats = static_cast<CWebStatsHandler*>(userdata);
+		pWebStats->SetSessionId(sessionid);
 	}
 	else if ( V_strstr( data, "matchurl: " ) )
 	{
-		responseInfo_t *pInfo = static_cast<responseInfo_t*>(userdata);
 		const char *pStart = V_strstr(data, " ") + 1;
 		int length = V_strlen(pStart) - 2; // -2 bytes for '\n' and '\r'
 
@@ -214,7 +194,9 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 		char matchurl[128];
 		length = length > sizeof(matchurl)-1 ? sizeof(matchurl)-1 : length;
 		V_strncpy(matchurl, pStart, length+1);
-		pInfo->SetMatchUrl(matchurl);
+
+		CWebStatsHandler *pWebStats = static_cast<CWebStatsHandler*>(userdata);
+		pWebStats->SetMatchUrl(matchurl);
 	}
 		
 	return maxSize;

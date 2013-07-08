@@ -18,6 +18,8 @@
 #include "utlbuffer.h"
 #include "ThreadFunctorQueue.h"
 #include "playerdata.h"
+#include "sizzstring.h"
+#include <functional>
 
 #define STATS_UPDATE_URL "sizzlingstats.com/api/stats/update"
 #define GAME_START_URL "sizzlingstats.com/api/stats/new"
@@ -120,10 +122,17 @@ public:
 
 	void SetApiKey( const char *apikey );
 
+	void SetReceiveSessionIdCallback( std::function<void(sizz::CString)> func );
+	void SetReceiveMatchUrlCallback( std::function<void(sizz::CString)> func );
+
 protected:
 	void SendStatsToWebInternal();
 	void SendGameStartEventInternal();
 	void SendGameOverEventInternal(double flMatchDuration);
+
+private:
+	void SetSessionId( const char *sessionid );
+	void SetMatchUrl( const char *matchurl );
 
 private:
 	// used for sending the data
@@ -150,6 +159,8 @@ private:
 	CUtlVector<playerInfo_t>		m_playerInfo;
 	hostInfo_t						m_hostInfo;
 	responseInfo_t					m_responseInfo;
+	std::function<void(sizz::CString)> m_RecvSessionIdCallback;
+	std::function<void(sizz::CString)> m_RecvMatchUrlCallback;
 	// this is protected with the hostInfo mutex, 
 	// but isn't in the hostinfo since it's only 
 	// sent once
@@ -394,5 +405,34 @@ inline void CWebStatsHandler::SetApiKey( const char *apikey )
 	V_strncpy(m_apikey, apikey, sizeof(m_apikey));
 	m_hostInfoMutex.Unlock();
 }
+
+inline void CWebStatsHandler::SetReceiveSessionIdCallback( std::function<void(sizz::CString)> func )
+{
+	m_RecvSessionIdCallback = func;
+}
+
+inline void CWebStatsHandler::SetReceiveMatchUrlCallback( std::function<void(sizz::CString)> func )
+{
+	m_RecvMatchUrlCallback = func;
+}
+
+inline void CWebStatsHandler::SetSessionId( const char *sessionid )
+{
+	m_responseInfo.SetSessionId(sessionid);
+	if (m_RecvSessionIdCallback)
+	{
+		m_RecvSessionIdCallback(sizz::CString(sessionid));
+	}
+}
+
+inline void CWebStatsHandler::SetMatchUrl( const char *matchurl )
+{
+	m_responseInfo.SetMatchUrl(matchurl);
+	if (m_RecvMatchUrlCallback)
+	{
+		m_RecvMatchUrlCallback(sizz::CString(matchurl));
+	}
+}
+
 
 #endif // WEB_STATS_HANDLER_H
