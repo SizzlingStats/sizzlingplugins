@@ -111,13 +111,12 @@ namespace sizz
 			if (length < sizeof(m_string))
 			{
 				dest = reinterpret_cast<char*>(&m_string);
-				V_strncpy(dest, str, length+1);
 			}
 			else
 			{
 				dest = m_string = reinterpret_cast<char*>(malloc(length+1));
-				V_strncpy(dest, str, length);
 			}
+			V_strncpy(dest, str, length+1);
 			m_length = length;
 		}
 	}
