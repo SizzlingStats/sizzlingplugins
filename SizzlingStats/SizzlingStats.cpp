@@ -720,7 +720,6 @@ void SizzlingStats::LogSessionId( sizz::CString str )
 	pEngine->LogPrint(temp);
 }
 
-
 void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
 {
 	extern CTSCallQueue *g_pTSCallQueue;
