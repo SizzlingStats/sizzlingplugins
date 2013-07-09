@@ -39,9 +39,6 @@
     <ClCompile Include="SC_helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ServerPluginHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SizzFileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

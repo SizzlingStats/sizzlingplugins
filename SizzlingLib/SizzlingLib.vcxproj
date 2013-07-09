@@ -24,7 +24,6 @@
     <ClCompile Include=".\StaticSizeVector.cpp" />
     <ClCompile Include="PlayerMessage.cpp" />
     <ClCompile Include="SC_helpers.cpp" />
-    <ClCompile Include="ServerPluginHandler.cpp" />
     <ClCompile Include="SizzFileSystem.cpp" />
     <ClCompile Include="SizzlingProtect.cpp" />
     <ClCompile Include="SRecipientFilter.cpp" />
