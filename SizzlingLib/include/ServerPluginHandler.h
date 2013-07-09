@@ -32,4 +32,29 @@ typedef struct s_ServerPlugin //size 28 i'm pretty sure
 
 extern s_ServerPlugin	*g_pServerPluginHandler;
 
+#include "utlvector.h"
+
+class IServerPluginCallbacks;
+class CSysModule;
+
+class CPlugin
+{
+public:
+	char m_szName[128];
+	bool m_bDisabled;
+	char padding[3];
+	IServerPluginCallbacks *m_pPlugin;
+	int m_iInterfaceVersion;
+	CSysModule *m_pSysModule;
+};
+
+class CServerPlugin: public IServerPluginHelpers
+{
+public:
+	CUtlVector<CPlugin*> m_plugins;
+	// this member might be part of
+	// a new version of the vector
+	uint32 m_unk;
+};
+
 #endif // SERVER_PLUGIN_HANDLER_H
