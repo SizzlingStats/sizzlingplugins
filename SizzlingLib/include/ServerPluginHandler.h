@@ -33,8 +33,9 @@ typedef struct s_ServerPlugin //size 28 i'm pretty sure
 extern s_ServerPlugin	*g_pServerPluginHandler;
 
 #include "utlvector.h"
+#include "engine/iserverplugin.h"
+#include "platform.h"
 
-class IServerPluginCallbacks;
 class CSysModule;
 
 class CPlugin
