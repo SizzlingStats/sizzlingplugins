@@ -224,14 +224,13 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	// needs to be before the auto updater since it's used to unload and reload the plugins
-	g_pServerPluginHandler = (s_ServerPlugin*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
+	CServerPlugin *pPluginManager = (CServerPlugin*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
+	int plugin_index = SCHelpers::GetThisPluginIndex(pPluginManager, this);
 
-	autoUpdateInfo_t a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
+	autoUpdateInfo_t a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION, plugin_index };
 	m_pAutoUpdater = new CAutoUpdateThread(a, s_pluginInfo);
 	m_pAutoUpdater->StartThread();
 
-	//AutoUpdate();
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 	if (!g_pFullFileSystem)
 	{

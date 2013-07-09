@@ -258,14 +258,33 @@ namespace SCHelpers
 		}
 	}
 
-	unsigned int GetThisPluginIndex( const char *pszDescriptionPart )
+	int GetThisPluginIndex( CServerPlugin *pPluginManager, IServerPluginCallbacks *pThisPlugin )
 	{
-		if (g_pServerPluginHandler)
+		if (pPluginManager && pThisPlugin)
 		{
-			for ( unsigned int i = 0; i < g_pServerPluginHandler->nLoadedPlugins; ++i )
+			int num_plugins = pPluginManager->m_plugins.Count();
+			for ( int i = 0; i < num_plugins; ++i )
 			{
-				//Msg( "plugin %i, %s\n", i, *((const char **)(g_pServerPluginHandler->pszInfo + i)) );
-				if ( V_strstr( *((const char **)(g_pServerPluginHandler->pszInfo + i)), pszDescriptionPart ) )
+				CPlugin *pPlugin = pPluginManager->m_plugins[i];
+				if ( pPlugin && (pPlugin->m_pPlugin == pThisPlugin) )
+				{
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+	int GetPluginIndex( CServerPlugin *pPluginManager, const char *pszDescriptionPart )
+	{
+		if (pPluginManager && pszDescriptionPart)
+		{
+			int num_plugins = pPluginManager->m_plugins.Count();
+			for ( int i = 0; i < num_plugins; ++i )
+			{
+				CPlugin *pPlugin = pPluginManager->m_plugins[i];
+				//Msg( "plugin %i, %s\n", i, pPlugin->m_szName );
+				if ( pPlugin && V_strstr(pPlugin->m_szName, pszDescriptionPart) )
 				{
 					return i;
 				}

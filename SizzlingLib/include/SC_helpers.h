@@ -25,6 +25,8 @@ struct typedescription_t;
 class CBaseHandle;
 class IGameEventManager2;
 class IGameEventListener2;
+class CServerPlugin;
+class IServerPluginCallbacks;
 
 namespace SCHelpers
 {
@@ -110,7 +112,8 @@ namespace SCHelpers
 	//-----------------------------------------------------------------------------
 	void S_littleendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
 
-	unsigned int GetThisPluginIndex( const char *pszDescriptionPart );
+	int GetThisPluginIndex( CServerPlugin *pPluginManager, IServerPluginCallbacks *pThisPlugin );
+	int GetPluginIndex( CServerPlugin *pPluginManager, const char *pszDescriptionPart );
 
 	//---------------------------------------------------------------------------------
 	// Purpose: used by the GetPropOffsetFromTable func to get a specific table
