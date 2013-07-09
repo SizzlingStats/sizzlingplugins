@@ -37,10 +37,10 @@ using namespace sizzFile;
 extern IVEngineServer		*pEngine;
 extern CTSCallQueue			*g_pTSCallQueue;
 
-void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
+bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 {
 	if (m_bWaitingForUnload)
-		return;
+		return false;
 
 	const char *pluginPath = pUpdateInfo[k_eLocalPluginPath];
 	const char *pluginNameNoExtension = pUpdateInfo[k_ePluginNameNoExtension];
@@ -52,7 +52,7 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 
 	bool isUpdate = CheckForUpdate();
 	if ( !isUpdate )
-		return;
+		return false;
 
 	const char *pluginName = pUpdateInfo[k_ePluginName];
 	char currentPluginPath[512] = {};
@@ -73,22 +73,11 @@ void CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 		{
 			file.Write( updatedFile.Base(), updatedFile.GetBytesRemaining() );
 			file.Close();
-
-			const char *pluginDescriptionPart = pUpdateInfo[k_ePluginDescriptionPart];
 			m_bWaitingForUnload = true;
-
-			static char temp[576] = {};
-			// unload the old plugin, load the new plugin
-			V_snprintf(temp, 576, "plugin_unload %i; plugin_load %s\n", m_info.plugin_index, currentPluginPath);
-
-			CLateBoundPtr<IVEngineServer> ppEngine(&pEngine);
-			g_pTSCallQueue->EnqueueFunctor( CreateFunctor(ppEngine, &IVEngineServer::ServerCommand, (const char *)temp) );
-			// the plugin will be unloaded when tf2 executes the command,
-			// which then also loads the new version of the plugin.
-			// the new version runs the updater which checks for plugin_old
-			// and deletes it.
+			return true;
 		}
 	}
+	return false;
 }
 
 bool CAutoUpdater::CheckForUpdate()

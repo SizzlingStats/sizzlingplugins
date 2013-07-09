@@ -138,6 +138,8 @@ public:
 	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
 
 private:
+	void LoadUpdatedPlugin();
+	void OnAutoUpdateReturn( bool bLoadUpdate );
 	void GetGameRules();
 	void GetPropOffsets();
 
@@ -227,8 +229,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	CServerPlugin *pPluginManager = (CServerPlugin*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 	int plugin_index = SCHelpers::GetThisPluginIndex(pPluginManager, this);
 
-	autoUpdateInfo_t a = { PLUGIN_PATH PLUGIN_NAME, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION, plugin_index };
+	autoUpdateInfo_t a = { FULL_PLUGIN_PATH, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION, plugin_index };
 	m_pAutoUpdater = new CAutoUpdateThread(a, s_pluginInfo);
+
+	using namespace std::placeholders;
+	m_pAutoUpdater->SetOnFinishedUpdateCallback(std::bind(&CEmptyServerPlugin::OnAutoUpdateReturn, this, _1));
 	m_pAutoUpdater->StartThread();
 
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
@@ -977,6 +982,34 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			m_SizzlingStats.SS_ShowHtmlStats( entindex, true );
 		}
 #endif
+	}
+}
+
+void CEmptyServerPlugin::LoadUpdatedPlugin()
+{
+	CServerPlugin *pPluginManager = m_PluginContext.GetPluginManager();
+	int plugin_index = SCHelpers::GetThisPluginIndex(pPluginManager, this);
+
+	if (plugin_index >= 0)
+	{
+		char temp[576];
+		// unload the old plugin, load the new plugin
+		V_snprintf(temp, 576, "plugin_unload %i; plugin_load %s\n", plugin_index, FULL_PLUGIN_PATH);
+		
+		IVEngineServer *pEngine = m_PluginContext.GetEngine();
+		pEngine->ServerCommand(temp);
+		// the plugin will be unloaded when tf2 executes the command,
+		// which then also loads the new version of the plugin.
+		// the new version runs the updater which checks for plugin_old
+		// and deletes it.
+	}
+}
+
+void CEmptyServerPlugin::OnAutoUpdateReturn( bool bLoadUpdate )
+{
+	if (bLoadUpdate)
+	{
+		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &CEmptyServerPlugin::LoadUpdatedPlugin));
 	}
 }
 

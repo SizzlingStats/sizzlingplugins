@@ -58,7 +58,7 @@ public:
 	{
 	}
 
-	void PerformUpdateIfAvailable( const char *pUpdateInfo[] );
+	bool PerformUpdateIfAvailable( const char *pUpdateInfo[] );
 
 private:
 	// returns true if there is an update available
@@ -84,7 +84,8 @@ class CAutoUpdateThread: public sizz::CThread
 public:
 	CAutoUpdateThread( autoUpdateInfo_t const &info, const char *pUpdateInfo[] ):
 		m_autoUpdater(info),
-		m_pUpdateInfo(pUpdateInfo)
+		m_pUpdateInfo(pUpdateInfo),
+		m_finished_callback(nullptr)
 	{
 	}
 
@@ -98,9 +99,18 @@ public:
 		Start();
 	}
 
+	void SetOnFinishedUpdateCallback( std::function<void(bool)> callback )
+	{
+		m_finished_callback = callback;
+	}
+
 	virtual int Run()
 	{
-		m_autoUpdater.PerformUpdateIfAvailable(m_pUpdateInfo);
+		bool ret = m_autoUpdater.PerformUpdateIfAvailable(m_pUpdateInfo);
+		if (m_finished_callback)
+		{
+			m_finished_callback(ret);
+		}
 		return 0;
 	}
 
@@ -113,6 +123,7 @@ private:
 	CAutoUpdater m_autoUpdater;
 	// the plugin will pass static data into here
 	const char **m_pUpdateInfo;
+	std::function<void(bool)> m_finished_callback;
 };
 
 #endif // AUTOUPDATE_H
