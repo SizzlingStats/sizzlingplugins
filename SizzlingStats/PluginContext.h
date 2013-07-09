@@ -14,38 +14,32 @@
 #ifndef PLUGIN_CONTEXT_H
 #define PLUGIN_CONTEXT_H
 
-#include "igameevents.h"
-#include "eiface.h"
-#include "game/server/iplayerinfo.h"
+class IVEngineServer;
+class IGameEventManager2;
+class IPlayerInfoManager;
+class CServerPlugin;
+class IServerPluginHelpers;
 
 class CPluginContext
 {
 	friend class CEmptyServerPlugin;
 public:
-	CPluginContext();
-
 	IVEngineServer *GetEngine() const;
 	IGameEventManager2 *GetEventMgr() const;
 	IPlayerInfoManager *GetPlayerInfoMgr() const;
+	CServerPlugin *GetPluginManager() const;
+	IServerPluginHelpers *GetServerPluginHelpers() const;
 
 protected:
-	void SetInterfaces(
-		IVEngineServer *pEng = NULL, 
-		IGameEventManager2 *pEventMgr = NULL,
-		IPlayerInfoManager *pPlayerInfoMgr = NULL );
-
-private:
 	IVEngineServer *m_pEngineServer;
 	IGameEventManager2 *m_pGameEventManager;
 	IPlayerInfoManager *m_pPlayerInfoManager;
+	union
+	{
+		CServerPlugin *m_pPluginManager;
+		IServerPluginHelpers *m_pPluginHelpers;
+	};
 };
-
-inline CPluginContext::CPluginContext():
-	m_pEngineServer(NULL),
-	m_pGameEventManager(NULL),
-	m_pPlayerInfoManager(NULL)
-{
-}
 
 inline IVEngineServer *CPluginContext::GetEngine() const
 {
@@ -62,14 +56,14 @@ inline IPlayerInfoManager *CPluginContext::GetPlayerInfoMgr() const
 	return m_pPlayerInfoManager;
 }
 
-inline void CPluginContext::SetInterfaces(
-		IVEngineServer *pEng /*= NULL*/, 
-		IGameEventManager2 *pEventMgr /*= NULL*/,
-		IPlayerInfoManager *pPlayerInfoMgr /*= NULL*/  )
+inline CServerPlugin *CPluginContext::GetPluginManager() const
 {
-	m_pEngineServer = pEng;
-	m_pGameEventManager = pEventMgr;
-	m_pPlayerInfoManager = pPlayerInfoMgr;
+	return m_pPluginManager;
+}
+
+inline IServerPluginHelpers *CPluginContext::GetServerPluginHelpers() const
+{
+	return m_pPluginHelpers;
 }
 
 #endif // PLUGIN_CONTEXT_H

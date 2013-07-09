@@ -14,8 +14,9 @@
 #include "strtools.h"
 #include "UserIdTracker.h"
 #include "platform.h"
-
+#include "eiface.h"
 #include "convar.h"
+#include "game/server/iplayerinfo.h"
 
 static ConVar ss_logging("sizz_stats_disable_logging", "0", FCVAR_NONE, "If nonzero, 'suppstats' logging is disabled from SizzlingStats. Used to resolve conflicts from other logging plugins.");
 

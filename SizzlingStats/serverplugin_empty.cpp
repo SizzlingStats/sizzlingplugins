@@ -275,7 +275,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	gpGlobals = playerinfomanager->GetGlobalVars();
 
-	m_PluginContext.SetInterfaces(pEngine, gameeventmanager, playerinfomanager);
+	m_PluginContext.m_pEngineServer = pEngine;
+	m_PluginContext.m_pGameEventManager = gameeventmanager;
+	m_PluginContext.m_pPlayerInfoManager = playerinfomanager;
+	m_PluginContext.m_pPluginHelpers = helpers;
+
 	m_logstats.Load();
 
 	//GetGameRules();
