@@ -43,15 +43,13 @@ extern IEngineTrace		*enginetrace;
 
 extern IServerGameEnts			*pServerEnts;
 
-#ifndef PUBLIC_RELEASE
+#ifdef FTP_STATS
 
 static ConVar ftp_user("sizz_stats_ftp_username", "username", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP username to connect with when using web stats.");
 static ConVar ftp_pass("sizz_stats_ftp_password", "password", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP password to connect with when using web stats.");
 static ConVar ftp_server("sizz_stats_ftp_hostname", "ftp.myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP hostname to connect to when using web stats.");
 static ConVar ftp_port("sizz_stats_ftp_port", "21", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP port to use when using web stats.");
-ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "Hostname of the external public directory of the FTP server.");
-
-static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
+static ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "Hostname of the external public directory of the FTP server.");
 
 #endif
 
@@ -60,6 +58,7 @@ static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If non
 #define HIDDEN_CVAR_FLAGS FCVAR_HIDDEN | FCVAR_PROTECTED | FCVAR_UNLOGGED
 
 static ConVar apikey("sizz_stats_web_api_key", "", HIDDEN_CVAR_FLAGS, "");
+static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
@@ -89,11 +88,7 @@ SizzlingStats::SizzlingStats(): m_aPropOffsets(),
 								m_bTournamentMatchRunning(false),
 								m_bFirstCapOfRound(false)
 {
-#ifndef PUBLIC_RELEASE
 	m_pWebStatsHandler = new CWebStatsHandler();
-#else
-	m_pWebStatsHandler = new CNullWebStatsHandler();
-#endif
 }
 #pragma warning( pop )
 
@@ -349,18 +344,18 @@ void SizzlingStats::SS_Msg( const char *pMsg, ... )
 
 void SizzlingStats::SS_SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
 {
-#ifndef PUBLIC_RELEASE
 	if (show_msg.GetInt() != 0)
-#endif
-	CPlayerMessage::SingleUserChatMessage( pEntity, szMessage );
+	{
+		CPlayerMessage::SingleUserChatMessage( pEntity, szMessage );
+	}
 }
 
 void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 {
-#ifndef PUBLIC_RELEASE
 	if (show_msg.GetInt() != 0)
-#endif
-	CPlayerMessage::AllUserChatMessage( szMessage, "\x04[\x05SizzlingStats\x04]\x06: \x03" );
+	{
+		CPlayerMessage::AllUserChatMessage( szMessage, "\x04[\x05SizzlingStats\x04]\x06: \x03" );
+	}
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
 
@@ -417,11 +412,9 @@ void SizzlingStats::SS_PreRoundFreeze()
 {
 	Msg( "pre-round started\n" );
 	SS_ResetData();
-#ifndef PUBLIC_RELEASE
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime;
 	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, SCHelpers::RoundDBL(curtime));
-#endif
 }
 
 void SizzlingStats::SS_RoundStarted()
@@ -436,12 +429,10 @@ void SizzlingStats::SS_RoundStarted()
 
 void SizzlingStats::SS_RoundEnded()
 {
-#ifndef PUBLIC_RELEASE
 	Msg( "round ended\n" );
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime - m_flRoundDuration;
 	m_PlayerDataManager.StopClassTracking(SCHelpers::RoundDBL(curtime));
-#endif
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
 	SS_EndOfRound();
 	engineContext_t context = { playerinfomanager, pEngine };
@@ -612,7 +603,7 @@ void SizzlingStats::SetTeamScores( int redscore, int bluscore )
 	m_hostInfo.m_bluscore = bluscore - m_iOldBluScore;
 }
 
-#ifndef PUBLIC_RELEASE
+#ifdef FTP_STATS
 
 static void messagethis()
 {

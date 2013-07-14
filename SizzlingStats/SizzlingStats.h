@@ -152,11 +152,7 @@ private:
 	CUtlVector<char> m_vecMedics; //ent index of medics
 private:
 	CPlayerDataManager m_PlayerDataManager;
-#ifdef PUBLIC_RELEASE
-	CNullWebStatsHandler *m_pWebStatsHandler;
-#else
 	CWebStatsHandler *m_pWebStatsHandler;
-#endif
 	ConVarRef m_refHostIP;
 	ConVarRef m_refIP;
 	ConVarRef m_refHostPort;

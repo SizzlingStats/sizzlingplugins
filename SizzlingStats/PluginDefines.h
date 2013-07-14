@@ -12,18 +12,12 @@
 #ifndef PLUGIN_DEFINES_H
 #define PLUGIN_DEFINES_H
 
-//#define PUBLIC_RELEASE 1
 //#define DEV_COMMANDS_ON
 //#define PROTO_STATS
+//#define FTP_STATS
 
-#ifdef PUBLIC_RELEASE
-	#define PLUGIN_VERSION "0.8.3.7"
-	#define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/"
-#else
-	#define PLUGIN_VERSION "0.9.3.1"
-	#define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
-#endif
-//#define RELEASE_VERSION
+#define PLUGIN_VERSION "0.9.3.1"
+#define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
 
 #ifdef _WIN32
 #define META  "metawin32.txt"

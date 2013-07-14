@@ -315,13 +315,12 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	
 	// when a player types in chat (doesn't include data to differentiate say and say_team)
 	gameeventmanager->AddListener( this, "player_say", true );
-#ifndef PUBLIC_RELEASE
+
 	// to track times for classes
 	gameeventmanager->AddListener( this, "player_changeclass", true );
 	gameeventmanager->AddListener( this, "player_team", true );
 	
 	//gameeventmanager->AddListener( this, "player_death", true );
-#endif
 	//gameeventmanager->AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//gameeventmanager->AddListener( this, "player_shoot", true );		// for accuracy stats
 
@@ -478,7 +477,6 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 
 		int roundstate = *m_iRoundState;
 		static int oldRoundState = roundstate;
-#ifndef PUBLIC_RELEASE
 		if (oldWaitingForPlayers != bWaitingForPlayers)
 		{
 			using namespace Teamplay_GameRule_States;
@@ -503,7 +501,6 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 
 			oldWaitingForPlayers = bWaitingForPlayers;
 		}
-#endif
 		if (oldRoundState != roundstate)
 		{
 			using namespace Teamplay_GameRule_States;
@@ -968,7 +965,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 				m_SizzlingStats.SS_Credits( entindex, PLUGIN_VERSION );
 			}
 		}
-#ifndef PUBLIC_RELEASE
 		else if ( FStrEq( text, ".ss" ) ||
 					FStrEq( text, ".stats" ) || 
 					FStrEq( text, ".showstats" ) || 
@@ -981,7 +977,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			int entindex = SCHelpers::UserIDToEntIndex( userid );
 			m_SizzlingStats.SS_ShowHtmlStats( entindex, true );
 		}
-#endif
 	}
 }
 
