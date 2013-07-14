@@ -67,7 +67,6 @@ extern CTSCallQueue		*g_pTSCallQueue;
 
 IServerGameDLL			*pServerDLL = NULL;
 IServerGameEnts			*pServerEnts = NULL;
-IFileSystem			*g_pFullFileSystem = NULL;
 
 CGlobalVars				*gpGlobals = NULL;
 

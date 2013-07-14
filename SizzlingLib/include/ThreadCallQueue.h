@@ -12,94 +12,103 @@
 #ifndef THREAD_CALL_QUEUE_H
 #define THREAD_CALL_QUEUE_H
 
-#include "callqueue.h"
+#include "tslist.h"
+#include "functors.h"
 
 class CTSCallQueue
 {
 public:
+	CTSCallQueue();
+	~CTSCallQueue();
 
-#pragma warning( push )
-#pragma warning( disable : 4355 )
-	CTSCallQueue(): m_pNopFunctor( CreateFunctor(this, &CTSCallQueue::nopFunc) ),
-					m_pCallQueueFunctor( CreateFunctor(this, &CTSCallQueue::CallOne) ),
-					m_pFuncCommandCaller( m_pNopFunctor )
-	{
-	}
-#pragma warning( pop )
-
-	~CTSCallQueue()
-	{
-		while ( m_queue.Count() )
-		{
-			CFunctor *pFunctor = NULL;
-			if ( m_queue.PopItem( &pFunctor ) )
-			{
-				pFunctor->Release();
-			}
-		}
-		m_pNopFunctor->Release();
-		m_pCallQueueFunctor->Release();
-	}
-
-	void CallAll()
-	{
-	    while ( m_queue.Count() )
-	    {
-            CFunctor *pFunctor = NULL;
-            if ( m_queue.PopItem( &pFunctor ) )
-            {
-                (*pFunctor)();
-                pFunctor->Release();
-            }
-	    }
-	}
-
-	inline void callQueueGameFrame()
-	{
-	    (*m_pFuncCommandCaller)();
-	}
-
-	void EnqueueFunctor( CFunctor *pFunctor )
-	{
-		QueueFunctorInternal( RetAddRef( pFunctor ) );
-		ThreadInterlockedCompareExchangePointer( (void* volatile*)(&m_pFuncCommandCaller), m_pCallQueueFunctor, m_pNopFunctor );
-	}
-
-	FUNC_GENERATE_QUEUE_METHODS();
+	void CallAll();
+	void callQueueGameFrame();
+	void EnqueueFunctor( CFunctor *pFunctor );
 
 private:
+	void CallOne();
+	void nopFunc();
+	void QueueFunctorInternal( CFunctor *pFunctor );
 
-    void CallOne()
-    {
-        if ( m_queue.Count() )
-        {
-            CFunctor *pFunctor = NULL;
-            if ( m_queue.PopItem( &pFunctor ) )
-            {
-                (*pFunctor)();
-                pFunctor->Release();
-            }
-        }
-        else
-        {
-            ThreadInterlockedExchangePointer( (void* volatile*)(&m_pFuncCommandCaller), m_pNopFunctor );
-        }
-    }
-
-    inline void nopFunc()
-    {
-    }
-
-	void QueueFunctorInternal( CFunctor *pFunctor )
-	{
-		m_queue.PushItem( pFunctor );
-	}
-
+private:
+	CFunctor	*m_pFuncCommandCaller;
 	CFunctor	*m_pNopFunctor;
 	CFunctor	*m_pCallQueueFunctor;
 	CTSQueue<CFunctor *>	m_queue;
-public:
-	CFunctor	*m_pFuncCommandCaller;
 };
+
+#pragma warning( push )
+#pragma warning( disable : 4355 )
+inline CTSCallQueue::CTSCallQueue():
+	m_pNopFunctor( CreateFunctor(this, &CTSCallQueue::nopFunc) ),
+	m_pCallQueueFunctor( CreateFunctor(this, &CTSCallQueue::CallOne) ),
+	m_pFuncCommandCaller( m_pNopFunctor )
+{
+}
+#pragma warning( pop )
+
+inline CTSCallQueue::~CTSCallQueue()
+{
+	while ( m_queue.Count() )
+	{
+		CFunctor *pFunctor = NULL;
+		if ( m_queue.PopItem( &pFunctor ) )
+		{
+			pFunctor->Release();
+		}
+	}
+	m_pNopFunctor->Release();
+	m_pCallQueueFunctor->Release();
+}
+
+inline void CTSCallQueue::CallAll()
+{
+	while ( m_queue.Count() )
+	{
+		CFunctor *pFunctor = NULL;
+		if ( m_queue.PopItem( &pFunctor ) )
+		{
+			(*pFunctor)();
+			pFunctor->Release();
+		}
+	}
+}
+
+inline void CTSCallQueue::callQueueGameFrame()
+{
+	(*m_pFuncCommandCaller)();
+}
+
+inline void CTSCallQueue::EnqueueFunctor( CFunctor *pFunctor )
+{
+	QueueFunctorInternal( RetAddRef( pFunctor ) );
+	ThreadInterlockedCompareExchangePointer( (void* volatile*)(&m_pFuncCommandCaller), m_pCallQueueFunctor, m_pNopFunctor );
+}
+
+inline void CTSCallQueue::CallOne()
+{
+	if ( m_queue.Count() )
+	{
+		CFunctor *pFunctor = NULL;
+		if ( m_queue.PopItem( &pFunctor ) )
+		{
+			(*pFunctor)();
+			pFunctor->Release();
+		}
+	}
+	else
+	{
+		ThreadInterlockedExchangePointer( (void* volatile*)(&m_pFuncCommandCaller), m_pNopFunctor );
+	}
+}
+
+inline void CTSCallQueue::nopFunc()
+{
+}
+
+inline void CTSCallQueue::QueueFunctorInternal( CFunctor *pFunctor )
+{
+	m_queue.PushItem( pFunctor );
+}
 
 #endif // THREAD_CALL_QUEUE_H
