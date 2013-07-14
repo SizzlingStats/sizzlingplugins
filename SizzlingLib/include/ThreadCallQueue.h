@@ -31,10 +31,10 @@ private:
 	void QueueFunctorInternal( CFunctor *pFunctor );
 
 private:
-	CFunctor	*m_pFuncCommandCaller;
 	CFunctor	*m_pNopFunctor;
 	CFunctor	*m_pCallQueueFunctor;
 	CTSQueue<CFunctor *>	m_queue;
+	CFunctor	*m_pFuncCommandCaller;
 };
 
 #pragma warning( push )
