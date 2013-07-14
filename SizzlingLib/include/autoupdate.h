@@ -101,7 +101,7 @@ public:
 
 	void SetOnFinishedUpdateCallback( std::function<void(bool)> callback )
 	{
-		m_finished_callback = callback;
+		m_finished_callback = std::move(callback);
 	}
 
 	virtual int Run()
