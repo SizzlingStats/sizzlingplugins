@@ -83,9 +83,6 @@
     <ClInclude Include="include\HtmlGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\HttpPost.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\MRecipientFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -16,32 +16,28 @@
 #include "PlayerMessage.h"
 #include "playerdata.h"
 #include "SC_helpers.h"
-//#include "filesystem.h"
-//#include "WebStatsHandler.h"
-#include "HtmlGenerator.h"
-#include "FtpUploader.h"
-#include "utlbuffer.h"
-#include "vstdlib/jobthread.h"
 #include "ThreadCallQueue.h"
-#include "curl/curl.h"
 #include "engine/IEngineTrace.h"
-
 #include "eiface.h"
 #include "game/server/iplayerinfo.h"
 
 #include <functional>
 
+#ifdef FTP_STATS
+#include "vstdlib/jobthread.h"
+#include "HtmlGenerator.h"
+#include "FtpUploader.h"
+#include "utlbuffer.h"
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-//extern PlayerMessage	*g_pMessage;
 extern CGlobalVars		*gpGlobals;
 extern IVEngineServer	*pEngine;
 extern IPlayerInfoManager *playerinfomanager;
 extern CTSCallQueue		*g_pTSCallQueue;
 extern IEngineTrace		*enginetrace;
-
-extern IServerGameEnts			*pServerEnts;
 
 #ifdef FTP_STATS
 
@@ -62,31 +58,32 @@ static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If non
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
-SizzlingStats::SizzlingStats(): m_aPropOffsets(),
-								m_PlayerFlagsOffset(0), 
-								m_TeamRoundsWonOffset(0),
-								m_PlayerClassOffset(0), // what am i using this for yet??
-								m_iWeaponsOffset(0),
-								m_iChargeLevelOffset(0),
-								m_iOriginOffset(0),
-								m_iChargeReleaseOffset(0),
-								m_pRedTeam(NULL),
-								m_pBluTeam(NULL),
-								m_iTeamScoreOffset(0),
-								m_iTeamNumOffset(0),
-								m_iOldRedScore(0),
-								m_iOldBluScore(0),
-								m_nCurrentRound(0),
-								m_PlayerDataManager(),
-								m_pWebStatsHandler(NULL),
-								m_refHostIP((IConVar*)NULL),
-								m_refIP((IConVar*)NULL),
-								m_refHostPort((IConVar*)NULL),
-								m_hostInfo(),
-								m_flRoundDuration(0),
-								m_flMatchDuration(0),
-								m_bTournamentMatchRunning(false),
-								m_bFirstCapOfRound(false)
+SizzlingStats::SizzlingStats():
+	m_aPropOffsets(),
+	m_PlayerFlagsOffset(0), 
+	m_TeamRoundsWonOffset(0),
+	m_PlayerClassOffset(0),
+	m_iWeaponsOffset(0),
+	m_iChargeLevelOffset(0),
+	m_iOriginOffset(0),
+	m_iChargeReleaseOffset(0),
+	m_pRedTeam(NULL),
+	m_pBluTeam(NULL),
+	m_iTeamScoreOffset(0),
+	m_iTeamNumOffset(0),
+	m_iOldRedScore(0),
+	m_iOldBluScore(0),
+	m_nCurrentRound(0),
+	m_PlayerDataManager(),
+	m_pWebStatsHandler(NULL),
+	m_refHostIP((IConVar*)NULL),
+	m_refIP((IConVar*)NULL),
+	m_refHostPort((IConVar*)NULL),
+	m_hostInfo(),
+	m_flRoundDuration(0),
+	m_flMatchDuration(0),
+	m_bTournamentMatchRunning(false),
+	m_bFirstCapOfRound(false)
 {
 	m_pWebStatsHandler = new CWebStatsHandler();
 }

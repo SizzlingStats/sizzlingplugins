@@ -31,10 +31,6 @@
 
 #include "SC_helpers.h"
 
-#ifdef COUNT_CYCLES
-	#include "fasttimer.h"
-#endif
-
 #include "PluginDefines.h"
 #include "PluginContext.h"
 #include "autoupdate.h"
@@ -61,8 +57,6 @@ IPlayerInfoManager		*playerinfomanager = NULL; // game dll interface to interact
 //IBotManager			*botmanager = NULL; // game dll interface to interact with bots
 IServerPluginHelpers	*helpers = NULL; // special 3rd party plugin helpers from the engine
 IEngineTrace			*enginetrace = NULL;
-//s_ServerPlugin			*g_pServerPluginHandler = NULL;
-//extern UserIdTracker 	*g_pUserIdTracker;
 extern CTSCallQueue		*g_pTSCallQueue;
 
 IServerGameDLL			*pServerDLL = NULL;
@@ -173,9 +167,6 @@ private:
 	// this var makes sure that LevelShutdown is 
 	// only called once for every LevelInit
 	bool m_bAlreadyLevelShutdown;
-#ifdef COUNT_CYCLES
-		CCycleCount m_CycleCount;
-#endif
 };
 
 // 
@@ -543,12 +534,6 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 	if (!m_bAlreadyLevelShutdown)
 	{
 		m_bAlreadyLevelShutdown = true;
-	#ifdef COUNT_CYCLES
-		Msg( "clock cycles: %i\n", m_CycleCount.GetCycles() );
-		Msg( "milliseconds: %i\n", m_CycleCount.GetMilliseconds() );
-		m_CycleCount.Init( (int64)0 );
-	#endif
-		//pEngine->LogPrint("LevelShutdown\n");
 		if (m_bTournamentMatchStarted)
 		{
 			TournamentMatchEnded();
@@ -856,9 +841,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	{
 		m_event_sender.SendEvent(event, gpGlobals->tickcount);
 	}
-#endif
-#ifdef COUNT_CYCLES
-	CTimeAdder Timer( &m_CycleCount );
 #endif
 	using namespace SCHelpers;
 

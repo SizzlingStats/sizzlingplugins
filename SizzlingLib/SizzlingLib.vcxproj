@@ -37,7 +37,6 @@
     <ClInclude Include="include\downloader.h" />
     <ClInclude Include="include\FtpUploader.h" />
     <ClInclude Include="include\HtmlGenerator.h" />
-    <ClInclude Include="include\HttpPost.h" />
     <ClInclude Include="include\JsonUtils.h" />
     <ClInclude Include="include\MRecipientFilter.h" />
     <ClInclude Include="include\NetPropUtils.h" />
