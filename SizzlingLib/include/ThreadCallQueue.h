@@ -31,18 +31,18 @@ private:
 	void QueueFunctorInternal( CFunctor *pFunctor );
 
 private:
-	CFunctor	*m_pNopFunctor;
-	CFunctor	*m_pCallQueueFunctor;
-	CTSQueue<CFunctor *>	m_queue;
 	CFunctor	*m_pFuncCommandCaller;
+	CFunctor	*m_pCallQueueFunctor;
+	CFunctor	*m_pNopFunctor;
+	CTSQueue<CFunctor *>	m_queue;
 };
 
 #pragma warning( push )
 #pragma warning( disable : 4355 )
 inline CTSCallQueue::CTSCallQueue():
-	m_pNopFunctor( CreateFunctor(this, &CTSCallQueue::nopFunc) ),
+	m_pFuncCommandCaller( CreateFunctor(this, &CTSCallQueue::nopFunc) ),
 	m_pCallQueueFunctor( CreateFunctor(this, &CTSCallQueue::CallOne) ),
-	m_pFuncCommandCaller( m_pNopFunctor )
+	m_pNopFunctor( m_pFuncCommandCaller )
 {
 }
 #pragma warning( pop )
