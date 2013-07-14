@@ -121,10 +121,10 @@ public:
 
 private:
 	void	OnSessionIdReceived( sizz::CString sessionid );
-	void	LogSessionId( sizz::CString str );
+	void	LogSessionId( const sizz::CString &str );
 
 	void	OnMatchUrlReceived( sizz::CString matchurl );
-	void	CacheSiteOnPlayer( sizz::CString match_url );
+	void	CacheSiteOnPlayer( const sizz::CString &match_url );
 
 	//	gets the prop offests
 	void	GetPropOffsets();

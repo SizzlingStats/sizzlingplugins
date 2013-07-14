@@ -53,10 +53,7 @@ namespace sizz
 
 	inline CString::CString( const CString &other )
 	{
-		if (this != &other)
-		{
-			CopyString(other.m_string, other.m_length);
-		}
+		CopyString(other.m_string, other.m_length);
 	}
 
 	inline CString::CString( CString &&other ):
@@ -119,6 +116,12 @@ namespace sizz
 			V_strncpy(dest, str, length+1);
 			m_length = length;
 		}
+	}
+
+	template<class T>
+	T &&move( T &param )
+	{
+		return std::move(param);
 	}
 
 }

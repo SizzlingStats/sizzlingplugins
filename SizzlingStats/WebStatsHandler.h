@@ -408,12 +408,12 @@ inline void CWebStatsHandler::SetApiKey( const char *apikey )
 
 inline void CWebStatsHandler::SetReceiveSessionIdCallback( std::function<void(sizz::CString)> func )
 {
-	m_RecvSessionIdCallback = func;
+	m_RecvSessionIdCallback = std::move(func);
 }
 
 inline void CWebStatsHandler::SetReceiveMatchUrlCallback( std::function<void(sizz::CString)> func )
 {
-	m_RecvMatchUrlCallback = func;
+	m_RecvMatchUrlCallback = std::move(func);
 }
 
 inline void CWebStatsHandler::SetSessionId( const char *sessionid )

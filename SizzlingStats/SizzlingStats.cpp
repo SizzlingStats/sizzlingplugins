@@ -113,8 +113,8 @@ void SizzlingStats::Load()
 	m_pWebStatsHandler->Initialize();
 
 	using namespace std::placeholders;
-	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, _1));
-	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, _1));
+	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, std::bind(sizz::move<sizz::CString>, _1)));
+	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, std::bind(sizz::move<sizz::CString>, _1)));
 }
 
 void SizzlingStats::Unload()
@@ -709,10 +709,10 @@ void SizzlingStats::SS_HideHtmlStats( int entindex )
 void SizzlingStats::OnSessionIdReceived( sizz::CString sessionid )
 {
 	extern CTSCallQueue *g_pTSCallQueue;
-	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, sessionid));
+	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, std::move(sessionid)));
 }
 
-void SizzlingStats::LogSessionId( sizz::CString str )
+void SizzlingStats::LogSessionId( const sizz::CString &str )
 {
 	const char *sessionid = str.ToCString();
 	char temp[128] = {};
@@ -723,10 +723,10 @@ void SizzlingStats::LogSessionId( sizz::CString str )
 void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
 {
 	extern CTSCallQueue *g_pTSCallQueue;
-	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::CacheSiteOnPlayer, matchurl));
+	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::CacheSiteOnPlayer, std::move(matchurl)));
 }
 
-void SizzlingStats::CacheSiteOnPlayer( sizz::CString match_url )
+void SizzlingStats::CacheSiteOnPlayer( const sizz::CString &match_url )
 {
 	const char *url = match_url.ToCString();
 	for (int i = 1; i < MAX_PLAYERS; ++i)
