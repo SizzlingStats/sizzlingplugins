@@ -1017,6 +1017,33 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 
 	m_logstats.TournamentMatchStarted(hostname, mapname, bluname, redname);
 	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);
+#ifdef PROTO_STATS
+	int tick = gpGlobals->tickcount;
+	m_event_sender.SendNamedEvent("tournament_match_start", tick);
+
+	for (int i = 1; i < gpGlobals->maxClients; ++i)
+	{
+		edict_t *pEdict = pEngine->PEntityOfEntIndex(i);
+		if (pEdict && !pEdict->IsFree())
+		{
+			IPlayerInfo *pInfo = playerinfomanager->GetPlayerInfo(pEdict);
+			if (pInfo && pInfo->IsConnected())
+			{
+				CSizzEvent event(m_event_sender.AllocEvent(), tick);
+				event.SetString("name", pInfo->GetName());
+				event.SetShort("userid", pEngine->GetPlayerUserId(pEdict));
+				event.SetString("steamid", pInfo->GetNetworkIDString());
+				event.SetByte("teamid", pInfo->GetTeamIndex());
+				//event.SetByte("classid", blah);
+				event.SetBool("isstv", pInfo->IsHLTV());
+				event.SetBool("isbot", pInfo->IsFakeClient());
+				event.SetBool("isreplay", pInfo->IsReplay());
+
+				m_event_sender.SendEvent(&event);
+			}
+		}
+	}
+#endif
 	m_bTournamentMatchStarted = true;
 }
 
@@ -1024,6 +1051,9 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 {
 	m_logstats.TournamentMatchEnded();
 	m_SizzlingStats.SS_TournamentMatchEnded();
+#ifdef PROTO_STATS
+	m_event_sender.SendNamedEvent("tournament_match_end", gpGlobals->tickcount);
+#endif
 	m_bTournamentMatchStarted = false;
 }
 
