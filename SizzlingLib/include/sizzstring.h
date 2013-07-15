@@ -23,7 +23,7 @@ namespace sizz
 	class CString
 	{
 	public:
-		CString( const char *str );
+		explicit CString( const char *str );
 		CString( const char *str, uint32_t length );
 		CString( const CString &other );
 		CString( CString &&other );
