@@ -14,7 +14,6 @@
 #ifndef LOG_STATS_H
 #define LOG_STATS_H
 
-#include "platform.h"
 #include "igameevents.h"
 
 class IGameEventManager2;
@@ -23,20 +22,21 @@ struct edict_t;
 class IGameEvent;
 class CPluginContext;
 struct playerInfo;
+class CSizzPluginContext;
 
 class CLogStats: public IGameEventListener2
 {
 public:
-	CLogStats( const CPluginContext &plugin_context );
+	CLogStats();
 	~CLogStats();
 
-	bool Load();
+	bool Load( CSizzPluginContext &plugin_context );
 	void Unload();
 
 	void LevelInit( const char *pMapName );
 
-	void ClientActive( edict_t *pEdict, int ent_index );
-	void ClientDisconnect( edict_t *pEdict );
+	void ClientActive( int ent_index );
+	void ClientDisconnect( int ent_index );
 
 	void TournamentMatchStarted( const char *RESTRICT hostname, 
 								const char *RESTRICT mapname, 
@@ -48,7 +48,10 @@ public:
 	virtual void FireGameEvent( IGameEvent *event );
 
 private:
-	const CPluginContext &m_context;
+	void WriteLog( const char *msg );
+
+private:
+	CSizzPluginContext *m_context;
 	playerInfo *m_entIndexToPlayerInfo;
 };
 
@@ -63,8 +66,8 @@ public:
 
 	void LevelInit( const char *pMapName ) {}
 
-	void ClientActive( edict_t *pEdict, int ent_index ) {}
-	void ClientDisconnect( edict_t *pEdict ) {}
+	void ClientActive( int ent_index ) {}
+	void ClientDisconnect( int ent_index ) {}
 
 	void TournamentMatchStarted( const char *RESTRICT hostname, 
 								const char *RESTRICT mapname, 

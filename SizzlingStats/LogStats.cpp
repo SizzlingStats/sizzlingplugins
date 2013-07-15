@@ -10,23 +10,12 @@
 */
 
 #include "LogStats.h"
-#include "PluginContext.h"
-#include "strtools.h"
-#include "UserIdTracker.h"
-#include "platform.h"
-#include "eiface.h"
 #include "convar.h"
 #include "game/server/iplayerinfo.h"
 
-static ConVar ss_logging("sizz_stats_disable_logging", "0", FCVAR_NONE, "If nonzero, 'suppstats' logging is disabled from SizzlingStats. Used to resolve conflicts from other logging plugins.");
+#include "SizzPluginContext.h"
 
-inline void WriteLog( IVEngineServer *pEngine, const char *msg )
-{
-	if (!ss_logging.GetBool())
-	{
-		pEngine->LogPrint(msg);
-	}
-}
+static ConVar ss_logging("sizz_stats_disable_logging", "0", FCVAR_NONE, "If nonzero, 'suppstats' logging is disabled from SizzlingStats. Used to resolve conflicts from other logging plugins.");
 
 struct playerInfo
 {
@@ -35,22 +24,21 @@ struct playerInfo
 		reset();
 	}
 	// which ones do i really need to reset? (instead of doing all of them)
-	void reset() {
+	void reset()
+	{
 		memset( steamid, 0, 64 );
 		memset( name, 0, 32 );
 		teamid = 0;
 		classid = 0;
-		pEdict = NULL;
 		pPlayerInfo = NULL;
-		pSteamId = NULL;
+		userid = -1;
 	}
 	char steamid[64];
 	char name[32];
 	int teamid;
 	int classid;
-	edict_t *pEdict;
 	IPlayerInfo *pPlayerInfo;
-	const CSteamID *pSteamId;
+	int userid;
 };
 
 static const char *teamNames[] =
@@ -80,8 +68,8 @@ inline bool FStrEq(const char *sz1, const char *sz2)
 	return(Q_stricmp(sz1, sz2) == 0);
 }
 
-CLogStats::CLogStats( const CPluginContext &plugin_context ):
-	m_context(plugin_context),
+CLogStats::CLogStats():
+	m_context(nullptr),
 	m_entIndexToPlayerInfo(new playerInfo[33])
 {
 }
@@ -91,74 +79,63 @@ CLogStats::~CLogStats()
 	delete [] m_entIndexToPlayerInfo;
 }
 
-bool CLogStats::Load()
+bool CLogStats::Load( CSizzPluginContext &plugin_context )
 {
-	IVEngineServer *pEng = m_context.GetEngine();
-	IGameEventManager2 *pGE = m_context.GetEventMgr();
-	if (pEng && pGE)
-	{
-		pGE->AddListener( this, "item_pickup", true );
-		pGE->AddListener( this, "player_hurt", true );
-		pGE->AddListener( this, "player_healed", true );
-		pGE->AddListener( this, "player_spawn", true );
-		pGE->AddListener( this, "player_team", true );
-		pGE->AddListener( this, "player_changename", true );
-		pGE->AddListener( this, "player_changeclass", true );
+	m_context = &plugin_context;
 
-		pEng->ServerCommand( "log on\n" );
-		pEng->ServerCommand("sm plugins unload supstats\n");
-		pEng->ServerExecute();
-		return true;
-	}
-	return false;
+	m_context->AddListener( this, "item_pickup", true );
+	m_context->AddListener( this, "player_hurt", true );
+	m_context->AddListener( this, "player_healed", true );
+	m_context->AddListener( this, "player_spawn", true );
+	m_context->AddListener( this, "player_team", true );
+	m_context->AddListener( this, "player_changename", true );
+	m_context->AddListener( this, "player_changeclass", true );
+
+	m_context->ServerCommand( "log on\n" );
+	m_context->ServerCommand("sm plugins unload supstats\n");
+	m_context->ServerExecute();
+	return true;
 }
 
 void CLogStats::Unload()
 {
-	IVEngineServer *pEng = m_context.GetEngine();
-	IGameEventManager2 *pGE = m_context.GetEventMgr();
-	if (pEng && pGE)
+	if (m_context->GetEngine() && m_context->GetGameEventManager())
 	{
-		pGE->RemoveListener(this);
-		pEng->ServerCommand("sm plugins load supstats\n");
-		pEng->ServerExecute();
+		m_context->RemoveListener(this);
+		m_context->ServerCommand("sm plugins load supstats\n");
+		m_context->ServerExecute();
 	}
 }
 
 void CLogStats::LevelInit( const char *pMapName )
 {
-	IVEngineServer *pEng = m_context.GetEngine();
-	pEng->ServerCommand( "log on\n" );
-	pEng->ServerExecute();
+	m_context->ServerCommand( "log on\n" );
+	m_context->ServerExecute();
 
 	char maplog[64];
 	Q_snprintf( maplog, 64, "Loading map \"%s\"\n", pMapName );
-	WriteLog( pEng, maplog );
+	WriteLog( maplog );
 }
 
-void CLogStats::ClientActive( edict_t *pEdict, int ent_index )
+void CLogStats::ClientActive( int ent_index )
 {
-	IPlayerInfo *pPlayerInfo = m_context.GetPlayerInfoMgr()->GetPlayerInfo( pEdict );
+	IPlayerInfo *pPlayerInfo = m_context->GetPlayerInfo(ent_index);
 	if ( pPlayerInfo && pPlayerInfo->IsConnected() )
 	{
 		playerInfo &pInfo = m_entIndexToPlayerInfo[ent_index];
-		pInfo.pEdict = pEdict;
 		pInfo.pPlayerInfo = pPlayerInfo;
 		Q_snprintf( pInfo.name, 32, "%s", pPlayerInfo->GetName() );
 		pInfo.teamid = pPlayerInfo->GetTeamIndex();
 		pInfo.classid = 0;
-		pInfo.pSteamId = m_context.GetEngine()->GetClientSteamID( pEdict );
-		if ( pInfo.pSteamId )
-		{
-			Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
-		}
+
+		pInfo.userid = m_context->UserIDFromEntIndex(ent_index);
+		m_context->GetSteamIDString(pInfo.userid, pInfo.steamid, sizeof(pInfo.steamid));
 	}
 }
 
-void CLogStats::ClientDisconnect( edict_t *pEdict )
+void CLogStats::ClientDisconnect( int ent_index )
 {
-	int index = m_context.GetEngine()->IndexOfEdict( pEdict );
-	m_entIndexToPlayerInfo[index].reset();
+	m_entIndexToPlayerInfo[ent_index].reset();
 }
 
 void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname, 
@@ -166,58 +143,47 @@ void CLogStats::TournamentMatchStarted( const char *RESTRICT hostname,
 									   const char *RESTRICT bluname, 
 									   const char *RESTRICT redname )
 {
-	IVEngineServer *pEngine = m_context.GetEngine();
-	pEngine->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
-	pEngine->ServerCommand("sm plugins unload supstats\n");
-	pEngine->ServerExecute();
-	pEngine->LogPrint( "[SizzlingStats]: Match Started\n" );
+	m_context->ServerCommand( "logaddress_add sizzlingstats.com:8006\n" );
+	m_context->ServerCommand("sm plugins unload supstats\n");
+	m_context->ServerExecute();
+	m_context->LogPrint( "[SizzlingStats]: Match Started\n" );
 	//char temp[256];
 	// DELIMIT THE STRINGS
 	//Q_snprintf(temp, 256, "[SizzlingStats]: Match Started<%s><%s><%s><%s>\n", hostname, mapname, bluname, redname);
 	//pEngine->LogPrint(temp);
 	char temp[128];
-	for (int i = 0; i < 33; ++i)
+	for (int i = 1; i < 33; ++i)
 	{
 		playerInfo *pInfo = &m_entIndexToPlayerInfo[i];
-		if (pInfo->pEdict)
-		{
-			// for testing to see if it can be null
-			if (!pInfo->pPlayerInfo)
-			{
-				pEngine->LogPrint("[SizzlingStats]: Error \"playerinfo was null\"\n");
-			}
-			int userid = pEngine->GetPlayerUserId(pInfo->pEdict);
-			const char *RESTRICT teamname = teamNames[pInfo->teamid];
-			const char *RESTRICT classname = classNames[pInfo->classid];
-			Q_snprintf(temp, 128, "[SizzlingStats]: player \"%s\"<%i><%s><%s> is role %s\n", pInfo->name, userid, pInfo->steamid, teamname, classname);
-			pEngine->LogPrint(temp);
-		}
+		int userid = m_context->UserIDFromEntIndex(i);
+		const char *RESTRICT teamname = teamNames[pInfo->teamid];
+		const char *RESTRICT classname = classNames[pInfo->classid];
+
+		Q_snprintf(temp, 128, "[SizzlingStats]: player \"%s\"<%i><%s><%s> is role %s\n", pInfo->name, userid, pInfo->steamid, teamname, classname);
+		m_context->LogPrint(temp);
 	}
 }
 
 void CLogStats::TournamentMatchEnded()
 {
-	IVEngineServer *pEngine = m_context.GetEngine();
-	pEngine->LogPrint("[SizzlingStats]: Match Ended\n");
-	pEngine->ServerExecute();
-	pEngine->ServerCommand( "logaddress_del sizzlingstats.com:8006\n" );
-	pEngine->ServerExecute();
+	m_context->LogPrint("[SizzlingStats]: Match Ended\n");
+	m_context->ServerExecute();
+	m_context->ServerCommand( "logaddress_del sizzlingstats.com:8006\n" );
+	m_context->ServerExecute();
 }
 
 void CLogStats::PreRoundFreezeStarted( bool bTournamentModeOn )
 {
 	if (bTournamentModeOn)
 	{
-		IVEngineServer *pEngine = m_context.GetEngine();
-		pEngine->ServerCommand("sm plugins unload supstats\n");
-		pEngine->ServerExecute();
+		m_context->ServerCommand("sm plugins unload supstats\n");
+		m_context->ServerExecute();
 	}
 }
 
 void CLogStats::FireGameEvent( IGameEvent *event )
 {
 	const char *RESTRICT name = event->GetName();
-	IVEngineServer *pEngine = m_context.GetEngine();
 
 	if ( FStrEq( name, "player_hurt" ) )
 	{
@@ -227,15 +193,12 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 		int attackerid = event->GetInt( "attacker" );
 		if ( ( event->GetInt( "userid" ) != attackerid ) && attackerid != 0 )
 		{
-			int index = g_pUserIdTracker->GetEntIndex(attackerid);
+			int index = m_context->EntIndexFromUserID(attackerid);
 			playerInfo &pInfo = m_entIndexToPlayerInfo[index];
 
-			if ( !pInfo.pSteamId )
+			if ( pInfo.steamid[0] == '\0' )
 			{
-				pInfo.pSteamId = pEngine->GetClientSteamID( pInfo.pEdict );
-				if ( !pInfo.pSteamId )
-					return;
-				Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
+				m_context->GetSteamIDString(pInfo.userid, pInfo.steamid, sizeof(pInfo.steamid));
 			}
 
 			char log[128];
@@ -245,34 +208,28 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 				pInfo.steamid,
 				teamNames[pInfo.teamid],
 				damageamount );
-			WriteLog( pEngine, log );
+			WriteLog( log );
 			//L 03/21/2011 - 02:32:11: "rline<326><STEAM_0:1:796515><Blue>" triggered "damage" (damage "37")
 		}
 	}
 	else if ( FStrEq( name, "player_healed" ) )
 	{
 		int healer = event->GetInt( "healer" );
-		int index1 = g_pUserIdTracker->GetEntIndex( healer );
+		int index1 = m_context->EntIndexFromUserID(healer);
 		playerInfo &pInfo1 = m_entIndexToPlayerInfo[index1];
 
 		int patient = event->GetInt( "patient" );
-		int index2 = g_pUserIdTracker->GetEntIndex( patient );
+		int index2 = m_context->EntIndexFromUserID(patient);
 		playerInfo &pInfo2 = m_entIndexToPlayerInfo[index2];
 
-		if ( !pInfo1.pSteamId )
+		if ( pInfo1.steamid[0] == '\0' )
 		{
-			pInfo1.pSteamId = pEngine->GetClientSteamID( pInfo1.pEdict );
-			if ( !pInfo1.pSteamId )
-				return;
-			Q_snprintf( pInfo1.steamid, 64, "%s", pInfo1.pPlayerInfo->GetNetworkIDString() );
+			m_context->GetSteamIDString(pInfo1.userid, pInfo1.steamid, sizeof(pInfo1.steamid));
 		}
 
-		if ( !pInfo2.pSteamId )
+		if ( pInfo2.steamid[0] == '\0' )
 		{
-			pInfo2.pSteamId = pEngine->GetClientSteamID( pInfo2.pEdict );
-			if ( !pInfo2.pSteamId )
-				return;
-			Q_snprintf( pInfo2.steamid, 64, "%s", pInfo2.pPlayerInfo->GetNetworkIDString() );
+			m_context->GetSteamIDString(pInfo2.userid, pInfo2.steamid, sizeof(pInfo2.steamid));
 		}
 					
 		char log[196];
@@ -286,21 +243,18 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo2.steamid,
 			teamNames[pInfo2.teamid],
 			event->GetInt( "amount" ) );
-		WriteLog( pEngine, log );
+		WriteLog( log );
 		//L 03/21/2011 - 02:35:55: "HackLimit2. MixMixMixMix<333><STEAM_0:1:15579670><Blue>" triggered "healed" against "AI kaytee fbs!!<331><STEAM_0:0:9786107><Blue>" (healing "73")
 	}
 	else if ( FStrEq( name, "item_pickup" ) )
 	{
 		int userid = event->GetInt( "userid" );
-		int index = g_pUserIdTracker->GetEntIndex( userid );
+		int index = m_context->EntIndexFromUserID(userid);
 
 		playerInfo &pInfo = m_entIndexToPlayerInfo[index];
-		if ( !pInfo.pSteamId )
+		if ( pInfo.steamid[0] == '\0' )
 		{
-			pInfo.pSteamId = pEngine->GetClientSteamID( pInfo.pEdict );
-			if ( !pInfo.pSteamId )
-				return;
-			Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
+			m_context->GetSteamIDString(pInfo.userid, pInfo.steamid, sizeof(pInfo.steamid));
 		}
 
 		char log[128];
@@ -310,21 +264,18 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo.steamid,
 			teamNames[pInfo.teamid],
 			event->GetString( "item" ) );
-		WriteLog( pEngine, log );
+		WriteLog( log );
 		//L 03/21/2011 - 02:35:56: "GooB<330><STEAM_0:1:23384772><Blue>" picked up item "tf_ammo_pack"
 	}
 	else if ( FStrEq( name, "player_spawn" ) )
 	{
 		int userid = event->GetInt( "userid" );
-		int index = g_pUserIdTracker->GetEntIndex( userid );
+		int index = m_context->EntIndexFromUserID(userid);
 		playerInfo &pInfo = m_entIndexToPlayerInfo[index];
 
-		if ( !pInfo.pSteamId )
+		if ( pInfo.steamid[0] == '\0' )
 		{
-			pInfo.pSteamId = pEngine->GetClientSteamID( pInfo.pEdict );
-			if ( !pInfo.pSteamId )
-				return;
-			Q_snprintf( pInfo.steamid, 64, "%s", pInfo.pPlayerInfo->GetNetworkIDString() );
+			m_context->GetSteamIDString(pInfo.userid, pInfo.steamid, sizeof(pInfo.steamid));
 		}
 
 		char log[128];
@@ -334,7 +285,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			pInfo.steamid,
 			teamNames[ pInfo.teamid ],
 			classNames[ pInfo.classid ] );
-		WriteLog( pEngine, log );
+		WriteLog( log );
 
 		        //LogToGame("\"%s<%d><%s><%s>\" spawned as \"%s\"",
           //        clientname,
@@ -346,20 +297,28 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 	else if ( FStrEq( name, "player_changeclass" ) )
 	{
 		int userid = event->GetInt( "userid" );
-		int index = g_pUserIdTracker->GetEntIndex( userid );
+		int index = m_context->EntIndexFromUserID(userid);
 		m_entIndexToPlayerInfo[index].classid = event->GetInt( "class" );
 	}
 	else if ( FStrEq( name, "player_team" ) )
 	{
 		int userid = event->GetInt( "userid" );
-		int index = g_pUserIdTracker->GetEntIndex( userid );
+		int index = m_context->EntIndexFromUserID(userid);
 		m_entIndexToPlayerInfo[index].teamid = event->GetInt( "team" );
 		Q_snprintf( m_entIndexToPlayerInfo[index].name, 32, "%s", event->GetString( "name" ) );
 	}
 	else if ( FStrEq( name, "player_changename" ) )
 	{
 		int userid = event->GetInt( "userid" );
-		int index = g_pUserIdTracker->GetEntIndex( userid );
+		int index = m_context->EntIndexFromUserID(userid);
 		Q_snprintf( m_entIndexToPlayerInfo[index].name, 32, "%s", event->GetString( "newname" ) );
+	}
+}
+
+void CLogStats::WriteLog( const char *msg )
+{
+	if (!ss_logging.GetBool())
+	{
+		m_context->LogPrint(msg);
 	}
 }

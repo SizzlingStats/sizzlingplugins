@@ -565,7 +565,7 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 
 	int ent_index = g_pUserIdTracker->ClientActive( pEdict );
 	m_SizzlingStats.SS_InsertPlayer( pEdict );
-	m_logstats.ClientActive(pEdict, ent_index);
+	m_logstats.ClientActive(ent_index);
 }
 
 //---------------------------------------------------------------------------------
@@ -582,10 +582,11 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 	if (!m_bAlreadyLevelShutdown)
 	{
 		m_plugin_context.ClientDisconnect(pEdict);
+		int ent_index = m_plugin_context.EntIndexFromEdict(pEdict);
 		if( !pEdict || pEdict->IsFree() )
 			return;
 		m_SizzlingStats.SS_DeletePlayer( pEdict );
-		m_logstats.ClientDisconnect(pEdict);
+		m_logstats.ClientDisconnect(ent_index);
 		g_pUserIdTracker->ClientDisconnect( pEdict );
 	}
 }
@@ -778,7 +779,7 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 			{
 				int ent_index = g_pUserIdTracker->ClientActive( pEdict );
 				m_SizzlingStats.SS_InsertPlayer( pEdict );
-				m_logstats.ClientActive(pEdict, ent_index);
+				m_logstats.ClientActive(ent_index);
 			}
 		}
 	}
