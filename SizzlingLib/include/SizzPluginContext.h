@@ -14,6 +14,8 @@
 #ifndef SIZZ_PLUGIN_CONTEXT_H
 #define SIZZ_PLUGIN_CONTEXT_H
 
+#include "engine/iserverplugin.h"
+
 class IVEngineServer;
 class CGlobalVars;
 class CUserIDTracker;
@@ -29,6 +31,7 @@ class CTSCallQueue;
 class CFunctor;
 class ServerClass;
 class IServerGameDLL;
+class KeyValues;
 
 typedef struct plugin_context_init_s
 {
@@ -48,6 +51,15 @@ public:
 
 	void Initialize( const plugin_context_init_t &init );
 
+	// get a pointer to the engine interface
+	IVEngineServer *GetEngine() const;
+
+	// get a pointer to the game events manager interface
+	IGameEventManager2 *GetGameEventManager() const;
+
+	// get a pointer to the server game dll interface
+	IServerGameDLL *GetServerGameDLL() const;
+
 	// returns -1 if ent index is invalid
 	int UserIDFromEntIndex( int ent_index );
 
@@ -66,6 +78,12 @@ public:
 	// the current time (per frame incremented)
 	float GetTime() const;
 
+	// the max number of clients
+	int GetMaxClients() const;
+
+	// returns the name of the current running map
+	const char *GetMapName() const;
+
 	// returns the index of the plugin attached 
 	// to the passed in plugin callbacks
 	int GetPluginIndex( const IServerPluginCallbacks *pPlugin ) const;
@@ -74,6 +92,10 @@ public:
 	// description string contains the passed 
 	// in description string
 	int GetPluginIndex( const char *pszDescriptionPart ) const;
+
+	// creates and sends a message of type 
+	// DIALOG_TYPE to the specified client
+	void CreateMessage( int ent_index, DIALOG_TYPE type, KeyValues *data, IServerPluginCallbacks *plugin );
 
 	// Issue a command to the command parser as if it was typed at the server console.
 	void ServerCommand( const char *command );
@@ -109,6 +131,10 @@ protected:
 	void ClientDisconnect( const edict_t *pEdict );
 	void GameFrame( bool simulating );
 
+	// returns the ent index from the edict pointer
+	// returns -1 on invalid edict
+	int EntIndexFromEdict( const edict_t *pEdict );
+
 private:
 	IVEngineServer *m_pEngine;
 	IPlayerInfoManager *m_pPlayerInfoManager;
@@ -121,6 +147,7 @@ private:
 	CTSCallQueue *m_pCallQueue;
 	int m_tickcount;
 	float m_flTime;
+	int m_max_clients;
 };
 
 #endif // SIZZ_PLUGIN_CONTEXT_H

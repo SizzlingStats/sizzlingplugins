@@ -30,7 +30,8 @@ CSizzPluginContext::CSizzPluginContext():
 	m_pUserIDTracker(new CUserIDTracker()),
 	m_pCallQueue(new CTSCallQueue()),
 	m_tickcount(0),
-	m_flTime(0.0f)
+	m_flTime(0.0f),
+	m_max_clients(0)
 {
 }
 
@@ -47,13 +48,23 @@ void CSizzPluginContext::Initialize( const plugin_context_init_t &init )
 	m_pPluginManager = reinterpret_cast<CServerPlugin*>(init.pHelpers);
 	m_pGameEventManager = init.pGameEventManager;
 	m_pServerGameDLL = init.pServerGameDLL;
-
-	if (m_pPlayerInfoManager)
-	{
-		m_pGlobals = m_pPlayerInfoManager->GetGlobalVars();
-	}
-
+	m_pGlobals = m_pPlayerInfoManager->GetGlobalVars();
 	m_pUserIDTracker->Reset();
+}
+
+IVEngineServer *CSizzPluginContext::GetEngine() const
+{
+	return m_pEngine;
+}
+
+IGameEventManager2 *CSizzPluginContext::GetGameEventManager() const
+{
+	return m_pGameEventManager;
+}
+
+IServerGameDLL *CSizzPluginContext::GetServerGameDLL() const
+{
+	return m_pServerGameDLL;
 }
 
 int CSizzPluginContext::UserIDFromEntIndex( int ent_index )
@@ -98,6 +109,16 @@ float CSizzPluginContext::GetTime() const
 	return m_flTime;
 }
 
+int CSizzPluginContext::GetMaxClients() const
+{
+	return m_max_clients;
+}
+
+const char *CSizzPluginContext::GetMapName() const
+{
+	return m_pGlobals->mapname.ToCStr();
+}
+
 int CSizzPluginContext::GetPluginIndex( const IServerPluginCallbacks *pPlugin ) const
 {
 	if (pPlugin)
@@ -132,6 +153,18 @@ int CSizzPluginContext::GetPluginIndex( const char *pszDescriptionPart ) const
 	return -1;
 }
 
+void CSizzPluginContext::CreateMessage( int ent_index, DIALOG_TYPE type, KeyValues *data, IServerPluginCallbacks *plugin )
+{
+	if (data && plugin)
+	{
+		edict_t *pEnt = m_pEngine->PEntityOfEntIndex(ent_index);
+		if (pEnt)
+		{
+			m_pPluginManager->CreateMessage(pEnt, type, data, plugin);
+		}
+	}
+}
+
 void CSizzPluginContext::ServerCommand( const char *command )
 {
 	m_pEngine->ServerCommand(command);
@@ -164,7 +197,7 @@ void CSizzPluginContext::RemoveListener( IGameEventListener2 *listener )
 
 IPlayerInfo *CSizzPluginContext::GetPlayerInfo( int ent_index )
 {
-	if ((1 <= ent_index) && (ent_index < m_pGlobals->maxClients))
+	if ((1 <= ent_index) && (ent_index < GetMaxClients()))
 	{
 		edict_t *pEdict = m_pEngine->PEntityOfEntIndex(ent_index);
 		if (pEdict && !pEdict->IsFree())
@@ -224,6 +257,16 @@ void CSizzPluginContext::GameFrame( bool simulating )
 {
 	m_tickcount = m_pGlobals->tickcount;
 	m_flTime = m_pGlobals->realtime;
+	m_max_clients = m_pGlobals->maxClients;
 
 	m_pCallQueue->callQueueGameFrame();
+}
+
+int CSizzPluginContext::EntIndexFromEdict( const edict_t *pEdict )
+{
+	if (pEdict)
+	{
+		return m_pEngine->IndexOfEdict(pEdict);
+	}
+	return -1;
 }
