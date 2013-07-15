@@ -67,3 +67,52 @@ void MRecipientFilter::AddRecipient(int iPlayer)
 
 	m_Recipients.AddToTail(iPlayer);
 }
+
+#include "SizzPluginContext.h"
+
+MRecipientFilter_new::MRecipientFilter_new( CSizzPluginContext &context ):
+	m_context(&context)
+{
+}
+
+int MRecipientFilter_new::GetRecipientCount( void ) const
+{
+	return m_recipients.Count();
+}
+
+int MRecipientFilter_new::GetRecipientIndex( int slot ) const
+{
+	if (slot < 0 || slot >= GetRecipientCount())
+	{
+		return -1;
+	}
+
+	return m_recipients[slot];
+}
+
+void MRecipientFilter_new::AddAllPlayers()
+{
+	m_recipients.RemoveAll();
+	int max_clients = m_context->GetMaxClients();
+	for (int i = 1; i <= max_clients; ++i)
+	{
+		IPlayerInfo *pInfo = m_context->GetPlayerInfo(i);
+		if (pInfo && !pInfo->IsFakeClient())
+		{
+			m_recipients.AddToTail(i);
+		}
+	}
+}
+
+void MRecipientFilter_new::AddRecipient(int ent_index)
+{
+	// Return if the recipient is already in the vector
+	if (m_recipients.Find(ent_index) == m_recipients.InvalidIndex())
+	{
+		IPlayerInfo *pInfo = m_context->GetPlayerInfo(ent_index);
+		if (pInfo && !pInfo->IsFakeClient())
+		{
+			m_recipients.AddToTail(ent_index);
+		}
+	}
+}
