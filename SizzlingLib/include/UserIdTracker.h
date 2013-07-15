@@ -35,4 +35,19 @@ private:
 
 extern UserIdTracker *g_pUserIdTracker;
 
+class CUserIDTracker
+{
+	friend class CSizzPluginContext;
+public:
+	int GetEntIndex( int userid ) const;
+
+protected:
+	void Reset();
+	void ClientActive( int userid, int ent_index );
+	void ClientDisconnect( int userid );
+
+private:
+	char m_ent_index_table[65536];
+};
+
 #endif // USER_ID_TRACKER_H

@@ -60,3 +60,27 @@ int UserIdTracker::GetEntIndex( int userid ) const
 {
 	return static_cast<int>( m_entIndexTable[userid] );
 }
+
+int CUserIDTracker::GetEntIndex( int userid ) const
+{
+	if (0 <= userid && userid < 65536)
+	{
+		return m_ent_index_table[userid];
+	}
+	return -1;
+}
+
+void CUserIDTracker::Reset()
+{
+	memset( m_ent_index_table, -1, 65536 );
+}
+
+void CUserIDTracker::ClientActive( int userid, int ent_index )
+{
+	m_ent_index_table[userid] = ent_index;
+}
+
+void CUserIDTracker::ClientDisconnect( int userid )
+{
+	m_ent_index_table[userid] = -1;
+}
