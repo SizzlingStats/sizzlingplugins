@@ -131,6 +131,7 @@ public:
 	ServerClass *GetAllServerClasses();
 
 protected:
+	void LevelShutdown();
 	void ClientActive( const edict_t *pEdict );
 	void ClientDisconnect( const edict_t *pEdict );
 	void GameFrame( bool simulating );

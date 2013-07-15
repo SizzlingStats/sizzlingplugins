@@ -241,6 +241,11 @@ ServerClass *CSizzPluginContext::GetAllServerClasses()
 	return m_pServerGameDLL->GetAllServerClasses();
 }
 
+void CSizzPluginContext::LevelShutdown()
+{
+	m_pUserIDTracker->Reset();
+}
+
 void CSizzPluginContext::ClientActive( const edict_t *pEdict )
 {
 	if (pEdict)

@@ -551,6 +551,7 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 		m_pTeamplayRoundBasedRules = NULL;
 		m_SizzlingStats.SS_DeleteAllPlayerData();
 		g_pUserIdTracker->Reset();
+		m_plugin_context.LevelShutdown();
 	}
 }
 
