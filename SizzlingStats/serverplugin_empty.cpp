@@ -32,7 +32,6 @@
 #include "SC_helpers.h"
 
 #include "PluginDefines.h"
-#include "PluginContext.h"
 #include "autoupdate.h"
 #include "UserIdTracker.h"
 #include "ServerPluginHandler.h"
@@ -142,7 +141,6 @@ private:
 
 private:
 	CSizzPluginContext m_plugin_context;
-	CPluginContext m_PluginContext;
 #ifdef PROTO_STATS
 	CEventSender m_event_sender;
 #endif
@@ -181,7 +179,7 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
-	m_logstats(m_PluginContext),
+	m_logstats(),
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
@@ -280,12 +278,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	m_plugin_context.Initialize(init);
 
-	m_PluginContext.m_pEngineServer = pEngine;
-	m_PluginContext.m_pGameEventManager = gameeventmanager;
-	m_PluginContext.m_pPlayerInfoManager = playerinfomanager;
-	m_PluginContext.m_pPluginHelpers = helpers;
-
-	m_logstats.Load();
+	m_logstats.Load(m_plugin_context);
 
 	//GetGameRules();
 	GetPropOffsets();
@@ -857,7 +850,8 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		int patient = event->GetInt( "patient" );
 		if ( patient != event->GetInt( "healer" ) )
 		{
-			int patientIndex = g_pUserIdTracker->GetEntIndex( patient );
+			
+			int patientIndex = m_plugin_context.EntIndexFromUserID(patient);
 			if (patientIndex > 0)
 			{
 				m_SizzlingStats.PlayerHealed( patientIndex, event->GetInt("amount") );
@@ -871,8 +865,8 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{
-		int killerIndex = g_pUserIdTracker->GetEntIndex( event->GetInt( "attacker" ) );	// med picks
-		int victimIndex = g_pUserIdTracker->GetEntIndex( event->GetInt( "userid" ) );
+		int killerIndex = m_plugin_context.EntIndexFromUserID(event->GetInt( "attacker" ));	// med picks
+		int victimIndex = m_plugin_context.EntIndexFromUserID(event->GetInt( "userid" ));
 		bool charged = event->GetBool( "charged" ); // med drops
 
 		if ( killerIndex > 0 && killerIndex != victimIndex )
@@ -888,7 +882,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	else if ( FStrEq( name, "player_changeclass" ) )
 	{
 		int userid = event->GetInt( "userid" );
-		int entindex = g_pUserIdTracker->GetEntIndex( userid );
+		int entindex = m_plugin_context.EntIndexFromUserID(userid);
 		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
 		m_SizzlingStats.PlayerChangedClass( entindex, player_class );
 	}
@@ -907,7 +901,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			if (teamid == 1) //TODO: verify that 1 is spec
 			{
 				int userid = event->GetInt( "userid" );
-				int entindex = g_pUserIdTracker->GetEntIndex( userid );
+				int entindex = m_plugin_context.EntIndexFromUserID(userid);
 				m_SizzlingStats.PlayerChangedClass(entindex, k_ePlayerClassUnknown);
 			}
 		}

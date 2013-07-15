@@ -62,9 +62,6 @@
     <ClInclude Include="LogStats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PluginContext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EventSender.h">
       <Filter>Header Files</Filter>
     </ClInclude>

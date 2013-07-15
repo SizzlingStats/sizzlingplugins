@@ -102,7 +102,6 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
     <ClInclude Include="EventSender.h" />
     <ClInclude Include="LogStats.h" />
     <ClInclude Include="PlayerDataManager.h" />
-    <ClInclude Include="PluginContext.h" />
     <ClInclude Include="PluginDefines.h" />
     <ClInclude Include="SizzEvent.pb.h" />
     <ClInclude Include="SizzlingStats.h" />

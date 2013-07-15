@@ -58,10 +58,10 @@ private:
 class CNullLogStats
 {
 public:
-	CNullLogStats( const CPluginContext &plugin_context ) {}
+	CNullLogStats() {}
 	~CNullLogStats() {}
 
-	bool Load() { return true; }
+	bool Load( CSizzPluginContext &plugin_context ) { return true; }
 	void Unload() {}
 
 	void LevelInit( const char *pMapName ) {}
