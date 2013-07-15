@@ -83,20 +83,40 @@ int CSizzPluginContext::EntIndexFromUserID( int userid ) const
 	return ent_index;
 }
 
-int CSizzPluginContext::SteamIDFromUserID( int userid )
+unsigned int CSizzPluginContext::SteamIDFromUserID( int userid )
 {
 	int ent_index = EntIndexFromUserID(userid);
 	return SteamIDFromEntIndex(ent_index);
 }
 
-int CSizzPluginContext::SteamIDFromEntIndex( int ent_index )
+unsigned int CSizzPluginContext::SteamIDFromEntIndex( int ent_index )
 {
 	const CSteamID *pID = m_pEngine->GetClientSteamIDByPlayerIndex(ent_index);
 	if (pID)
 	{
 		return pID->GetAccountID();
 	}
-	return 0;
+	return static_cast<unsigned int>(-1);
+}
+
+void CSizzPluginContext::GetSteamIDString( int userid, char *dest, int buff_size )
+{
+	if (dest && (buff_size > 0))
+	{
+		int ent_index = EntIndexFromUserID(userid);
+		if (ent_index != -1)
+		{
+			IPlayerInfo *pInfo = GetPlayerInfo(ent_index);
+			if (pInfo)
+			{
+				const char *src = pInfo->GetNetworkIDString();
+				if (src)
+				{
+					V_strncpy(dest, src, buff_size);
+				}
+			}
+		}
+	}
 }
 
 int CSizzPluginContext::GetCurrentTick() const

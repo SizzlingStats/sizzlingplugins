@@ -66,11 +66,15 @@ public:
 	// returns -1 if userid is invalid
 	int EntIndexFromUserID( int userid ) const;
 
-	// returns -1 on error
-	int SteamIDFromUserID( int userid );
+	// returns max int (-1) on error
+	unsigned int SteamIDFromUserID( int userid );
 
-	// returns -1 on error
-	int SteamIDFromEntIndex( int ent_index );
+	// returns max int (-1) on error
+	unsigned int SteamIDFromEntIndex( int ent_index );
+
+	// writes the steam id string to the buffer at dest
+	// for the passed in userid
+	void GetSteamIDString( int userid, char *dest, int buff_size );
 
 	// the current server tick
 	int GetCurrentTick() const;
