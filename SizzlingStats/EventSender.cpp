@@ -31,9 +31,88 @@ enum EVENT_DATA_TYPES
 	NUM_EVENT_TYPES
 };
 
+CSizzEvent::CSizzEvent( SizzEvent::SizzEvent *pEvent, unsigned int server_tick ):
+	m_pEvent(pEvent)
+{
+	Assert(pEvent);
+	m_pEvent->set_event_timestamp(server_tick);
+}
+
 void CSizzEvent::SetName( const char *name )
 {
 	m_pEvent->set_event_name(name);
+}
+
+void CSizzEvent::SetString( const char *name, const char *value )
+{
+	if (name && value)
+	{
+		using namespace SizzEvent;
+		SizzEvent_EventData *pData = m_pEvent->add_event_data();
+		pData->set_value_type(static_cast<SizzEvent_EventData_DATA_TYPE>(EVENT_TYPE_STRING));
+		pData->set_key_name(name);
+		pData->set_value_string(value);
+	}
+}
+
+void CSizzEvent::SetFloat( const char *name, float value )
+{
+	if (name)
+	{
+		using namespace SizzEvent;
+		SizzEvent_EventData *pData = m_pEvent->add_event_data();
+		pData->set_value_type(static_cast<SizzEvent_EventData_DATA_TYPE>(EVENT_TYPE_FLOAT));
+		pData->set_key_name(name);
+		pData->set_value_float(value);
+	}
+}
+
+void CSizzEvent::SetInt( const char *name, int value )
+{
+	if (name)
+	{
+		using namespace SizzEvent;
+		SizzEvent_EventData *pData = m_pEvent->add_event_data();
+		pData->set_value_type(static_cast<SizzEvent_EventData_DATA_TYPE>(EVENT_TYPE_LONG));
+		pData->set_key_name(name);
+		pData->set_value_long(value);
+	}
+}
+
+void CSizzEvent::SetShort( const char *name, int value )
+{
+	if (name)
+	{
+		using namespace SizzEvent;
+		SizzEvent_EventData *pData = m_pEvent->add_event_data();
+		pData->set_value_type(static_cast<SizzEvent_EventData_DATA_TYPE>(EVENT_TYPE_SHORT));
+		pData->set_key_name(name);
+		pData->set_value_short(value);
+	}
+}
+
+void CSizzEvent::SetByte( const char *name, int value )
+{
+	if (name)
+	{
+		using namespace SizzEvent;
+		SizzEvent_EventData *pData = m_pEvent->add_event_data();
+		pData->set_value_type(static_cast<SizzEvent_EventData_DATA_TYPE>(EVENT_TYPE_BYTE));
+		pData->set_key_name(name);
+		pData->set_value_byte(value);
+	}
+}
+
+void CSizzEvent::SetBool( const char *name, bool value )
+{
+	if (name)
+	{
+		using namespace SizzEvent;
+		SizzEvent_EventData *pData = m_pEvent->add_event_data();
+		pData->set_value_type(static_cast<SizzEvent_EventData_DATA_TYPE>(EVENT_TYPE_BOOL));
+		pData->set_key_name(name);
+		pData->set_value_bool(value);
+	}
 }
 
 bool CEventSender::BeginConnection( const char *url )
@@ -130,6 +209,14 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 			
 		m_send_queue.EnqueueFunctor(CreateFunctor(this, &CEventSender::SendEventInternal, pSizzEvent));
 	}
+}
+
+void CEventSender::SendNamedEvent( const char *event_name, unsigned int server_tick )
+{
+	CSizzEvent event(AllocEvent(), server_tick);
+	event.SetName(event_name);
+
+	SendEvent(&event);
 }
 
 void CEventSender::SendEventInternal( const SizzEvent::SizzEvent *pEvent )

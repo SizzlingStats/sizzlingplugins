@@ -129,15 +129,16 @@ namespace SizzEvent { class SizzEvent; }
 class CSizzEvent
 {
 public:
-	CSizzEvent( SizzEvent::SizzEvent *pEvent ):
-		m_pEvent(pEvent)
-	{
-		assert(pEvent);
-	}
+	CSizzEvent( SizzEvent::SizzEvent *pEvent, unsigned int server_tick );
 
 	void SetName( const char *name );
 
-	// TODO: add set value methods when needed
+	void SetString( const char *name, const char *value );
+	void SetFloat( const char *name, float value );
+	void SetInt( const char *name, int value );
+	void SetShort( const char *name, int value );
+	void SetByte( const char *name, int value );
+	void SetBool( const char *name, bool value );
 
 	SizzEvent::SizzEvent *GetEvent() const
 	{
@@ -159,6 +160,8 @@ public:
 	// sends and frees the event
 	void SendEvent( CSizzEvent *pEvent );
 	void SendEvent( IGameEvent *pEvent, unsigned int server_tick );
+
+	void SendNamedEvent( const char *event_name, unsigned int server_tick );
 
 private:
 	void SendEventInternal( const SizzEvent::SizzEvent *pEvent );

@@ -803,10 +803,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			bool paused = pEngine->IsPaused();
 			if (!paused)
 			{
-				CSizzEvent event(m_event_sender.AllocEvent());
-				event.SetName("pause");
-
-				m_event_sender.SendEvent(&event);
+				m_event_sender.SendNamedEvent("pause", gpGlobals->tickcount);
 			}
 		}
 		else if ( FStrEq( szCommand, "unpause" ) )
@@ -814,10 +811,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			bool paused = pEngine->IsPaused();
 			if (paused)
 			{
-				CSizzEvent event(m_event_sender.AllocEvent());
-				event.SetName("unpause");
-
-				m_event_sender.SendEvent(&event);
+				m_event_sender.SendNamedEvent("unpause", gpGlobals->tickcount);
 			}
 		}
 #endif
