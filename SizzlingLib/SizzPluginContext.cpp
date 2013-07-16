@@ -21,6 +21,8 @@
 #include "ThreadCallQueue.h"
 #include "irecipientfilter.h"
 
+#define USERMSG_MAX_LENGTH 192
+
 CSizzPluginContext::CSizzPluginContext():
 	m_pEngine(nullptr),
 	m_pPlayerInfoManager(nullptr),
@@ -242,15 +244,29 @@ ServerClass *CSizzPluginContext::GetAllServerClasses()
 	return m_pServerGameDLL->GetAllServerClasses();
 }
 
-void CSizzPluginContext::ChatMessage( IRecipientFilter *pFilter, const char *msg )
+void CSizzPluginContext::ChatMessage( IRecipientFilter *pFilter, const char *format, ... )
 {
-	if (pFilter && msg)
+	if (pFilter && format)
+	{
+		va_list args;
+		va_start(args, format);
+		ChatMessage(pFilter, format, args);
+		va_end(args);
+	}
+}
+
+void CSizzPluginContext::ChatMessageArg( IRecipientFilter *pFilter, const char *format, va_list args )
+{
+	if (pFilter && format && args)
 	{
 		// Start the usermessage and get a bf_write
 		// SayText: 3
 		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 3);
 		if (pBuffer)
 		{
+			char msg[USERMSG_MAX_LENGTH];
+			V_vsnprintf(msg, USERMSG_MAX_LENGTH, format, args);
+
 			// Send the message
 			pBuffer->WriteByte(0);
 			pBuffer->WriteString(msg);
@@ -276,9 +292,20 @@ void CSizzPluginContext::HudResetMessage( IRecipientFilter *pFilter )
 	}
 }
 
-void CSizzPluginContext::HudMessage( IRecipientFilter *pFilter, const char *msg, const hud_msg_cfg_t &cfg )
+void CSizzPluginContext::HudMessage( IRecipientFilter *pFilter, const hud_msg_cfg_t &cfg, const char *format, ... )
 {
-	if (pFilter && msg)
+	if (pFilter && format)
+	{
+		va_list args;
+		va_start(args, format);
+		HudMessage(pFilter, cfg, format, args);
+		va_end(args);
+	}
+}
+
+void CSizzPluginContext::HudMessageArg( IRecipientFilter *pFilter, const hud_msg_cfg_t &cfg, const char *format, va_list args )
+{
+	if (pFilter && format && args)
 	{
 		// HudMsg: 21
 		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 21);
@@ -323,6 +350,9 @@ void CSizzPluginContext::HudMessage( IRecipientFilter *pFilter, const char *msg,
 			// fx time (for effect type 2)
 			pBuffer->WriteFloat(0);
 
+			char msg[USERMSG_MAX_LENGTH];
+			V_vsnprintf(msg, USERMSG_MAX_LENGTH, format, args);
+
 			// message
 			pBuffer->WriteString(msg);
 
@@ -331,9 +361,20 @@ void CSizzPluginContext::HudMessage( IRecipientFilter *pFilter, const char *msg,
 	}
 }
 
-void CSizzPluginContext::HudHintMessage( IRecipientFilter *pFilter, const char *msg )
+void CSizzPluginContext::HudHintMessage( IRecipientFilter *pFilter, const char *format, ... )
 {
-	if (pFilter && msg)
+	if (pFilter && format)
+	{
+		va_list args;
+		va_start(args, format);
+		HudHintMessage(pFilter, format, args);
+		va_end(args);
+	}
+}
+
+void CSizzPluginContext::HudHintMessageArg( IRecipientFilter *pFilter, const char *format, va_list args )
+{
+	if (pFilter && format && args)
 	{
 		// KeyHintText: 20
 		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 20);
@@ -341,6 +382,9 @@ void CSizzPluginContext::HudHintMessage( IRecipientFilter *pFilter, const char *
 		{
 			// number of messages to write
 			pBuffer->WriteByte( 1 );
+
+			char msg[USERMSG_MAX_LENGTH];
+			V_vsnprintf(msg, USERMSG_MAX_LENGTH, format, args);
 
 			// message
 			pBuffer->WriteString(msg);

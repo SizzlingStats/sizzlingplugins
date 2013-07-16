@@ -76,10 +76,8 @@ enum MOTDPANE_TYPE
 
 typedef struct motd_msg_cfg_s
 {
-	motd_msg_cfg_s():
-		type(MOTDPANEL_TYPE_INDEX),
-		visible(true),
-		large_window(true)
+	motd_msg_cfg_s(): type(MOTDPANEL_TYPE_INDEX),
+		visible(true), large_window(true)
 	{
 	}
 
@@ -177,17 +175,20 @@ public:
 	ServerClass *GetAllServerClasses();
 
 	// send a chat message to the recipients in the filter
-	void ChatMessage( IRecipientFilter *pFilter, const char *msg );
+	void ChatMessage( IRecipientFilter *pFilter, const char *format, ... );
+	void ChatMessageArg( IRecipientFilter *pFilter, const char *format, va_list args );
 
 	// sends a hud reset message to the recipients in the filter
 	// used for clearing hud messages
 	void HudResetMessage( IRecipientFilter *pFilter );
 
 	// sends a hud message to the recipients in the filter
-	void HudMessage( IRecipientFilter *pFilter, const char *msg, const hud_msg_cfg_t &cfg );
+	void HudMessage( IRecipientFilter *pFilter, const hud_msg_cfg_t &cfg, const char *format, ... );
+	void HudMessageArg( IRecipientFilter *pFilter, const hud_msg_cfg_t &cfg, const char *format, va_list args );
 
 	// sends a hud hint message to the recipients in the filter
-	void HudHintMessage( IRecipientFilter *pFilter, const char *msg );
+	void HudHintMessage( IRecipientFilter *pFilter, const char *format, ... );
+	void HudHintMessageArg( IRecipientFilter *pFilter, const char *format, va_list args );
 
 	// sends a motd pane message to the recipients in the filter
 	void MOTDPanelMessage( IRecipientFilter *pFilter, const char *msg, const motd_msg_cfg_t &cfg );
