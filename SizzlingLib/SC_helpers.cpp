@@ -31,7 +31,6 @@ extern CGlobalVars		*gpGlobals;
 extern IServerGameEnts	*pServerEnts;
 extern IServerGameDLL	*pServerDLL;
 //extern s_ServerPlugin	*g_pServerPluginHandler;
-extern UserIdTracker 	*g_pUserIdTracker;
 
 namespace SCHelpers
 {
@@ -58,27 +57,6 @@ namespace SCHelpers
 			classname_offset = GetOffsetForDatamapVar(pEnt, "m_iClassname");
 		}
 		return ByteOffsetFromPointer<const char*>(pEnt, classname_offset);
-	}
-
-	edict_t *UserIDToEdict( int userid )
-	{
-		int index = g_pUserIdTracker->GetEntIndex(userid);
-		return pEngine->PEntityOfEntIndex(index);
-	}
-
-	unsigned int UserIDToSteamID( int userid )
-	{
-		int index = g_pUserIdTracker->GetEntIndex(userid);
-		edict_t *pEdict = pEngine->PEntityOfEntIndex(index);
-		const CSteamID *pSteamID = pEngine->GetClientSteamID(pEdict);
-		if ( pSteamID )
-		{
-			return pSteamID->GetAccountID();
-		}
-		else
-		{
-			return 0;
-		}
 	}
 
 	CBaseEntity *GetEntityByClassname( const char *pszClassname, int start_index /*= 0*/, int *ent_index_out /*= NULL*/ )
@@ -161,11 +139,6 @@ namespace SCHelpers
 				}
 			}
 		} while ( pTeam && (!(*ppBluTeam) || !(*ppRedTeam)) );
-	}
-
-	int UserIDToEntIndex( int userid )
-	{
-		return g_pUserIdTracker->GetEntIndex(userid);
 	}
 
 	//-----------------------------------------------------------------------------

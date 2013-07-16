@@ -251,8 +251,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	    g_pCVar = cvar;
 	}
 
-	g_pUserIdTracker->Load();
-
 	playerinfomanager = (IPlayerInfoManager *)gameServerFactory(INTERFACEVERSION_PLAYERINFOMANAGER,NULL);
 	pEngine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 	gameeventmanager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
@@ -543,7 +541,6 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 		}
 		m_pTeamplayRoundBasedRules = NULL;
 		m_SizzlingStats.SS_DeleteAllPlayerData();
-		g_pUserIdTracker->Reset();
 		m_plugin_context.LevelShutdown();
 	}
 }
@@ -557,7 +554,6 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 	if( !pEdict || pEdict->IsFree() )
 		return;
 
-	g_pUserIdTracker->ClientActive( pEdict );
 	m_SizzlingStats.SS_InsertPlayer( pEdict );
 	m_logstats.ClientActive(ent_index);
 }
@@ -580,7 +576,6 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 			return;
 		m_SizzlingStats.SS_DeletePlayer( pEdict );
 		m_logstats.ClientDisconnect(ent_index);
-		g_pUserIdTracker->ClientDisconnect( pEdict );
 		m_plugin_context.ClientDisconnect(pEdict);
 	}
 }
@@ -772,7 +767,6 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 			if (pServerEnts->EdictToBaseEntity(pEdict))
 			{
 				int ent_index = m_plugin_context.ClientActive(pEdict);
-				g_pUserIdTracker->ClientActive( pEdict );
 				m_SizzlingStats.SS_InsertPlayer( pEdict );
 				m_logstats.ClientActive(ent_index);
 			}
@@ -940,7 +934,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		if ( FStrEq( text, ".ss_credits" ) )
 		{
 			int userid = event->GetInt( "userid" );
-			int entindex = SCHelpers::UserIDToEntIndex( userid );
+			int entindex = m_plugin_context.EntIndexFromUserID(userid);
 			// don't try to send messages to worldspawn
 			if ( entindex != 0 )
 			{
@@ -956,7 +950,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 					FStrEq( text, ".gg" ) )
 		{
 			int userid = event->GetInt( "userid" );
-			int entindex = SCHelpers::UserIDToEntIndex( userid );
+			int entindex = m_plugin_context.EntIndexFromUserID(userid);
 			m_SizzlingStats.SS_ShowHtmlStats( entindex, true );
 		}
 	}

@@ -77,15 +77,9 @@ namespace SCHelpers
 	// doesn't check pEnt for NULL
 	const char **GetClassname( CBaseEntity * const pEnt );
 
-	edict_t *UserIDToEdict( int userid );
-	
-	unsigned int UserIDToSteamID( int userid );
-
 	CBaseEntity *GetEntityByClassname( const char *pszClassname, int start_index = 0, int *ent_index_out = NULL );
 
 	void GetTeamEnts( CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset );
-
-	int UserIDToEntIndex( int userid );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: Returns the 4 bit nibble for a hex character
