@@ -33,4 +33,24 @@ private:
 	int m_Recipient;
 };
 
+class CSizzPluginContext;
+
+class SRecipientFilter_new: public IRecipientFilter		// a version of MRecipientFilter
+{														// that is optimized for 1 recipient
+public:
+	SRecipientFilter_new( CSizzPluginContext &context, int ent_index = -1 );
+
+	virtual bool IsReliable( void ) const { return false; }
+	virtual bool IsInitMessage( void ) const { return false; }
+
+	virtual int GetRecipientCount( void ) const { return 1; };
+	virtual int GetRecipientIndex( int slot ) const;
+
+	void SetRecipient(int iPlayer);
+
+private:
+	CSizzPluginContext *m_context;
+	int m_recipient;
+};
+
 #endif // _SRECIPIENT_FILTER_H
