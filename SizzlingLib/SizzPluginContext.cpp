@@ -246,20 +246,22 @@ void CSizzPluginContext::LevelShutdown()
 	m_pUserIDTracker->Reset();
 }
 
-void CSizzPluginContext::ClientActive( const edict_t *pEdict )
+int CSizzPluginContext::ClientActive( const edict_t *pEdict )
 {
 	if (pEdict)
 	{
-		int ent_index = m_pEngine->IndexOfEdict(pEdict);
-		if (ent_index != -1)
+		int userid = m_pEngine->GetPlayerUserId(pEdict);
+		if (userid != -1)
 		{
-			int userid = UserIDFromEntIndex(ent_index);
-			if (userid != -1)
+			int ent_index = m_pEngine->IndexOfEdict(pEdict);
+			if (ent_index != -1)
 			{
 				m_pUserIDTracker->ClientActive(userid, ent_index);
+				return ent_index;
 			}
 		}
 	}
+	return -1;
 }
 
 void CSizzPluginContext::ClientDisconnect( const edict_t *pEdict )

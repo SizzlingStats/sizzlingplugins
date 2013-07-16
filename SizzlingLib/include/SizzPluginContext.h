@@ -132,7 +132,11 @@ public:
 
 protected:
 	void LevelShutdown();
-	void ClientActive( const edict_t *pEdict );
+
+	// returns the ent index of the client
+	// returns -1 on error
+	int ClientActive( const edict_t *pEdict );
+
 	void ClientDisconnect( const edict_t *pEdict );
 	void GameFrame( bool simulating );
 

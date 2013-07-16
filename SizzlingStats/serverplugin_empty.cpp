@@ -553,11 +553,11 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 {
-	m_plugin_context.ClientActive(pEdict);
+	int ent_index = m_plugin_context.ClientActive(pEdict);
 	if( !pEdict || pEdict->IsFree() )
 		return;
 
-	int ent_index = g_pUserIdTracker->ClientActive( pEdict );
+	g_pUserIdTracker->ClientActive( pEdict );
 	m_SizzlingStats.SS_InsertPlayer( pEdict );
 	m_logstats.ClientActive(ent_index);
 }
@@ -771,7 +771,8 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 		{
 			if (pServerEnts->EdictToBaseEntity(pEdict))
 			{
-				int ent_index = g_pUserIdTracker->ClientActive( pEdict );
+				int ent_index = m_plugin_context.ClientActive(pEdict);
+				g_pUserIdTracker->ClientActive( pEdict );
 				m_SizzlingStats.SS_InsertPlayer( pEdict );
 				m_logstats.ClientActive(ent_index);
 			}
