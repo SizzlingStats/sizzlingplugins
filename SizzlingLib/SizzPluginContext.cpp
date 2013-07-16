@@ -19,6 +19,7 @@
 #include "game/server/iplayerinfo.h"
 #include "igameevents.h"
 #include "ThreadCallQueue.h"
+#include "irecipientfilter.h"
 
 CSizzPluginContext::CSizzPluginContext():
 	m_pEngine(nullptr),
@@ -239,6 +240,171 @@ void CSizzPluginContext::EnqueueGameFrameFunctor( CFunctor *pFunctor )
 ServerClass *CSizzPluginContext::GetAllServerClasses()
 {
 	return m_pServerGameDLL->GetAllServerClasses();
+}
+
+void CSizzPluginContext::ChatMessage( IRecipientFilter *pFilter, const char *msg )
+{
+	if (pFilter && msg)
+	{
+		// Start the usermessage and get a bf_write
+		// SayText: 3
+		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 3);
+		if (pBuffer)
+		{
+			// Send the message
+			pBuffer->WriteByte(0);
+			pBuffer->WriteString(msg);
+			pBuffer->WriteByte(0);
+
+			// End the message
+			m_pEngine->MessageEnd();
+		}
+	}
+}
+
+void CSizzPluginContext::HudResetMessage( IRecipientFilter *pFilter )
+{
+	if (pFilter)
+	{
+		// ResetHUD: 6
+		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 6);
+		if (pBuffer)
+		{
+			pBuffer->WriteByte(0);
+			m_pEngine->MessageEnd();
+		}
+	}
+}
+
+void CSizzPluginContext::HudMessage( IRecipientFilter *pFilter, const char *msg, const hud_msg_cfg_t &cfg )
+{
+	if (pFilter && msg)
+	{
+		// HudMsg: 21
+		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 21);
+		if (pBuffer)
+		{
+			// channel byte
+			pBuffer->WriteByte(cfg.channel & 0xFF);
+
+			// x, y (-1 = center)
+			pBuffer->WriteFloat(cfg.x);
+			pBuffer->WriteFloat(cfg.y);
+
+			char r = cfg.rgba.r();
+			char g = cfg.rgba.g();
+			char b = cfg.rgba.b();
+			char a = cfg.rgba.a();
+
+			// second colour
+			pBuffer->WriteByte(r);
+			pBuffer->WriteByte(g);
+			pBuffer->WriteByte(b);
+			pBuffer->WriteByte(a);
+
+			// init colour
+			pBuffer->WriteByte(r);
+			pBuffer->WriteByte(g);
+			pBuffer->WriteByte(b);
+			pBuffer->WriteByte(a);
+
+			// effect (0 = fade in/out, 1 = flickery credits, 2 = write out)
+			pBuffer->WriteByte(0);
+
+			// fade in time (per char in effect 2)
+			pBuffer->WriteFloat(0);
+
+			// fade out time
+			pBuffer->WriteFloat(0);
+
+			// hold time
+			pBuffer->WriteFloat(cfg.screentime);
+
+			// fx time (for effect type 2)
+			pBuffer->WriteFloat(0);
+
+			// message
+			pBuffer->WriteString(msg);
+
+			m_pEngine->MessageEnd();
+		}
+	}
+}
+
+void CSizzPluginContext::HudHintMessage( IRecipientFilter *pFilter, const char *msg )
+{
+	if (pFilter && msg)
+	{
+		// KeyHintText: 20
+		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 20);
+		if (pBuffer)
+		{
+			// number of messages to write
+			pBuffer->WriteByte( 1 );
+
+			// message
+			pBuffer->WriteString(msg);
+
+			m_pEngine->MessageEnd();
+		}
+	}
+}
+
+void CSizzPluginContext::MOTDPanelMessage( IRecipientFilter *pFilter, const char *msg, const motd_msg_cfg_t &cfg )
+{
+	if (pFilter && msg)
+	{
+		// VGUIMenu: 12
+		bf_write *pBuffer = m_pEngine->UserMessageBegin(pFilter, 12);
+		if (pBuffer)
+		{
+			// the string type of the panel
+			// some more are defined in viewport_panel_names.h
+			pBuffer->WriteString("info");
+
+			// will the panel be visible? 1 is yes, 0 is no
+			pBuffer->WriteByte(cfg.visible ? 1 : 0);
+
+			// number of entries in the following'table
+			pBuffer->WriteByte(5);
+			{
+				// Title of the panel (printed on the top border of the window).
+				pBuffer->WriteString("title");
+				pBuffer->WriteString("");
+
+				const char *int_to_str[] = 
+				{
+					"0", "1", "2", "3"
+				};
+
+				// Determines the way to treat the message body of the panel.
+				// the types are defined above
+				pBuffer->WriteString("type");
+				pBuffer->WriteString(int_to_str[cfg.type]);
+
+				// Contents of the panel, it can be treated as an url, filename or plain text
+				// depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
+				pBuffer->WriteString("msg");							
+				pBuffer->WriteString(msg);
+
+				// 0 means use a small vgui window, 1 means a large (tf2 only)
+				pBuffer->WriteString("customsvr");
+				pBuffer->WriteString(int_to_str[cfg.large_window]);
+
+				// what to execute after the window is closed
+				//  0 for no command
+				//  1 for joingame
+				//  2 for changeteam
+				//  3 for impulse 101
+				//  4 for mapinfo
+				//  5 for closed_htmlpage
+				//  6 for chooseteam
+				pBuffer->WriteString("cmd");
+				pBuffer->WriteString("5"); 
+			}
+			m_pEngine->MessageEnd();
+		}
+	}
 }
 
 void CSizzPluginContext::LevelShutdown()

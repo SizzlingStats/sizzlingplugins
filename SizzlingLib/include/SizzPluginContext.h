@@ -15,6 +15,7 @@
 #define SIZZ_PLUGIN_CONTEXT_H
 
 #include "engine/iserverplugin.h"
+#include "Color.h"
 
 class IVEngineServer;
 class CGlobalVars;
@@ -32,6 +33,7 @@ class CFunctor;
 class ServerClass;
 class IServerGameDLL;
 class KeyValues;
+class IRecipientFilter;
 
 typedef struct plugin_context_init_s
 {
@@ -41,6 +43,50 @@ typedef struct plugin_context_init_s
 	IGameEventManager2 *pGameEventManager;
 	IServerGameDLL *pServerGameDLL;
 } plugin_context_init_t;
+
+typedef struct hud_msg_cfg_s
+{
+	hud_msg_cfg_s():
+		rgba(Color(0,0,0,255)), screentime(20.0f),
+		x(-1), y(-1), channel(1)
+	{
+	}
+
+	Color rgba;
+	float screentime;
+	float x;
+	float y;
+	int channel;
+} hud_msg_cfg_t;
+
+enum MOTDPANE_TYPE
+{
+	// Treat msg as plain text
+	MOTDPANEL_TYPE_TEXT	= 0,
+
+	//Msg is auto determined by the engine
+	MOTDPANEL_TYPE_INDEX = 1,
+
+	//Treat msg as an URL link
+	MOTDPANEL_TYPE_URL = 2,
+
+	// Treat msg as a filename to be openned (on the client)
+	MOTDPANEL_TYPE_FILE = 3
+};
+
+typedef struct motd_msg_cfg_s
+{
+	motd_msg_cfg_s():
+		type(MOTDPANEL_TYPE_INDEX),
+		visible(true),
+		large_window(true)
+	{
+	}
+
+	MOTDPANE_TYPE type;
+	bool visible;
+	bool large_window;
+} motd_msg_cfg_t;
 
 class CSizzPluginContext
 {
@@ -129,6 +175,22 @@ public:
 
 	// returns a pointer to the server class list
 	ServerClass *GetAllServerClasses();
+
+	// send a chat message to the recipients in the filter
+	void ChatMessage( IRecipientFilter *pFilter, const char *msg );
+
+	// sends a hud reset message to the recipients in the filter
+	// used for clearing hud messages
+	void HudResetMessage( IRecipientFilter *pFilter );
+
+	// sends a hud message to the recipients in the filter
+	void HudMessage( IRecipientFilter *pFilter, const char *msg, const hud_msg_cfg_t &cfg );
+
+	// sends a hud hint message to the recipients in the filter
+	void HudHintMessage( IRecipientFilter *pFilter, const char *msg );
+
+	// sends a motd pane message to the recipients in the filter
+	void MOTDPanelMessage( IRecipientFilter *pFilter, const char *msg, const motd_msg_cfg_t &cfg );
 
 protected:
 	void LevelShutdown();
