@@ -36,6 +36,8 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+class CSizzPluginContext;
+
 // Interfaces from the engine
 extern IVEngineServer			*pEngine; // helper functions (messaging clients, loading content, making entities, running commands, etc)
 extern IGameEventManager2		*gameeventmanager; // game events interface
@@ -59,6 +61,8 @@ class SizzlingMatches: public IEventRegisterCallback
 public:
 	SizzlingMatches(void);
 	~SizzlingMatches(void);
+
+	void	Load( CSizzPluginContext &context );
 
 	//	call this after load to create data for current players if none exists
 	void	SM_LoadCurrentPlayers();
@@ -144,7 +148,7 @@ public:
 	void	StartGame();
 
 private:
-
+	CSizzPluginContext *m_plugin_context;
 	CTimedEventMgr	m_TimedEventMgr;
 	CEventRegister	m_EventRegister;
 

@@ -50,6 +50,7 @@
 	#include "client_class.h"
 #endif
 
+#include "SizzPluginContext.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -223,6 +224,7 @@ public:
 	virtual int GetCommandIndex() { return m_iClientCommandIndex; }
 
 private:
+	CSizzPluginContext m_plugin_context;
 	int m_iClientCommandIndex;
 	SizzlingMatches m_SizzlingMatches;
 	float m_fNextEventTime;
@@ -325,6 +327,15 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	
 	//GetMessageInts();
 
+	plugin_context_init_t init;
+	init.pEngine = pEngine;
+	init.pPlayerInfoManager = playerinfomanager;
+	init.pHelpers = helpers;
+	init.pGameEventManager = gameeventmanager;
+	init.pServerGameDLL = pServerDLL;
+
+	m_plugin_context.Initialize(init);
+
 	gameeventmanager->AddListener( this, "teamplay_round_stalemate", true );
 	gameeventmanager->AddListener( this, "teamplay_round_active", true );		//9:54
 	gameeventmanager->AddListener( this, "teamplay_round_win", true );			//end round
@@ -338,6 +349,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	gameeventmanager->AddListener( this, "tf_game_over", true );
 	//gameeventmanager->AddListener( this, "teamplay_broadcast_audio", true );
 
+	m_SizzlingMatches.Load(m_plugin_context);
 	m_SizzlingMatches.SM_GetPropOffsets();
 	m_SizzlingMatches.SM_SetEventUpdateInterval( 3.0f );
 	m_SizzlingMatches.SM_LoadCurrentPlayers();
@@ -881,7 +893,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			}
 			else if ( FStrEq( text, ".forcestart" ) )
 			{
-				if ( UserIDToSteamID( event->GetInt( "userid" ) ) == 28707326 ) //SizzlingCalamari's Acc ID 28707326
+				if ( m_plugin_context.SteamIDFromUserID(event->GetInt( "userid" )) == 28707326 ) //SizzlingCalamari's Acc ID 28707326
 				{
 					m_SizzlingMatches.SM_AllUserChatMessage( "Forcing Match Start\n" );
 					m_SizzlingMatches.StartGame();
@@ -890,7 +902,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		}
 		else if ( FStrEq( text, ".forcequit" ) )
 		{
-			if ( UserIDToSteamID( event->GetInt( "userid" ) ) == 28707326 ) //SizzlingCalamari's Acc ID 28707326
+			if ( m_plugin_context.SteamIDFromUserID(event->GetInt( "userid" )) == 28707326 ) //SizzlingCalamari's Acc ID 28707326
 			{
 				IGameEvent *event = gameeventmanager->CreateEvent("tf_game_over", true);
 				event->SetString( "reason", "SizzMatch" );

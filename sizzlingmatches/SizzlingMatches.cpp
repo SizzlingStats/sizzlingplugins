@@ -17,21 +17,25 @@
 #include "tier1/utlvector.h"
 #include "tier1/stringpool.h"
 
+#include "SizzPluginContext.h"
+
 extern IGameEventManager2		*gameeventmanager;
 
 SendTable		*GetDataTable( const char *pTableName, SendTable *pTable );
 unsigned int	GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr);
 
-SizzlingMatches::SizzlingMatches(): m_PlayerFlagsOffset(0), 
-								m_TeamRoundsWonOffset(0),
-								m_nPlayersReady(0),
-								m_nPlayersOnTeams(0),
-								m_bMatchStarted(0),
-								m_bTimer5(0),
-								m_nCountdown(0),
-								m_n12sectimer(0),
-								m_nCurrentPlayers(0),
-								m_nCurrentRound(0)
+SizzlingMatches::SizzlingMatches():
+	m_plugin_context(nullptr),
+	m_PlayerFlagsOffset(0), 
+	m_TeamRoundsWonOffset(0),
+	m_nPlayersReady(0),
+	m_nPlayersOnTeams(0),
+	m_bMatchStarted(0),
+	m_bTimer5(0),
+	m_nCountdown(0),
+	m_n12sectimer(0),
+	m_nCurrentPlayers(0),
+	m_nCurrentRound(0)
 {
 	memset(m_aPropOffsets, 0, sizeof(m_aPropOffsets) );
 	m_SteamIDToPlayerDataMap.SetLessFunc( SCHelpers::FUIntCmp );
@@ -41,6 +45,11 @@ SizzlingMatches::SizzlingMatches(): m_PlayerFlagsOffset(0),
 
 SizzlingMatches::~SizzlingMatches()
 {	
+}
+
+void SizzlingMatches::Load( CSizzPluginContext &context )
+{
+	m_plugin_context = &context;
 }
 
 void SizzlingMatches::SM_LoadCurrentPlayers()
@@ -344,8 +353,7 @@ void SizzlingMatches::SM_GetEntities()
 
 void SizzlingMatches::SM_PlayerChangeTeam( int userid, int newteamid, int oldteamid )
 {
-
-	unsigned int SteamID = SCHelpers::UserIDToSteamID( userid );
+	unsigned int SteamID = m_plugin_context->SteamIDFromUserID(userid);
 	int index = m_SteamIDToPlayerDataMap.Find( SteamID );
 	if ( !( m_SteamIDToPlayerDataMap.IsValidIndex( index ) ) )
 		return;
@@ -369,7 +377,7 @@ void SizzlingMatches::SM_PlayerChangeTeam( int userid, int newteamid, int oldtea
 
 void SizzlingMatches::SM_PlayerChangeName( int userid, const char *szNewName )
 {
-	unsigned int SteamID = SCHelpers::UserIDToSteamID( userid );
+	unsigned int SteamID = m_plugin_context->SteamIDFromUserID(userid);
 	int index = m_SteamIDToPlayerDataMap.Find( SteamID );
 	if ( !( m_SteamIDToPlayerDataMap.IsValidIndex( index ) ) )
 		return;
@@ -378,7 +386,7 @@ void SizzlingMatches::SM_PlayerChangeName( int userid, const char *szNewName )
 
 void SizzlingMatches::SM_PlayerChangeReadyState( int userid, bool state )
 {
-	unsigned int SteamID = SCHelpers::UserIDToSteamID( userid );
+	unsigned int SteamID = m_plugin_context->SteamIDFromUserID(userid);
 	int index = m_SteamIDToPlayerDataMap.Find( SteamID );
 	if ( !( m_SteamIDToPlayerDataMap.IsValidIndex( index ) ) )
 		return;
