@@ -71,6 +71,8 @@ namespace SCHelpers
 		return reinterpret_cast<T*>((reinterpret_cast<uint8*>(pBase) + byte_offset));
 	}
 
+	CBaseEntity *EdictToBaseEntity( edict_t *pEdict );
+
 	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle );
 
 	// gets the m_iClassname value for the entity

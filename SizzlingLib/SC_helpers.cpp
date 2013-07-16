@@ -34,16 +34,26 @@ extern IServerGameDLL	*pServerDLL;
 
 namespace SCHelpers
 {
+	CBaseEntity *EdictToBaseEntity( edict_t *pEdict )
+	{
+		if (pEdict)
+		{
+			IServerUnknown *pUnk = pEdict->GetUnknown();
+			if (pUnk)
+			{
+				return pUnk->GetBaseEntity();
+			}
+		}
+		return nullptr;
+	}
+
 	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle )
 	{
 		if (pHandle && pHandle->IsValid())
 		{
 			int entindex = pHandle->GetEntryIndex();
 			edict_t *pEdict = pEngine->PEntityOfEntIndex(entindex);
-			if (pEdict && !pEdict->IsFree())
-			{
-				return pServerEnts->EdictToBaseEntity(pEdict);
-			}
+			return EdictToBaseEntity(pEdict);
 		}
 		
 		return NULL;

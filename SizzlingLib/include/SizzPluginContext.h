@@ -193,6 +193,10 @@ public:
 	// sends a motd pane message to the recipients in the filter
 	void MOTDPanelMessage( IRecipientFilter *pFilter, const char *msg, const motd_msg_cfg_t &cfg );
 
+	// returns the base entity of the base handle
+	// returns null on error
+	CBaseEntity *BaseEntityFromBaseHandle( const CBaseHandle *pHandle );
+
 protected:
 	void LevelShutdown();
 
@@ -201,11 +205,19 @@ protected:
 	int ClientActive( const edict_t *pEdict );
 
 	void ClientDisconnect( const edict_t *pEdict );
+
+	void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax );
+
 	void GameFrame( bool simulating );
 
 	// returns the ent index from the edict pointer
 	// returns -1 on invalid edict
 	int EntIndexFromEdict( const edict_t *pEdict );
+	
+	// returns the corresponding edict_t pointer 
+	// to the passed in ent index
+	// returns nullptr on error
+	edict_t *EdictFromEntIndex( int ent_index );
 
 private:
 	IVEngineServer *m_pEngine;
@@ -220,6 +232,9 @@ private:
 	int m_tickcount;
 	float m_flTime;
 	int m_max_clients;
+
+	edict_t *m_edict_list;
+	int m_num_edicts;
 };
 
 #endif // SIZZ_PLUGIN_CONTEXT_H

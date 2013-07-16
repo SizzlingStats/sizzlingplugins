@@ -446,6 +446,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	m_bAlreadyLevelShutdown = false;
+	m_plugin_context.ServerActivate(pEdictList, edictCount, clientMax);
 	//GetGameRules();
 	GetPropOffsets();
 	m_SizzlingStats.ServerActivate();

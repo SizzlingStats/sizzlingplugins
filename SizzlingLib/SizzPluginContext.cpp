@@ -20,6 +20,7 @@
 #include "igameevents.h"
 #include "ThreadCallQueue.h"
 #include "irecipientfilter.h"
+#include "SC_helpers.h"
 
 #define USERMSG_MAX_LENGTH 192
 
@@ -34,7 +35,9 @@ CSizzPluginContext::CSizzPluginContext():
 	m_pCallQueue(new CTSCallQueue()),
 	m_tickcount(0),
 	m_flTime(0.0f),
-	m_max_clients(0)
+	m_max_clients(0),
+	m_edict_list(nullptr),
+	m_num_edicts(0)
 {
 }
 
@@ -72,7 +75,7 @@ IServerGameDLL *CSizzPluginContext::GetServerGameDLL() const
 
 int CSizzPluginContext::UserIDFromEntIndex( int ent_index )
 {
-	edict_t *pEdict = m_pEngine->PEntityOfEntIndex(ent_index);
+	edict_t *pEdict = EdictFromEntIndex(ent_index);
 	if (pEdict)
 	{
 		return m_pEngine->GetPlayerUserId(pEdict);
@@ -180,7 +183,7 @@ void CSizzPluginContext::CreateMessage( int ent_index, DIALOG_TYPE type, KeyValu
 {
 	if (data && plugin)
 	{
-		edict_t *pEnt = m_pEngine->PEntityOfEntIndex(ent_index);
+		edict_t *pEnt = EdictFromEntIndex(ent_index);
 		if (pEnt)
 		{
 			m_pPluginManager->CreateMessage(pEnt, type, data, plugin);
@@ -222,7 +225,7 @@ IPlayerInfo *CSizzPluginContext::GetPlayerInfo( int ent_index )
 {
 	if ((1 <= ent_index) && (ent_index < GetMaxClients()))
 	{
-		edict_t *pEdict = m_pEngine->PEntityOfEntIndex(ent_index);
+		edict_t *pEdict = EdictFromEntIndex(ent_index);
 		if (pEdict && !pEdict->IsFree())
 		{
 			return m_pPlayerInfoManager->GetPlayerInfo(pEdict);
@@ -451,8 +454,22 @@ void CSizzPluginContext::MOTDPanelMessage( IRecipientFilter *pFilter, const char
 	}
 }
 
+CBaseEntity *CSizzPluginContext::BaseEntityFromBaseHandle( const CBaseHandle *pHandle )
+{
+	if (pHandle && pHandle->IsValid())
+	{
+		int entindex = pHandle->GetEntryIndex();
+		edict_t *pEdict = EdictFromEntIndex(entindex);
+		return SCHelpers::EdictToBaseEntity(pEdict);
+	}
+	return nullptr;
+}
+
 void CSizzPluginContext::LevelShutdown()
 {
+	m_edict_list = nullptr;
+	m_num_edicts = 0;
+
 	m_pUserIDTracker->Reset();
 }
 
@@ -463,7 +480,7 @@ int CSizzPluginContext::ClientActive( const edict_t *pEdict )
 		int userid = m_pEngine->GetPlayerUserId(pEdict);
 		if (userid != -1)
 		{
-			int ent_index = m_pEngine->IndexOfEdict(pEdict);
+			int ent_index = EntIndexFromEdict(pEdict);
 			if (ent_index != -1)
 			{
 				m_pUserIDTracker->ClientActive(userid, ent_index);
@@ -478,7 +495,7 @@ void CSizzPluginContext::ClientDisconnect( const edict_t *pEdict )
 {
 	if (pEdict)
 	{
-		int ent_index = m_pEngine->IndexOfEdict(pEdict);
+		int ent_index = EntIndexFromEdict(pEdict);
 		if (ent_index != -1)
 		{
 			int userid = UserIDFromEntIndex(ent_index);
@@ -488,6 +505,12 @@ void CSizzPluginContext::ClientDisconnect( const edict_t *pEdict )
 			}
 		}
 	}
+}
+
+void CSizzPluginContext::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
+{
+	m_edict_list = pEdictList;
+	m_num_edicts = edictCount;
 }
 
 void CSizzPluginContext::GameFrame( bool simulating )
@@ -501,9 +524,38 @@ void CSizzPluginContext::GameFrame( bool simulating )
 
 int CSizzPluginContext::EntIndexFromEdict( const edict_t *pEdict )
 {
+	int ret = -1;
 	if (pEdict)
 	{
-		return m_pEngine->IndexOfEdict(pEdict);
+		if (m_edict_list)
+		{
+			ret = (pEdict - m_edict_list) / sizeof(edict_t);
+		}
+		else
+		{
+			ret = m_pEngine->IndexOfEdict(pEdict);
+		}
 	}
-	return -1;
+	return ret;
+}
+
+edict_t *CSizzPluginContext::EdictFromEntIndex( int ent_index )
+{
+	edict_t *pEdict = nullptr;
+	if (m_edict_list)
+	{
+		if ((0 <= ent_index) && (ent_index < m_num_edicts))
+		{
+			pEdict = (m_edict_list + ent_index);
+			if (pEdict->IsFree())
+			{
+				pEdict = nullptr;
+			}
+		}
+	}
+	else
+	{
+		pEdict = m_pEngine->PEntityOfEntIndex(ent_index);
+	}
+	return pEdict;
 }
