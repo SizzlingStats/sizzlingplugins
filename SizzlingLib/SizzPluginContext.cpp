@@ -464,6 +464,20 @@ CBaseEntity *CSizzPluginContext::BaseEntityFromBaseHandle( const CBaseHandle *pH
 	return nullptr;
 }
 
+IHandleEntity *CSizzPluginContext::HandleEntityFromEntIndex( int ent_index )
+{
+	edict_t *pEdict = EdictFromEntIndex(ent_index);
+	if (pEdict)
+	{
+		IServerEntity *pServerEnt = pEdict->GetIServerEntity();
+		if (pServerEnt)
+		{
+			return static_cast<IHandleEntity*>(pServerEnt);
+		}
+	}
+	return nullptr;
+}
+
 void CSizzPluginContext::LevelShutdown()
 {
 	m_edict_list = nullptr;

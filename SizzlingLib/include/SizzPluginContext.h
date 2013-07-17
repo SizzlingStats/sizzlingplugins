@@ -197,6 +197,9 @@ public:
 	// returns null on error
 	CBaseEntity *BaseEntityFromBaseHandle( const CBaseHandle *pHandle );
 
+	// returns the IHandleEntity pointer from the given ent index
+	IHandleEntity *HandleEntityFromEntIndex( int ent_index );
+
 protected:
 	void LevelShutdown();
 
