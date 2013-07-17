@@ -163,6 +163,14 @@ public:
 	{
 	}
 
+	virtual void OnEdictAllocated( edict_t *edict )
+	{
+	}
+
+	virtual void OnEdictFreed( const edict_t *edict )
+	{
+	}
+
 	virtual int GetCommandIndex()
 	{
 		return m_iClientCommandIndex;

@@ -48,6 +48,8 @@ public:
 	virtual PLUGIN_RESULT	ClientCommand( edict_t *pEntity, const CCommand &args );
 	virtual PLUGIN_RESULT	NetworkIDValidated( const char *pszUserName, const char *pszNetworkID );
 	virtual void			OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue );
+	virtual void			OnEdictAllocated( edict_t *edict );
+	virtual void			OnEdictFreed( const edict_t *edict );
 
 	// Additions
 	//virtual bool			ConfirmInterfaces( void );
@@ -261,6 +263,14 @@ PLUGIN_RESULT CEmptyServerPlugin::NetworkIDValidated( const char *pszUserName, c
 // Purpose: called when a cvar value query is finished
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::OnQueryCvarValueFinished( QueryCvarCookie_t iCookie, edict_t *pPlayerEntity, EQueryCvarValueStatus eStatus, const char *pCvarName, const char *pCvarValue )
+{
+}
+
+void CEmptyServerPlugin::OnEdictAllocated( edict_t *edict )
+{
+}
+
+void CEmptyServerPlugin::OnEdictFreed( const edict_t *edict )
 {
 }
 
