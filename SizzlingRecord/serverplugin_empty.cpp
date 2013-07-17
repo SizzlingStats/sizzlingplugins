@@ -541,7 +541,7 @@ private:
 // The plugin is a static singleton that is exported as an interface
 //
 static CEmptyServerPlugin s_EmptyServerPlugin;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, s_EmptyServerPlugin);
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS_VERSION_1, s_EmptyServerPlugin);
 
 static ConCommand invis_players("sizz_rec_fix_invisible_players", &s_EmptyServerPlugin, "Fixes invisible players by restarting the demo recording without interrupting the current record session.");
 static ConCommand start_recording("sizz_rec_start_recording", &s_EmptyServerPlugin, "Starts recording a demo with SizzlingRecord.");

@@ -238,7 +238,7 @@ private:
 // The plugin is a static singleton that is exported as an interface
 //
 CEmptyServerPlugin g_ServerPlugin;
-EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS, g_ServerPlugin );
+EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, INTERFACEVERSION_ISERVERPLUGINCALLBACKS_VERSION_1, g_ServerPlugin );
 
 //---------------------------------------------------------------------------------
 // Purpose: constructor/destructor
