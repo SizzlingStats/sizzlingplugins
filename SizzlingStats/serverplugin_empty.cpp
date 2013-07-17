@@ -215,10 +215,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	CServerPlugin *pPluginManager = (CServerPlugin*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
-	int plugin_index = SCHelpers::GetThisPluginIndex(pPluginManager, this);
-
-	autoUpdateInfo_t a = { FULL_PLUGIN_PATH, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION, plugin_index };
+	autoUpdateInfo_t a = { FULL_PLUGIN_PATH, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
 	m_pAutoUpdater = new CAutoUpdateThread(a, s_pluginInfo);
 
 	using namespace std::placeholders;

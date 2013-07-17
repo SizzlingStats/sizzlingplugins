@@ -26,7 +26,6 @@ typedef struct autoUpdateInfo_s
 	char destDir[64];
 	unsigned int fileCRC;
 	char currentVersion[16];
-	int plugin_index;
 } autoUpdateInfo_t;
 
 // this is for whoever uses the updater thread
