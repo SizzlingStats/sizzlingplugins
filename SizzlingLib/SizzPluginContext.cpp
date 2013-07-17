@@ -36,8 +36,7 @@ CSizzPluginContext::CSizzPluginContext():
 	m_tickcount(0),
 	m_flTime(0.0f),
 	m_max_clients(0),
-	m_edict_list(nullptr),
-	m_num_edicts(0)
+	m_edict_list(nullptr)
 {
 }
 
@@ -468,7 +467,6 @@ CBaseEntity *CSizzPluginContext::BaseEntityFromBaseHandle( const CBaseHandle *pH
 void CSizzPluginContext::LevelShutdown()
 {
 	m_edict_list = nullptr;
-	m_num_edicts = 0;
 
 	m_pUserIDTracker->Reset();
 }
@@ -510,7 +508,6 @@ void CSizzPluginContext::ClientDisconnect( const edict_t *pEdict )
 void CSizzPluginContext::ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	m_edict_list = pEdictList;
-	m_num_edicts = edictCount;
 }
 
 void CSizzPluginContext::GameFrame( bool simulating )
@@ -556,7 +553,7 @@ edict_t *CSizzPluginContext::EdictFromEntIndex( int ent_index )
 	// first try using the list
 	if (m_edict_list)
 	{
-		if ((0 <= ent_index) && (ent_index < m_num_edicts))
+		if ((0 <= ent_index) && (ent_index < MAX_EDICTS))
 		{
 			pEdict = (m_edict_list + ent_index);
 			if (pEdict->IsFree())
@@ -573,7 +570,7 @@ edict_t *CSizzPluginContext::EdictFromEntIndex( int ent_index )
 		{
 			pEdict = EdictFromEntIndex(ent_index);
 		}
-		else
+		else // no reason why this should happen
 		{
 			// fallback engine call
 			pEdict = m_pEngine->PEntityOfEntIndex(ent_index);

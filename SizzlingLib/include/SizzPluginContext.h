@@ -234,7 +234,6 @@ private:
 	int m_max_clients;
 
 	edict_t *m_edict_list;
-	int m_num_edicts;
 };
 
 #endif // SIZZ_PLUGIN_CONTEXT_H
