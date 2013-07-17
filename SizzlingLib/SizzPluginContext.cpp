@@ -524,25 +524,7 @@ int CSizzPluginContext::EntIndexFromEdict( const edict_t *pEdict )
 	int ent_index = -1;
 	if (pEdict)
 	{
-		// first try using the list
-		if (m_edict_list)
-		{
-			ent_index = (pEdict - m_edict_list);
-		}
-		else
-		{
-			// try to get the list
-			m_edict_list = m_pEngine->PEntityOfEntIndex(0);
-			if (m_edict_list)
-			{
-				ent_index = EntIndexFromEdict(pEdict);
-			}
-			else
-			{
-				// fallback engine call
-				ent_index = m_pEngine->IndexOfEdict(pEdict);
-			}
-		}
+		ent_index = pEdict->m_iIndex;
 	}
 	return ent_index;
 }
