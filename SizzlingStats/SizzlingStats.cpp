@@ -198,16 +198,15 @@ void SizzlingStats::TeamCapped( int team_index )
 class CTraceFilterSkipTwo: public ITraceFilter
 {
 public:
-	CTraceFilterSkipTwo( CBaseEntity *pEnt1, CBaseEntity *pEnt2 ):
+	CTraceFilterSkipTwo( IHandleEntity *pEnt1, IHandleEntity *pEnt2 ):
 		m_pEnt1(pEnt1),
 		m_pEnt2(pEnt2)
 	{
 	}
 
 	virtual bool ShouldHitEntity( IHandleEntity *pServerEntity, int contentsMask )
-	{ 
-		CBaseEntity *pEnt = SCHelpers::BaseHandleToBaseEntity(&pServerEntity->GetRefEHandle());
-		if (pEnt == m_pEnt1 || pEnt == m_pEnt2)
+	{
+		if (!pServerEntity || (pServerEntity == m_pEnt1) || (pServerEntity == m_pEnt2))
 		{
 			return false;
 		}
@@ -220,8 +219,8 @@ public:
 	}
 
 private:
-	CBaseEntity *m_pEnt1;
-	CBaseEntity *m_pEnt2;
+	IHandleEntity *m_pEnt1;
+	IHandleEntity *m_pEnt2;
 };
 
 static char *UTIL_VarArgs( char *format, ... )
@@ -284,7 +283,9 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 					{
 						Ray_t ray;
 						ray.Init(*medPos, *victimPos);
-						CTraceFilterSkipTwo traceFilter(pMedData->GetBaseEntity(), pMedigun);
+						IHandleEntity *pMedHandleEnt = m_plugin_context->HandleEntityFromEntIndex(pMedData->GetEntIndex());
+						IHandleEntity *pMedigunHandleEnt = m_plugin_context->HandleEntityFromEntIndex(hMedigun->GetEntryIndex());
+						CTraceFilterSkipTwo traceFilter(pMedHandleEnt, pMedigunHandleEnt);
 						trace_t trace;
 						enginetrace->TraceRay(ray, MASK_SHOT_HULL, &traceFilter, &trace);
 						if (!trace.DidHit())
