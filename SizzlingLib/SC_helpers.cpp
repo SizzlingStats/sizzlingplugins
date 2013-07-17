@@ -47,18 +47,6 @@ namespace SCHelpers
 		return nullptr;
 	}
 
-	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle )
-	{
-		if (pHandle && pHandle->IsValid())
-		{
-			int entindex = pHandle->GetEntryIndex();
-			edict_t *pEdict = pEngine->PEntityOfEntIndex(entindex);
-			return EdictToBaseEntity(pEdict);
-		}
-		
-		return NULL;
-	}
-
 	const char **GetClassname( CBaseEntity * const pEnt )
 	{
 		static uint32 classname_offset = 0xffff;

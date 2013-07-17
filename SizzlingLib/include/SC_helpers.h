@@ -73,8 +73,6 @@ namespace SCHelpers
 
 	CBaseEntity *EdictToBaseEntity( edict_t *pEdict );
 
-	CBaseEntity *BaseHandleToBaseEntity( const CBaseHandle *pHandle );
-
 	// gets the m_iClassname value for the entity
 	// doesn't check pEnt for NULL
 	const char **GetClassname( CBaseEntity * const pEnt );
