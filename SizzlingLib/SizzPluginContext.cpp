@@ -524,24 +524,36 @@ void CSizzPluginContext::GameFrame( bool simulating )
 
 int CSizzPluginContext::EntIndexFromEdict( const edict_t *pEdict )
 {
-	int ret = -1;
+	int ent_index = -1;
 	if (pEdict)
 	{
+		// first try using the list
 		if (m_edict_list)
 		{
-			ret = (pEdict - m_edict_list);
+			ent_index = (pEdict - m_edict_list);
 		}
 		else
 		{
-			ret = m_pEngine->IndexOfEdict(pEdict);
+			// try to get the list
+			m_edict_list = m_pEngine->PEntityOfEntIndex(0);
+			if (m_edict_list)
+			{
+				ent_index = EntIndexFromEdict(pEdict);
+			}
+			else
+			{
+				// fallback engine call
+				ent_index = m_pEngine->IndexOfEdict(pEdict);
+			}
 		}
 	}
-	return ret;
+	return ent_index;
 }
 
 edict_t *CSizzPluginContext::EdictFromEntIndex( int ent_index )
 {
 	edict_t *pEdict = nullptr;
+	// first try using the list
 	if (m_edict_list)
 	{
 		if ((0 <= ent_index) && (ent_index < m_num_edicts))
@@ -555,7 +567,17 @@ edict_t *CSizzPluginContext::EdictFromEntIndex( int ent_index )
 	}
 	else
 	{
-		pEdict = m_pEngine->PEntityOfEntIndex(ent_index);
+		// try to get the list
+		m_edict_list = m_pEngine->PEntityOfEntIndex(0);
+		if (m_edict_list)
+		{
+			pEdict = EdictFromEntIndex(ent_index);
+		}
+		else
+		{
+			// fallback engine call
+			pEdict = m_pEngine->PEntityOfEntIndex(ent_index);
+		}
 	}
 	return pEdict;
 }
