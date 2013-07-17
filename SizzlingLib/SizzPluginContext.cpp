@@ -529,7 +529,7 @@ int CSizzPluginContext::EntIndexFromEdict( const edict_t *pEdict )
 	{
 		if (m_edict_list)
 		{
-			ret = (pEdict - m_edict_list) / sizeof(edict_t);
+			ret = (pEdict - m_edict_list);
 		}
 		else
 		{
