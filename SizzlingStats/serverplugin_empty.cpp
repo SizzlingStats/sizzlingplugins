@@ -800,7 +800,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			bool paused = m_plugin_context.IsPaused();
 			if (!paused)
 			{
-				m_event_sender.SendNamedEvent("pause", m_plugin_context.GetCurrentTick());
+				m_event_sender.SendNamedEvent("ss_pause", m_plugin_context.GetCurrentTick());
 			}
 		}
 		else if ( FStrEq( szCommand, "unpause" ) )
@@ -808,7 +808,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			bool paused = m_plugin_context.IsPaused();
 			if (paused)
 			{
-				m_event_sender.SendNamedEvent("unpause", m_plugin_context.GetCurrentTick());
+				m_event_sender.SendNamedEvent("ss_unpause", m_plugin_context.GetCurrentTick());
 			}
 		}
 #endif
@@ -1013,7 +1013,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
-	m_event_sender.SendNamedEvent("tournament_match_start", tick);
+	m_event_sender.SendNamedEvent("ss_tournament_match_start", tick);
 	int max_clients = m_plugin_context.GetMaxClients();
 	for (int i = 1; i < max_clients; ++i)
 	{
@@ -1021,6 +1021,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 		if (pInfo && pInfo->IsConnected())
 		{
 			CSizzEvent event(m_event_sender.AllocEvent(), tick);
+			event.SetName("ss_player_info");
 			event.SetString("name", pInfo->GetName());
 			event.SetShort("userid", m_plugin_context.UserIDFromEntIndex(i));
 			event.SetString("steamid", pInfo->GetNetworkIDString());
