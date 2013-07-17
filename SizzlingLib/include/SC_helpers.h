@@ -108,9 +108,6 @@ namespace SCHelpers
 	//-----------------------------------------------------------------------------
 	void S_littleendianhextobinary( char const *in, int numchars, byte *out, int maxoutputbytes );
 
-	int GetThisPluginIndex( CServerPlugin *pPluginManager, IServerPluginCallbacks *pThisPlugin );
-	int GetPluginIndex( CServerPlugin *pPluginManager, const char *pszDescriptionPart );
-
 	//---------------------------------------------------------------------------------
 	// Purpose: used by the GetPropOffsetFromTable func to get a specific table
 	//---------------------------------------------------------------------------------

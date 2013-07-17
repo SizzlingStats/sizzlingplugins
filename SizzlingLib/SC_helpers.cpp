@@ -241,41 +241,6 @@ namespace SCHelpers
 		}
 	}
 
-	int GetThisPluginIndex( CServerPlugin *pPluginManager, IServerPluginCallbacks *pThisPlugin )
-	{
-		if (pPluginManager && pThisPlugin)
-		{
-			int num_plugins = pPluginManager->m_plugins.Count();
-			for ( int i = 0; i < num_plugins; ++i )
-			{
-				CPlugin *pPlugin = pPluginManager->m_plugins[i];
-				if ( pPlugin && (pPlugin->m_pPlugin == pThisPlugin) )
-				{
-					return i;
-				}
-			}
-		}
-		return -1;
-	}
-
-	int GetPluginIndex( CServerPlugin *pPluginManager, const char *pszDescriptionPart )
-	{
-		if (pPluginManager && pszDescriptionPart)
-		{
-			int num_plugins = pPluginManager->m_plugins.Count();
-			for ( int i = 0; i < num_plugins; ++i )
-			{
-				CPlugin *pPlugin = pPluginManager->m_plugins[i];
-				//Msg( "plugin %i, %s\n", i, pPlugin->m_szName );
-				if ( pPlugin && V_strstr(pPlugin->m_szName, pszDescriptionPart) )
-				{
-					return i;
-				}
-			}
-		}
-		return 0xffff;
-	}
-
 	//---------------------------------------------------------------------------------
 	// Purpose: used by the GetPropOffsetFromTable func to get a specific table
 	//---------------------------------------------------------------------------------
