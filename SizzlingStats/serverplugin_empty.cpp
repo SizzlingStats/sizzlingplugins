@@ -318,7 +318,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 #ifdef PROTO_STATS
 	m_event_sender.BeginConnection( "sizzlingstats.com:8007" );
 #endif
-	m_SizzlingStats.Load();
+	m_SizzlingStats.Load(&m_plugin_context);
 
 	LoadCurrentPlayers();
 	//Name: 	player_changename

@@ -24,6 +24,7 @@
 #include "tier1/utlvector.h"
 
 class CFuncQueueThread;
+class CSizzPluginContext;
 
 class SizzlingStats
 {
@@ -32,7 +33,7 @@ public:
 	~SizzlingStats(void);
 
 	// called when the plugin is loaded
-	void	Load();
+	void	Load( CSizzPluginContext *context );
 
 	// called when the plugin is unloaded
 	void	Unload();
@@ -132,6 +133,7 @@ private:
 	void	GetEntities();
 
 private:
+	CSizzPluginContext *m_plugin_context;
 	unsigned int	m_aPropOffsets[20];
 	unsigned int	m_PlayerFlagsOffset;
 	unsigned int	m_TeamRoundsWonOffset;

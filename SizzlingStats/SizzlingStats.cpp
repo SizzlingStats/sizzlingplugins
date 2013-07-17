@@ -20,6 +20,7 @@
 #include "engine/IEngineTrace.h"
 #include "eiface.h"
 #include "game/server/iplayerinfo.h"
+#include "SizzPluginContext.h"
 
 #include <functional>
 
@@ -59,6 +60,7 @@ static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If non
 #pragma warning( push )
 #pragma warning( disable : 4351 )
 SizzlingStats::SizzlingStats():
+	m_plugin_context(nullptr),
 	m_aPropOffsets(),
 	m_PlayerFlagsOffset(0), 
 	m_TeamRoundsWonOffset(0),
@@ -94,8 +96,10 @@ SizzlingStats::~SizzlingStats()
 	delete m_pWebStatsHandler;
 }
 
-void SizzlingStats::Load()
+void SizzlingStats::Load( CSizzPluginContext *context )
 {
+	m_plugin_context = context;
+
     GetPropOffsets();
 	GetEntities();
 	m_refHostIP.Init("hostip", false);
@@ -238,7 +242,7 @@ void SizzlingStats::GiveUber( int entindex )
 	if (pData && (pData->GetClass(m_PlayerClassOffset) == 5))
 	{
 		CBaseHandle *hMedigun = (CBaseHandle*)((unsigned char *)(pData->GetBaseEntity()) + m_iWeaponsOffset + 4); // +4 because we want the medigun slot
-		CBaseEntity *pMedigun = SCHelpers::BaseHandleToBaseEntity(hMedigun);
+		CBaseEntity *pMedigun = m_plugin_context->BaseEntityFromBaseHandle(hMedigun);
 
 		if (pMedigun)
 		{
@@ -259,7 +263,7 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 		{
 			using namespace SCHelpers;
 			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
-			CBaseEntity *pMedigun = BaseHandleToBaseEntity(hMedigun);
+			CBaseEntity *pMedigun = m_plugin_context->BaseEntityFromBaseHandle(hMedigun);
 
 			const char **ppWeapon = SCHelpers::GetClassname(pMedigun);
 			if ( ppWeapon && SCHelpers::FStrEq(*ppWeapon, "tf_weapon_medigun") )
