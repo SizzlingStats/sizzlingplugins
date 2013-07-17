@@ -33,9 +33,6 @@
     <ClCompile Include="ThreadFunctorQueueTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LogStats.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EventSender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -57,9 +54,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="STVRecorder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LogStats.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventSender.h">

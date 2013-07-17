@@ -35,7 +35,6 @@
 #include "autoupdate.h"
 #include "UserIdTracker.h"
 #include "ServerPluginHandler.h"
-#include "LogStats.h"
 
 #include "curl/curl.h"
 
@@ -146,7 +145,6 @@ private:
 #ifdef PROTO_STATS
 	CEventSender m_event_sender;
 #endif
-	CNullLogStats m_logstats;
 	SizzlingStats m_SizzlingStats;
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
@@ -181,7 +179,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 // Purpose: constructor/destructor
 //---------------------------------------------------------------------------------
 CEmptyServerPlugin::CEmptyServerPlugin():
-	m_logstats(),
 	m_SizzlingStats(),
 	m_SayHook(),
 	m_SayTeamHook(),
@@ -277,8 +274,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	init.pServerGameDLL = (IServerGameDLL *)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
 
 	m_plugin_context.Initialize(init);
-
-	m_logstats.Load(m_plugin_context);
 
 	//GetGameRules();
 	GetPropOffsets();
@@ -388,7 +383,6 @@ void CEmptyServerPlugin::Unload( void )
 #ifdef PROTO_STATS
 	m_event_sender.EndConnection();
 #endif
-	m_logstats.Unload();
 	
 	//UnhookProps();
 
@@ -438,7 +432,6 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	m_plugin_context.LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	
 	m_SizzlingStats.LevelInit(pMapName);
-	m_logstats.LevelInit(pMapName);
 }
 
 //---------------------------------------------------------------------------------
@@ -505,7 +498,6 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 			case GR_STATE_PREROUND:
 				{
 					m_bShouldRecord = true; // start extra stats recording
-					m_logstats.PreRoundFreezeStarted(m_bTournamentMatchStarted);
 					m_SizzlingStats.SS_PreRoundFreeze();
 				}
 				break;
@@ -558,7 +550,6 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 		return;
 
 	m_SizzlingStats.SS_InsertPlayer( pEdict );
-	m_logstats.ClientActive(ent_index);
 }
 
 //---------------------------------------------------------------------------------
@@ -578,7 +569,6 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 		if( !pEdict || pEdict->IsFree() )
 			return;
 		m_SizzlingStats.SS_DeletePlayer( pEdict );
-		m_logstats.ClientDisconnect(ent_index);
 		m_plugin_context.ClientDisconnect(pEdict);
 	}
 }
@@ -779,7 +769,6 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 			{
 				int ent_index = m_plugin_context.ClientActive(pEdict);
 				m_SizzlingStats.SS_InsertPlayer( pEdict );
-				m_logstats.ClientActive(ent_index);
 			}
 		}
 	}
@@ -1024,7 +1013,6 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 	const char *RESTRICT bluname = m_refBlueTeamName.GetString();
 	const char *RESTRICT redname = m_refRedTeamName.GetString();
 
-	m_logstats.TournamentMatchStarted(hostname, mapname, bluname, redname);
 	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
@@ -1054,7 +1042,6 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 
 void CEmptyServerPlugin::TournamentMatchEnded()
 {
-	m_logstats.TournamentMatchEnded();
 	m_SizzlingStats.SS_TournamentMatchEnded();
 #ifdef PROTO_STATS
 	m_event_sender.SendNamedEvent("tournament_match_end", m_plugin_context.GetCurrentTick());
