@@ -16,7 +16,7 @@
 #include "PlayerMessage.h"
 #include "playerdata.h"
 #include "SC_helpers.h"
-#include "ThreadCallQueue.h"
+#include "functors.h"
 #include "engine/IEngineTrace.h"
 #include "eiface.h"
 #include "game/server/iplayerinfo.h"
@@ -37,7 +37,6 @@
 extern CGlobalVars		*gpGlobals;
 extern IVEngineServer	*pEngine;
 extern IPlayerInfoManager *playerinfomanager;
-extern CTSCallQueue		*g_pTSCallQueue;
 extern IEngineTrace		*enginetrace;
 
 #ifdef FTP_STATS
@@ -701,8 +700,7 @@ void SizzlingStats::SS_HideHtmlStats( int entindex )
 
 void SizzlingStats::OnSessionIdReceived( sizz::CString sessionid )
 {
-	extern CTSCallQueue *g_pTSCallQueue;
-	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, std::move(sessionid)));
+	m_plugin_context->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, std::move(sessionid)));
 }
 
 void SizzlingStats::LogSessionId( const sizz::CString &str )
@@ -715,8 +713,7 @@ void SizzlingStats::LogSessionId( const sizz::CString &str )
 
 void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
 {
-	extern CTSCallQueue *g_pTSCallQueue;
-	g_pTSCallQueue->EnqueueFunctor(CreateFunctor(this, &SizzlingStats::CacheSiteOnPlayer, std::move(matchurl)));
+	m_plugin_context->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::CacheSiteOnPlayer, std::move(matchurl)));
 }
 
 void SizzlingStats::CacheSiteOnPlayer( const sizz::CString &match_url )
