@@ -134,10 +134,9 @@ void CPlayerDataManager::RemovePlayer( engineContext_t &context, edict_t *pEdict
 void CPlayerDataManager::RemoveArchivedPlayers( engineContext_t &context )
 {
 	// clean up the archived memory saved in the hash table
-	auto &list = m_playerDataArchive.m_aDataPool;
-	for (int it = list.Head(); it != list.Tail(); it = list.Next(it))
+	FOR_EACH_LL( m_playerDataArchive.m_aDataPool, it )
 	{
-		playerAndExtra_t &data = list.Element(it).m_Data;
+		playerAndExtra_t &data = m_playerDataArchive.m_aDataPool.Element(it).m_Data;
 		m_PlayerDataMemPool.Free(data.m_pPlayerData);
 		m_ExtraDataMemPool.Free(data.m_pExtraData);
 	}
