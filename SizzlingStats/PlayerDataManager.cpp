@@ -18,6 +18,7 @@
 #include "steam/steamclientpublic.h" // for a log using accountid
 #include "const.h"
 #include "SC_helpers.h"
+#include "SizzPluginContext.h"
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
@@ -40,32 +41,10 @@ CPlayerDataManager::~CPlayerDataManager()
 	m_ExtraDataMemPool.Clear();
 }
 
-bool CPlayerDataManager::InsertPlayer( engineContext_t &context, edict_t *pEdict )
+bool CPlayerDataManager::InsertPlayer( int ent_index, CBaseEntity *pEnt )
 {
-	IPlayerInfo *pPlayerInfo = context.pPlayerInfoManager->GetPlayerInfo(pEdict);
-	if (pPlayerInfo)
-	{
-		if (!(pPlayerInfo->IsConnected()))
-		{
-			PD_Msg("error: player not yet connected, aborting insert\n");
-			return false;
-		}
-	}
-	else
-	{
-		PD_Msg("error: could not get player info, aborting insert\n");
-		return false;
-	}
-	
-	const CSteamID *pSteamID = context.pEngine->GetClientSteamID(pEdict);
-	if (!pSteamID)
-	{
-		PD_Msg("error: client %s not authenticated with steam, aborting insert\n", pPlayerInfo->GetName());
-		return false;
-	}
-
 	// normalize with a -1 for array indexing
-	int ent_index = context.pEngine->IndexOfEdict(pEdict) - 1;
+	--ent_index;
 
 	//uint32 account_id = pSteamID->GetAccountID();
 	UtlHashFastHandle_t hHash = m_playerDataArchive.InvalidHandle(); //m_playerDataArchive.Find(account_id);
@@ -88,36 +67,24 @@ bool CPlayerDataManager::InsertPlayer( engineContext_t &context, edict_t *pEdict
 	}
 
 	// reset the entity pointers
-	m_pPlayerData[ent_index]->SetBaseEntity(SCHelpers::EdictToBaseEntity(pEdict));
+	m_pPlayerData[ent_index]->SetBaseEntity(pEnt);
 	m_nPlayers += 1;
 	
 	PD_Msg( "current players: %i\n", m_nPlayers );
-	PD_Msg( "Stats for player #%i: '%s' will be tracked\n", pSteamID->GetAccountID(), pPlayerInfo->GetName() );
-	
 	return true;
 }
 
-void CPlayerDataManager::RemovePlayer( engineContext_t &context, edict_t *pEdict )
+void CPlayerDataManager::RemovePlayer( int ent_index, IPlayerInfo *pPlayerInfo, unsigned int account_id )
 {
-	const CSteamID *pSteamID = context.pEngine->GetClientSteamID(pEdict);
-	if (!pSteamID)
-	{
-		// TODO: verify that this can happen
-		PD_Msg("error: client not authenticated with steam, aborting delete\n");
-		return;
-	}
-	
 	// normalize with -1 for array indexing
-	int ent_index = context.pEngine->IndexOfEdict(pEdict) - 1;
+	--ent_index;
 
-	// bots have an account type of k_EAccountTypeAnonGameServer
-	// and we don't want to archive their data
-	if (pSteamID->GetEAccountType() != k_EAccountTypeAnonGameServer)
+	// we don't want to archive these types of players
+	if (!pPlayerInfo->IsFakeClient() && !pPlayerInfo->IsHLTV() && !pPlayerInfo->IsReplay())
 	{
 		// archives the data for players who 
 		// might rejoin before the round/match is over
 		playerAndExtra_t data = {m_pPlayerData[ent_index], m_pEntIndexToExtraData[ent_index]};
-		uint32 account_id = pSteamID->GetAccountID();
 		// fastinsert doesn't check for duplicates
 		m_playerDataArchive.FastInsert(account_id, data);
 	}

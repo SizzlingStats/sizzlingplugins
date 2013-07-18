@@ -99,6 +99,8 @@ unsigned int CSizzPluginContext::SteamIDFromEntIndex( int ent_index )
 	const CSteamID *pID = m_pEngine->GetClientSteamIDByPlayerIndex(ent_index);
 	if (pID)
 	{
+		// bots have an account type of k_EAccountTypeAnonGameServer
+		// maybe check that and return a special value
 		return pID->GetAccountID();
 	}
 	return static_cast<unsigned int>(-1);

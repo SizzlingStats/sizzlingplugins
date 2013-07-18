@@ -33,6 +33,7 @@ class SS_PlayerData;
 struct edict_t;
 struct extradata_s;
 typedef struct extradata_s extradata_t;
+class IPlayerInfo;
 
 typedef struct playerAndExtra_s
 {
@@ -46,8 +47,8 @@ public:
 	CPlayerDataManager();
 	~CPlayerDataManager();
 	
-	bool InsertPlayer( engineContext_t &context, edict_t *pEdict );
-	void RemovePlayer( engineContext_t &context, edict_t *pEdict );
+	bool InsertPlayer( int ent_index, CBaseEntity *pEnt );
+	void RemovePlayer( int ent_index, IPlayerInfo *pPlayerInfo, unsigned int account_id );
 	void RemoveArchivedPlayers();
 	void RemoveAllPlayers();
 	

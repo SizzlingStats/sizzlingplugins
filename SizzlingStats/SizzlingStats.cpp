@@ -319,17 +319,39 @@ void SizzlingStats::CapFix( const char *cappers, int length )
 bool SizzlingStats::SS_InsertPlayer( edict_t *pEdict )
 {
 	Msg( "SS_InsertPlayer\n" );
-	engineContext_t context = { playerinfomanager, pEngine };
-	return m_PlayerDataManager.InsertPlayer(context, pEdict);
+	int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
+	if (ent_index != -1)
+	{
+		IPlayerInfo *pPlayerInfo = m_plugin_context->GetPlayerInfo(ent_index);
+		if (pPlayerInfo && pPlayerInfo->IsConnected())
+		{
+			CBaseEntity *pEnt = SCHelpers::EdictToBaseEntity(pEdict);
+			bool ret = m_PlayerDataManager.InsertPlayer(ent_index, pEnt);
+			if (ret)
+			{
+				int acc_id = m_plugin_context->SteamIDFromEntIndex(ent_index);
+				SS_Msg("Stats for player #%i: '%s' will be tracked\n", acc_id, pPlayerInfo->GetName());
+			}
+			return ret;
+		}
+	}
+	return false;
 }
 
 void SizzlingStats::SS_DeletePlayer( edict_t *pEdict )
 {
 	Msg( "SS_DeletePlayer\n" );
-	int entindex = pEngine->IndexOfEdict(pEdict);
-	m_vecMedics.FindAndRemove(entindex);
-	engineContext_t context = { playerinfomanager, pEngine };
-	m_PlayerDataManager.RemovePlayer(context, pEdict);
+	int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
+	if (ent_index != -1)
+	{
+		m_vecMedics.FindAndRemove(ent_index);
+		IPlayerInfo *pPlayerInfo = m_plugin_context->GetPlayerInfo(ent_index);
+		if (pPlayerInfo && pPlayerInfo->IsConnected())
+		{
+			unsigned int acc_id = m_plugin_context->SteamIDFromEntIndex(ent_index);
+			m_PlayerDataManager.RemovePlayer(ent_index, pPlayerInfo, acc_id);
+		}
+	}
 }
 
 void SizzlingStats::SS_DeleteAllPlayerData()
