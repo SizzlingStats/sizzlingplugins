@@ -36,7 +36,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern CGlobalVars		*gpGlobals;
 extern IVEngineServer	*pEngine;
 extern IPlayerInfoManager *playerinfomanager;
 extern IEngineTrace		*enginetrace;
@@ -134,7 +133,7 @@ void SizzlingStats::GameFrame()
 
 void SizzlingStats::LoadConfig()
 {
-	pEngine->ServerCommand( "exec " PLUGIN_CONFIG_FILE "\n" );
+	m_plugin_context->ServerCommand( "exec " PLUGIN_CONFIG_FILE "\n" );
 }
 
 void SizzlingStats::PlayerHealed( int entindex, int amount )
@@ -578,10 +577,6 @@ void SizzlingStats::SS_EndOfRound()
 
 	if (m_bTournamentMatchRunning)
 	{
-		//V_strncpy(m_hostInfo.m_hostname, m_refHostname.GetString(), 64);
-		//V_strncpy(m_hostInfo.m_mapname, gpGlobals->mapname.ToCStr(), 64);
-		//V_strncpy(m_hostInfo.m_bluname, m_refBlueTeamName.GetString(), 32);
-		//V_strncpy(m_hostInfo.m_redname, m_refRedTeamName.GetString(), 32);
 		m_hostInfo.m_roundduration = m_flRoundDuration;
 		m_pWebStatsHandler->SetHostData(m_hostInfo);
 		m_pWebStatsHandler->SendStatsToWeb();
@@ -722,7 +717,7 @@ void SizzlingStats::LogSessionId( const sizz::CString &str )
 	const char *sessionid = str.ToCString();
 	char temp[128] = {};
 	V_snprintf(temp, 128, "[SizzlingStats]: sessionid %s\n", sessionid);
-	pEngine->LogPrint(temp);
+	m_plugin_context->LogPrint(temp);
 }
 
 void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
