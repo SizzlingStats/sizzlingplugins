@@ -167,6 +167,8 @@ private:
 	// this var makes sure that LevelShutdown is 
 	// only called once for every LevelInit
 	bool m_bAlreadyLevelShutdown;
+
+	CON_COMMAND_MEMBER_F(CEmptyServerPlugin, "printservertables", PrintServerTables, "prints the server tables ya", 0);
 };
 
 // 
@@ -756,12 +758,13 @@ bool CEmptyServerPlugin::ConfirmInterfaces( void )
 void CEmptyServerPlugin::LoadCurrentPlayers()
 {
 	int max_clients = m_plugin_context.GetMaxClients();
-	for ( int i = 1; i <= max_clients; i++ )
+	for ( int i = 1; i <= max_clients; ++i )
 	{
-		edict_t *pEdict = pEngine->PEntityOfEntIndex(i);
+		edict_t *pEdict = m_plugin_context.EdictFromEntIndex(i);
 		if (pEdict && !pEdict->IsFree())
 		{
-			if (pServerEnts->EdictToBaseEntity(pEdict))
+			// might not need this second check
+			if (SCHelpers::EdictToBaseEntity(pEdict))
 			{
 				m_plugin_context.ClientActive(pEdict);
 				m_SizzlingStats.SS_InsertPlayer(pEdict);
@@ -1050,7 +1053,7 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 #undef GetProp
 #endif
 
-void RecurseServerTable( SendTable *pTable, int &spacing )
+static void RecurseServerTable( SendTable *pTable, int &spacing )
 {
 	SendTable *pSendTable = pTable;
 	if (pSendTable == NULL)
@@ -1113,9 +1116,9 @@ void RecurseServerTable( SendTable *pTable, int &spacing )
 	spacing-=2;
 }
 
-CON_COMMAND ( printservertables, "prints the server tables ya" )
+void CEmptyServerPlugin::PrintServerTables( const CCommand &args )
 {
-	ServerClass *pClass = pServerDLL->GetAllServerClasses();
+	ServerClass *pClass = m_plugin_context.GetAllServerClasses();
 	while ( pClass )
 	{
 		Msg("%s\n", pClass->m_pNetworkName );
