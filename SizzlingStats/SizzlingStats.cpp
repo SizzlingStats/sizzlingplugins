@@ -76,7 +76,6 @@ SizzlingStats::SizzlingStats():
 	m_iTeamNumOffset(0),
 	m_iOldRedScore(0),
 	m_iOldBluScore(0),
-	m_nCurrentRound(0),
 	m_PlayerDataManager(),
 	m_pWebStatsHandler(NULL),
 	m_refHostIP((IConVar*)NULL),

@@ -150,7 +150,6 @@ private:
 	uint16			m_iOldRedScore;
 	uint16			m_iOldBluScore;
 
-	int				m_nCurrentRound;
 	CUtlVector<char> m_vecMedics; //ent index of medics
 private:
 	CPlayerDataManager m_PlayerDataManager;
