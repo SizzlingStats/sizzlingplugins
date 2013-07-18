@@ -20,15 +20,6 @@
 #include "utlhash.h"
 #include "shareddefs.h"
 
-class IPlayerInfoManager;
-class IVEngineServer;
-
-typedef struct engineContext_s
-{
-	IPlayerInfoManager	*pPlayerInfoManager;
-	IVEngineServer		*pEngine;
-} engineContext_t;
-
 class SS_PlayerData;
 struct edict_t;
 struct extradata_s;

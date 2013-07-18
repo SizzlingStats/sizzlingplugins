@@ -11,11 +11,9 @@
 
 #include "PlayerDataManager.h"
 
-#include "eiface.h" // for IVEngineServer
-#include "game/server/iplayerinfo.h" // for IPlayerInfoManager
+#include "game/server/iplayerinfo.h" // for IPlayerInfo
 #include "playerdata.h"
 #include "strtools.h"
-#include "steam/steamclientpublic.h" // for a log using accountid
 #include "const.h"
 #include "SC_helpers.h"
 #include "SizzPluginContext.h"

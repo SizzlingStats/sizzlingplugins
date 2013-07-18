@@ -36,8 +36,6 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern IVEngineServer	*pEngine;
-extern IPlayerInfoManager *playerinfomanager;
 extern IEngineTrace		*enginetrace;
 
 #ifdef FTP_STATS
