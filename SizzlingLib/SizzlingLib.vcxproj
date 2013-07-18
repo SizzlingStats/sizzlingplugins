@@ -29,6 +29,7 @@
     <ClCompile Include="SRecipientFilter.cpp" />
     <ClCompile Include="ThreadCallQueue.cpp" />
     <ClCompile Include="UserIdTracker.cpp" />
+    <ClCompile Include="UserMessageHelpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\autoupdate.h" />
@@ -54,6 +55,7 @@
     <ClInclude Include="include\ThreadCallQueue.h" />
     <ClInclude Include="include\threading.h" />
     <ClInclude Include="include\UserIdTracker.h" />
+    <ClInclude Include="include\UserMessageHelpers.h" />
     <ClInclude Include="include\VFuncs.h" />
   </ItemGroup>
   <ItemGroup>

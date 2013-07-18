@@ -16,6 +16,7 @@
 
 class CSizzPluginContext;
 typedef struct hud_msg_cfg_s hud_msg_cfg_t;
+typedef struct motd_msg_cfg_s motd_msg_cfg_t;
 
 class CUserMessageHelpers
 {
@@ -42,6 +43,13 @@ public:
 
 	void AllUserHudHintMessage( const char *format, ... );
 	void AllUserHudHintMessageArg( const char *format, va_list args );
+
+	void SingleUserMOTDPanelMessage( int ent_index, const char *msg, const motd_msg_cfg_t &cfg );
+	void AllUserMOTDPanelMessage( const char *msg, const motd_msg_cfg_t &cfg );
+
+private:
+	CUserMessageHelpers( const CUserMessageHelpers &other );
+	CUserMessageHelpers &operator=( const CUserMessageHelpers &other );
 
 private:
 	CSizzPluginContext &m_context;

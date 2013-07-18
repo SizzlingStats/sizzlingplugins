@@ -127,3 +127,16 @@ void CUserMessageHelpers::AllUserHudHintMessageArg( const char *format, va_list 
 	filter.AddAllPlayers();
 	m_context.HudHintMessageArg(&filter, format, args);
 }
+
+void CUserMessageHelpers::SingleUserMOTDPanelMessage( int ent_index, const char *msg, const motd_msg_cfg_t &cfg )
+{
+	SRecipientFilter_new filter(m_context, ent_index);
+	m_context.MOTDPanelMessage(&filter, msg, cfg);
+}
+
+void CUserMessageHelpers::AllUserMOTDPanelMessage( const char *msg, const motd_msg_cfg_t &cfg )
+{
+	MRecipientFilter_new filter(m_context);
+	filter.AddAllPlayers();
+	m_context.MOTDPanelMessage(&filter, msg, cfg);
+}
