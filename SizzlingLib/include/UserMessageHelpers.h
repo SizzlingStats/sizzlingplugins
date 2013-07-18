@@ -55,6 +55,8 @@ private:
 
 private:
 	CSizzPluginContext *m_context;
+	MRecipientFilter m_multi_recip;
+	SRecipientFilter m_single_recip;
 };
 
 #endif // USER_MESSAGE_HELPERS
