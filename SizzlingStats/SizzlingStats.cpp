@@ -380,7 +380,7 @@ void SizzlingStats::SS_TournamentMatchStarted( const char *RESTRICT hostname,
 	m_hostInfo.m_roundduration = m_flRoundDuration;
 	m_pWebStatsHandler->SetHostData(m_hostInfo);
 
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	for (int i = 1; i < MAX_PLAYERS; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
@@ -531,7 +531,7 @@ void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 
 void SizzlingStats::SS_EndOfRound()
 {
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	for (int i = 1; i < MAX_PLAYERS; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
@@ -576,7 +576,7 @@ void SizzlingStats::SS_EndOfRound()
 
 void SizzlingStats::SS_ResetData()
 {
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	for (int i = 1; i < MAX_PLAYERS; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
