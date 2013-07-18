@@ -252,7 +252,7 @@ void CSizzPluginContext::ChatMessage( IRecipientFilter *pFilter, const char *for
 	{
 		va_list args;
 		va_start(args, format);
-		ChatMessage(pFilter, format, args);
+		ChatMessageArg(pFilter, format, args);
 		va_end(args);
 	}
 }
@@ -300,7 +300,7 @@ void CSizzPluginContext::HudMessage( IRecipientFilter *pFilter, const hud_msg_cf
 	{
 		va_list args;
 		va_start(args, format);
-		HudMessage(pFilter, cfg, format, args);
+		HudMessageArg(pFilter, cfg, format, args);
 		va_end(args);
 	}
 }
@@ -369,7 +369,7 @@ void CSizzPluginContext::HudHintMessage( IRecipientFilter *pFilter, const char *
 	{
 		va_list args;
 		va_start(args, format);
-		HudHintMessage(pFilter, format, args);
+		HudHintMessageArg(pFilter, format, args);
 		va_end(args);
 	}
 }
