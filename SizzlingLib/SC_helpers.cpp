@@ -47,6 +47,16 @@ namespace SCHelpers
 		return nullptr;
 	}
 
+	int EntIndexFromEdict( const edict_t *pEdict )
+	{
+		int ent_index = -1;
+		if (pEdict)
+		{
+			ent_index = pEdict->m_iIndex;
+		}
+		return ent_index;
+	}
+
 	const char **GetClassname( CBaseEntity * const pEnt )
 	{
 		static uint32 classname_offset = 0xffff;

@@ -216,10 +216,6 @@ protected:
 	void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax );
 
 	void GameFrame( bool simulating );
-
-	// returns the ent index from the edict pointer
-	// returns -1 on invalid edict
-	int EntIndexFromEdict( const edict_t *pEdict );
 	
 	// returns the corresponding edict_t pointer 
 	// to the passed in ent index

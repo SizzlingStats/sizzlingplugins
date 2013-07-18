@@ -497,7 +497,7 @@ int CSizzPluginContext::ClientActive( const edict_t *pEdict )
 		int userid = m_pEngine->GetPlayerUserId(pEdict);
 		if (userid != -1)
 		{
-			int ent_index = EntIndexFromEdict(pEdict);
+			int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
 			if (ent_index != -1)
 			{
 				m_pUserIDTracker->ClientActive(userid, ent_index);
@@ -512,7 +512,7 @@ void CSizzPluginContext::ClientDisconnect( const edict_t *pEdict )
 {
 	if (pEdict)
 	{
-		int ent_index = EntIndexFromEdict(pEdict);
+		int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
 		if (ent_index != -1)
 		{
 			int userid = UserIDFromEntIndex(ent_index);
@@ -536,16 +536,6 @@ void CSizzPluginContext::GameFrame( bool simulating )
 	m_max_clients = m_pGlobals->maxClients;
 
 	m_pCallQueue->callQueueGameFrame();
-}
-
-int CSizzPluginContext::EntIndexFromEdict( const edict_t *pEdict )
-{
-	int ent_index = -1;
-	if (pEdict)
-	{
-		ent_index = pEdict->m_iIndex;
-	}
-	return ent_index;
 }
 
 edict_t *CSizzPluginContext::EdictFromEntIndex( int ent_index )

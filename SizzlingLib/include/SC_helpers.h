@@ -73,6 +73,10 @@ namespace SCHelpers
 
 	CBaseEntity *EdictToBaseEntity( edict_t *pEdict );
 
+	// returns the ent index from the edict pointer
+	// returns -1 on invalid edict
+	int EntIndexFromEdict( const edict_t *pEdict );
+
 	// gets the m_iClassname value for the entity
 	// doesn't check pEnt for NULL
 	const char **GetClassname( CBaseEntity * const pEnt );

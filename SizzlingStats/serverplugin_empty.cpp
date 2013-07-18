@@ -562,7 +562,7 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 	// isn't called twice for the same player.
 	if (!m_bAlreadyLevelShutdown)
 	{
-		int ent_index = m_plugin_context.EntIndexFromEdict(pEdict);
+		int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
 		if( !pEdict || pEdict->IsFree() )
 			return;
 		m_SizzlingStats.SS_DeletePlayer( pEdict );
@@ -614,7 +614,7 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 		return PLUGIN_CONTINUE;
 	}
 
-	int entindex = m_plugin_context.EntIndexFromEdict(pEntity);
+	int entindex = SCHelpers::EntIndexFromEdict(pEntity);
 	if (entindex > 0)
 	{
 		if ( FStrEq(pcmd, "sizz_show_stats") )
