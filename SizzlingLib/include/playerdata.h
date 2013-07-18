@@ -180,46 +180,17 @@ class SS_PlayerData
 {
 public:
 	SS_PlayerData();
-	SS_PlayerData( edict_t *pEdict, IPlayerInfo *pInfo );
-	virtual ~SS_PlayerData();
 
-	void SetBaseData( edict_t *pEdict, IPlayerInfo *pInfo )
-	{
-		m_BasePlayerData.SetBaseData(pEdict, pInfo);
-	}
+	void SetBaseEntity( CBaseEntity *pEnt ) { m_base_entity = pEnt; }
+	CBaseEntity *GetBaseEntity() const { return m_base_entity; }
 
-	CBaseEntity *GetBaseEntity() const
-	{
-		return m_BasePlayerData.GetBaseEntity();
-	}
+	void		UpdateRoundStatsData( const unsigned int pPropOffsets[] );
+	void		ResetRoundStatsData();
+	ScoreData	GetRoundStatsData();
 
-	IPlayerInfo *GetPlayerInfo() const
-	{
-		return m_BasePlayerData.GetPlayerInfo();
-	}
+	void		UpdateRoundExtraData(  extradata_t &dat );
 
-	edict_t	*GetEdict() const
-	{
-		return m_BasePlayerData.GetEdict();
-	}
-
-	int	GetEntIndex() const
-	{
-		return m_BasePlayerData.GetEntIndex();
-	}
-
-	void		UpdateRoundData( int CurrentRound, const unsigned int pPropOffsets[] );
-	void		UpdateTotalData( int CurrentRound );
-	void		ResetTotalData();
-	ScoreData	GetTotalData();
-
-	void		UpdateExtraData( int CurrentRound, extradata_t &dat );
-
-	int			GetStat( int RoundNumber, int StatID );	//if RoundNumber is -1, returns the totalscore stats
-
-	ScoreData	GetScoreData( int RoundNumber ) const;
-
-	void		ResetExtraData( int CurrentRound );
+	int			GetStat( int StatID );
 
 	CPlayerClassTracker	*GetClassTracker();
 	int			GetClass(unsigned int playerClassOffset);
@@ -233,10 +204,8 @@ private:
 	int			GetDataFromOffset( int PropName, const unsigned int pPropOffsets[]);
 
 private:
-	BasePlayerData	m_BasePlayerData;
-
-	CUtlVector<ScoreData> m_aRoundScoreData;	//[Round Number][Data Number]
-	ScoreData m_aTotalScoreData;		//[data number]
+	CBaseEntity *m_base_entity;
+	ScoreData m_RoundScoreData;
 	CPlayerClassTracker m_classTracker;
 	bool m_bCapFix;
 };

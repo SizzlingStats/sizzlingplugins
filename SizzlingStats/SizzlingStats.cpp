@@ -21,6 +21,8 @@
 #include "eiface.h"
 #include "game/server/iplayerinfo.h"
 #include "SizzPluginContext.h"
+#include "SRecipientFilter.h"
+#include "MRecipientFilter.h"
 
 #include <functional>
 
@@ -170,10 +172,14 @@ void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class 
 
 void SizzlingStats::ChatEvent( int entindex, const char *pText, bool bTeamChat )
 {
+	// this needs to be checked carefully for 
+	// the error that happened below before any 
+	// null check optimizations can be made
 	SS_PlayerData *player_data = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData;
 	if (player_data)
 	{
-		const char *pSteamId = player_data->GetPlayerInfo()->GetNetworkIDString();
+		IPlayerInfo *pInfo = m_plugin_context->GetPlayerInfo(entindex);
+		const char *pSteamId = pInfo->GetNetworkIDString();
 		// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
 		// so subtracting gets the time since the match started
 		m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
@@ -239,12 +245,14 @@ void SizzlingStats::GiveUber( int entindex )
 	SS_PlayerData *pData = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData;
 	if (pData && (pData->GetClass(m_PlayerClassOffset) == 5))
 	{
-		CBaseHandle *hMedigun = (CBaseHandle*)((unsigned char *)(pData->GetBaseEntity()) + m_iWeaponsOffset + 4); // +4 because we want the medigun slot
+		CBaseEntity *pPlayer = m_plugin_context->BaseEntityFromEntIndex(entindex);
+		// +4 because we want the medigun slot
+		CBaseHandle *hMedigun = *SCHelpers::ByteOffsetFromPointer<CBaseHandle*>(pPlayer, m_iWeaponsOffset + 4);
 		CBaseEntity *pMedigun = m_plugin_context->BaseEntityFromBaseHandle(hMedigun);
 
 		if (pMedigun)
 		{
-			float *flChargeLevel = (float*)((unsigned char *)pMedigun + m_iChargeLevelOffset);
+			float *flChargeLevel = *SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, m_iChargeLevelOffset);
 			*flChargeLevel = 1.0f;
 		}
 	}
@@ -257,7 +265,10 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 		int medIndex = m_vecMedics[i];
 		SS_PlayerData *pMedData = m_PlayerDataManager.GetPlayerData(medIndex).m_pPlayerData;
 		SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
-		if ( pMedData->GetPlayerInfo()->GetTeamIndex() == pVictimData->GetPlayerInfo()->GetTeamIndex() )
+
+		IPlayerInfo *pMedPlayerInfo = m_plugin_context->GetPlayerInfo(medIndex);
+		IPlayerInfo *pVictimPlayerInfo = m_plugin_context->GetPlayerInfo(victimIndex);
+		if ( pMedPlayerInfo->GetTeamIndex() == pVictimPlayerInfo->GetTeamIndex() )
 		{
 			using namespace SCHelpers;
 			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
@@ -282,7 +293,7 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 					{
 						Ray_t ray;
 						ray.Init(*medPos, *victimPos);
-						IHandleEntity *pMedHandleEnt = m_plugin_context->HandleEntityFromEntIndex(pMedData->GetEntIndex());
+						IHandleEntity *pMedHandleEnt = m_plugin_context->HandleEntityFromEntIndex(medIndex);
 						IHandleEntity *pMedigunHandleEnt = m_plugin_context->HandleEntityFromEntIndex(hMedigun->GetEntryIndex());
 						CTraceFilterSkipTwo traceFilter(pMedHandleEnt, pMedigunHandleEnt);
 						trace_t trace;
@@ -343,11 +354,12 @@ void SizzlingStats::SS_Msg( const char *pMsg, ... )
 	va_end( argList );
 }
 
-void SizzlingStats::SS_SingleUserChatMessage( edict_t *pEntity, const char *szMessage )
+void SizzlingStats::SS_SingleUserChatMessage( int ent_index, const char *szMessage )
 {
 	if (show_msg.GetInt() != 0)
 	{
-		CPlayerMessage::SingleUserChatMessage( pEntity, szMessage );
+		SRecipientFilter filter(ent_index);
+		m_plugin_context->ChatMessage(&filter, szMessage);
 	}
 }
 
@@ -355,7 +367,9 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 {
 	if (show_msg.GetInt() != 0)
 	{
-		CPlayerMessage::AllUserChatMessage( szMessage, "\x04[\x05SizzlingStats\x04]\x06: \x03" );
+		MRecipientFilter filter;
+		filter.AddAllPlayers();
+		m_plugin_context->ChatMessage(&filter, "%s%s", "\x04[\x05SizzlingStats\x04]\x06: \x03", szMessage);
 	}
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
@@ -384,10 +398,11 @@ void SizzlingStats::SS_TournamentMatchStarted( const char *RESTRICT hostname,
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
 		{
+			IPlayerInfo *pInfo = m_plugin_context->GetPlayerInfo(i);
 			playerInfo_t info;
-			V_strncpy(info.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
-			V_strncpy(info.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
-			info.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
+			V_strncpy(info.m_name, pInfo->GetName(), 32);
+			V_strncpy(info.m_steamid, pInfo->GetNetworkIDString(), 32);
+			info.m_teamid = pInfo->GetTeamIndex();
 			info.m_mostPlayedClass = data.m_pPlayerData->GetClass(m_PlayerClassOffset);
 			m_pWebStatsHandler->EnqueuePlayerInfo(info);
 		}
@@ -440,35 +455,36 @@ void SizzlingStats::SS_RoundEnded()
 	m_PlayerDataManager.RemoveArchivedPlayers(context);
 }
 
-void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
+void SizzlingStats::SS_DisplayStats( int ent_index )
 {
 	char pText[64] = {};
-	int kills = playerData.GetStat(m_nCurrentRound, Kills);
-	int assists = playerData.GetStat(m_nCurrentRound, KillAssists);
-	int deaths = playerData.GetStat(m_nCurrentRound, Deaths);
-	int damagedone = playerData.GetStat(m_nCurrentRound, DamageDone);
-	int amounthealed = playerData.GetStat(m_nCurrentRound, HealPoints);
-	int points = playerData.GetStat(m_nCurrentRound, Points);
-	int backstabs = playerData.GetStat(m_nCurrentRound, Backstabs);
-	int headshots = playerData.GetStat(m_nCurrentRound, Headshots);
-	int captures = playerData.GetStat(m_nCurrentRound, Captures);
-	int defenses = playerData.GetStat(m_nCurrentRound, Defenses);
-	int healsrecv = playerData.GetStat(m_nCurrentRound, HealsReceived);
-	int ubers = playerData.GetStat(m_nCurrentRound, Invulns);
-	int drops = playerData.GetStat(m_nCurrentRound, UbersDropped);
-	int medpicks = playerData.GetStat(m_nCurrentRound, MedPicks);
+	SS_PlayerData &playerData = *m_PlayerDataManager.GetPlayerData(ent_index).m_pPlayerData;
+	int kills = playerData.GetStat(Kills);
+	int assists = playerData.GetStat(KillAssists);
+	int deaths = playerData.GetStat(Deaths);
+	int damagedone = playerData.GetStat(DamageDone);
+	int amounthealed = playerData.GetStat(HealPoints);
+	int points = playerData.GetStat(Points);
+	int backstabs = playerData.GetStat(Backstabs);
+	int headshots = playerData.GetStat(Headshots);
+	int captures = playerData.GetStat(Captures);
+	int defenses = playerData.GetStat(Defenses);
+	int healsrecv = playerData.GetStat(HealsReceived);
+	int ubers = playerData.GetStat(Invulns);
+	int drops = playerData.GetStat(UbersDropped);
+	int medpicks = playerData.GetStat(MedPicks);
 	
-	edict_t *pEntity = playerData.GetEdict();
+	IPlayerInfo *pPlayerInfo = m_plugin_context->GetPlayerInfo(ent_index);
 
-	V_snprintf( pText, 64, "\x04[\x05SizzlingStats\x04]\x06: \x03%s\n", playerData.GetPlayerInfo()->GetName() );
-	SS_SingleUserChatMessage( pEntity, pText );
+	V_snprintf( pText, 64, "\x04[\x05SizzlingStats\x04]\x06: \x03%s\n", pPlayerInfo->GetName() );
+	SS_SingleUserChatMessage(ent_index, pText);
 
 	memset( pText, 0, sizeof(pText) );
 	if ( deaths != 0 )
 		V_snprintf( pText, 64, "K/D: %i:%i (%.2f), Assists: %i\n", kills, deaths, (double)kills/(double)deaths, assists );
 	else
 		V_snprintf( pText, 64, "K/D: %i:%i, Assists: %i\n", kills, deaths, assists );
-	SS_SingleUserChatMessage( pEntity, pText );
+	SS_SingleUserChatMessage(ent_index, pText);
 
 	memset( pText, 0, sizeof(pText) );
 	//Msg( "class: %i\n", *((int *)(((unsigned char *)playerData.GetBaseEntity()) + m_PlayerClassOffset)) );
@@ -484,48 +500,48 @@ void SizzlingStats::SS_DisplayStats( SS_PlayerData &playerData )
 		//V_snprintf( pText, 64, "Avg Charge Time: %i seconds", chargetime );
 		//SS_SingleUserChatMessage( pEntity, pText );
 	}
-	SS_SingleUserChatMessage( pEntity, pText );
+	SS_SingleUserChatMessage(ent_index, pText);
 
 	if ( amounthealed != 0 )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Amount Healed: %i\n", amounthealed );
-		SS_SingleUserChatMessage( pEntity, pText );
+		SS_SingleUserChatMessage(ent_index, pText);
 	}
 
 	if ( medpicks != 0 )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Medic Picks: %i\n", medpicks );
-		SS_SingleUserChatMessage( pEntity, pText );
+		SS_SingleUserChatMessage(ent_index, pText);
 	}
 
 	if ( (backstabs != 0) && (headshots != 0) )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Backstabs: %i, Headshots: %i\n", backstabs, headshots );
-		SS_SingleUserChatMessage( pEntity, pText );
+		SS_SingleUserChatMessage(ent_index, pText);
 	}
 	else if ( (backstabs != 0) && (headshots == 0) )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Backstabs: %i\n", backstabs );
-		SS_SingleUserChatMessage( pEntity, pText );
+		SS_SingleUserChatMessage(ent_index, pText);
 	}
 	else if ( (backstabs == 0) && (headshots != 0) )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Headshots: %i\n", headshots );
-		SS_SingleUserChatMessage( pEntity, pText );
+		SS_SingleUserChatMessage(ent_index, pText);
 	}
 
 	memset( pText, 0, sizeof(pText) );
 	V_snprintf( pText, 64, "Captures: %i, Defenses: %i\n", captures, defenses );
-	SS_SingleUserChatMessage( pEntity, pText );
+	SS_SingleUserChatMessage(ent_index, pText);
 
 	memset( pText, 0, sizeof(pText) );
 	V_snprintf( pText, 64, "Round Score: %i\n", points );
-	SS_SingleUserChatMessage( pEntity, pText );
+	SS_SingleUserChatMessage(ent_index, pText);
 }
 
 void SizzlingStats::SS_EndOfRound()
@@ -536,28 +552,28 @@ void SizzlingStats::SS_EndOfRound()
 		if (data.m_pPlayerData)
 		{
 			// UpdateRoundData needs to be before the UpdateExtraData or crash cause no vector
-			data.m_pPlayerData->UpdateRoundData(m_nCurrentRound, m_aPropOffsets);
-			data.m_pPlayerData->UpdateExtraData(m_nCurrentRound, *data.m_pExtraData);
+			data.m_pPlayerData->UpdateRoundStatsData(m_aPropOffsets);
+			data.m_pPlayerData->UpdateRoundExtraData(*data.m_pExtraData);
+
+			IPlayerInfo *pInfo = m_plugin_context->GetPlayerInfo(i);
 
 			if (m_bTournamentMatchRunning)
 			{
 				playerWebStats_t stats;
-				stats.m_scoreData = data.m_pPlayerData->GetScoreData(m_nCurrentRound);
-				V_strncpy(stats.m_playerInfo.m_name, data.m_pPlayerData->GetPlayerInfo()->GetName(), 32);
-				V_strncpy(stats.m_playerInfo.m_steamid, data.m_pPlayerData->GetPlayerInfo()->GetNetworkIDString(), 32);
-				stats.m_playerInfo.m_teamid = data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex();
+				stats.m_scoreData = data.m_pPlayerData->GetRoundStatsData();
+				V_strncpy(stats.m_playerInfo.m_name, pInfo->GetName(), 32);
+				V_strncpy(stats.m_playerInfo.m_steamid, pInfo->GetNetworkIDString(), 32);
+				stats.m_playerInfo.m_teamid = pInfo->GetTeamIndex();
 				CPlayerClassTracker *pTracker = data.m_pPlayerData->GetClassTracker();
 				stats.m_playerInfo.m_mostPlayedClass = pTracker->GetMostPlayedClass();
 				stats.m_playerInfo.m_playedClasses = pTracker->GetPlayedClasses();
 				m_pWebStatsHandler->EnqueuePlayerStats(stats);
 			}
 
-			if (data.m_pPlayerData->GetPlayerInfo()->GetTeamIndex() > 1)
+			if (pInfo->GetTeamIndex() > 1)
 			{
-				SS_DisplayStats( *data.m_pPlayerData );
+				SS_DisplayStats(i);
 			}
-			data.m_pPlayerData->UpdateTotalData( m_nCurrentRound );
-			//data.m_pPlayerData->ResetExtraData( m_nCurrentRound ); // this happens in pre-round, so test commenting this
 		}
 	}
 
@@ -580,7 +596,6 @@ void SizzlingStats::SS_ResetData()
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
 		{
-			data.m_pPlayerData->ResetExtraData(m_nCurrentRound);
 			data.m_pExtraData->operator=(0);
 		}
 	}

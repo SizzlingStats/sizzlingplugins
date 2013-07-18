@@ -14,6 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 #include "playerdata.h"
 #include "eiface.h"
+#include "SC_helpers.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -57,96 +58,46 @@ void BasePlayerData::SetBaseData( edict_t *pEdict, IPlayerInfo *pInfo )
 // SS_PlayerData
 // ---------------------------------------------------------------------- //
 SS_PlayerData::SS_PlayerData():
-	m_BasePlayerData(),
+	m_base_entity(nullptr),
 	m_bCapFix(false)
 {
 }
 
-SS_PlayerData::SS_PlayerData( edict_t *pEdict, IPlayerInfo *pInfo ):
-	m_BasePlayerData( pEdict, pInfo ),
-	m_bCapFix(false)
+void SS_PlayerData::UpdateRoundStatsData( const unsigned int pPropOffsets[] )
 {
-}
-
-SS_PlayerData::~SS_PlayerData()
-{
-}
-
-void SS_PlayerData::UpdateRoundData( int CurrentRound, const unsigned int pPropOffsets[] )
-{
-	ScoreData scoreData;
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < HealsReceived; ++i)
 	{
-		scoreData.data[i] = GetDataFromOffset(i, pPropOffsets);
+		m_RoundScoreData.data[i] = GetDataFromOffset(i, pPropOffsets);
 	}
 
 	if (m_bCapFix)
 	{
-		scoreData.data[Captures] += 1;
-		scoreData.data[Points] += 2;
+		m_RoundScoreData.data[Captures] += 1;
+		m_RoundScoreData.data[Points] += 2;
 		m_bCapFix = false;
 	}
-
-	if ( !m_aRoundScoreData.IsValidIndex( CurrentRound ) )
-	{
-		m_aRoundScoreData.AddToTail( scoreData );
-	}
-	else
-	{
-		m_aRoundScoreData.Element( CurrentRound ) = scoreData;
-	}
 }
 
-void SS_PlayerData::UpdateTotalData( int CurrentRound )
+void SS_PlayerData::ResetRoundStatsData()
 {
-	m_aTotalScoreData += m_aRoundScoreData[CurrentRound];
-	//for (int i = 0; i < 20; i++ )
-	//	m_aTotalScoreData += m_aRoundScoreData.Element(CurrentRound);
+	m_RoundScoreData.Reset();
 }
 
-void SS_PlayerData::ResetTotalData()
+ScoreData SS_PlayerData::GetRoundStatsData()
 {
-	m_aTotalScoreData.Reset();
+	return m_RoundScoreData;
 }
 
-ScoreData SS_PlayerData::GetTotalData()
+void SS_PlayerData::UpdateRoundExtraData( extradata_t &dat )
 {
-	return m_aTotalScoreData;
+	m_RoundScoreData.data[HealsReceived] = dat.healsrecv;
+	m_RoundScoreData.data[MedPicks] = dat.medpicks;
+	m_RoundScoreData.data[UbersDropped] = dat.ubersdropped;
 }
 
-void SS_PlayerData::UpdateExtraData( int CurrentRound, extradata_t &dat )
+int SS_PlayerData::GetStat( int StatID )
 {
-	int *data = m_aRoundScoreData.Element( CurrentRound ).data;
-	data[HealsReceived] = dat.healsrecv;
-	data[MedPicks] = dat.medpicks;
-	data[UbersDropped] = dat.ubersdropped;
-	//data[SumTimeCharging] = dat.sumofubertimes;
-}
-
-int SS_PlayerData::GetStat( int RoundNumber, int StatID )
-{
-	if ( StatID >= NumOfStats )
-		return -1;
-	return (RoundNumber != -1) ? ( m_aRoundScoreData.Element(RoundNumber).data[StatID] ) : ( m_aTotalScoreData.data[StatID] );
-}
-
-ScoreData SS_PlayerData::GetScoreData( int RoundNumber ) const
-{
-	return m_aRoundScoreData.Element(RoundNumber);
-}
-
-void SS_PlayerData::ResetExtraData( int CurrentRound )
-{
-	if ( !m_aRoundScoreData.IsValidIndex( CurrentRound ) ) 
-	{
-		ScoreData data;
-		m_aRoundScoreData.AddToTail( data );
-	}
-	int *data = m_aRoundScoreData.Element( CurrentRound ).data;
-	*(data+HealsReceived) = 0;
-	*(data+MedPicks) = 0;
-	*(data+UbersDropped) = 0;
-	//*(data+SumTimeCharging) = 0.0;
+	return m_RoundScoreData.data[StatID];
 }
 
 CPlayerClassTracker *SS_PlayerData::GetClassTracker()
@@ -156,12 +107,12 @@ CPlayerClassTracker *SS_PlayerData::GetClassTracker()
 
 int	SS_PlayerData::GetClass(unsigned int playerClassOffset)
 {
-	return *((unsigned int *)(((unsigned char *)m_BasePlayerData.GetBaseEntity()) + playerClassOffset));
+	return *SCHelpers::ByteOffsetFromPointer<int>(m_base_entity, playerClassOffset);
 }
 
 int	SS_PlayerData::GetDataFromOffset( int PropName, const unsigned int pPropOffsets[] )
 {
-	return *((unsigned int *)(((unsigned char *)m_BasePlayerData.GetBaseEntity()) + pPropOffsets[PropName]));
+	return *SCHelpers::ByteOffsetFromPointer<int>(m_base_entity, pPropOffsets[PropName]);
 }
 
 // ---------------------------------------------------------------------- //

@@ -80,7 +80,7 @@ public:
 	void	SS_Msg( const char *pMsg, ... );
 
 	//	chat message to be sent to one user
-	void	SS_SingleUserChatMessage( edict_t *pEntity, const char *szMessage );
+	void	SS_SingleUserChatMessage( int ent_index, const char *szMessage );
 
 	//	chat message to be sent to all users
 	void	SS_AllUserChatMessage( const char *szMessage );
@@ -99,7 +99,7 @@ public:
 	void	SS_RoundEnded();
 
 	//	displays the stats for use at the end of a round
-	void	SS_DisplayStats( SS_PlayerData &PlayerData );
+	void	SS_DisplayStats( int ent_index );
 
 	//	called when the round ends
 	void	SS_EndOfRound();

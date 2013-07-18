@@ -17,6 +17,7 @@
 #include "strtools.h"
 #include "steam/steamclientpublic.h" // for a log using accountid
 #include "const.h"
+#include "SC_helpers.h"
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
@@ -87,7 +88,7 @@ bool CPlayerDataManager::InsertPlayer( engineContext_t &context, edict_t *pEdict
 	}
 
 	// reset the entity pointers
-	m_pPlayerData[ent_index]->SetBaseData(pEdict, pPlayerInfo);
+	m_pPlayerData[ent_index]->SetBaseEntity(SCHelpers::EdictToBaseEntity(pEdict));
 	m_nPlayers += 1;
 	
 	PD_Msg( "current players: %i\n", m_nPlayers );
