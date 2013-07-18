@@ -458,10 +458,15 @@ CBaseEntity *CSizzPluginContext::BaseEntityFromBaseHandle( const CBaseHandle *pH
 	if (pHandle && pHandle->IsValid())
 	{
 		int entindex = pHandle->GetEntryIndex();
-		edict_t *pEdict = EdictFromEntIndex(entindex);
-		return SCHelpers::EdictToBaseEntity(pEdict);
+		return BaseEntityFromEntIndex(entindex);
 	}
 	return nullptr;
+}
+
+CBaseEntity *CSizzPluginContext::BaseEntityFromEntIndex( int ent_index )
+{
+	edict_t *pEdict = EdictFromEntIndex(ent_index);
+	return SCHelpers::EdictToBaseEntity(pEdict);
 }
 
 IHandleEntity *CSizzPluginContext::HandleEntityFromEntIndex( int ent_index )

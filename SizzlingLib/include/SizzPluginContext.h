@@ -197,6 +197,10 @@ public:
 	// returns null on error
 	CBaseEntity *BaseEntityFromBaseHandle( const CBaseHandle *pHandle );
 
+	// returns the base entity of the ent index
+	// returns null on error
+	CBaseEntity *BaseEntityFromEntIndex( int ent_index );
+
 	// returns the IHandleEntity pointer from the given ent index
 	IHandleEntity *HandleEntityFromEntIndex( int ent_index );
 
