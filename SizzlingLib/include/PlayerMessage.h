@@ -27,7 +27,7 @@ struct colour
 
 class CPlayerMessage
 {
-public:
+private:
 	static void	SingleUserChatMessage( edict_t *pEntity, const char *szMessage );
 	static void	SingleUserChatMessage( int entindex, const char *szMessage );
 	static void	SingleUserChatMessage( edict_t *pEntity, const char *szMessage, const char *szPrefix );

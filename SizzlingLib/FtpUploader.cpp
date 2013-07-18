@@ -23,7 +23,6 @@ static int dbgCurl(CURL *curl, curl_infotype type, char *info, size_t, void *)
 	char temp[128] = "";
 	V_snprintf(temp, 128, "%s", info);
 	Msg("curl debug says: %s\n", temp);
-	CPlayerMessage::AllUserChatMessage(temp);
 	return 0;
 }
 

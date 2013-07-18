@@ -16,6 +16,8 @@
 #include "SC_helpers.h"
 #include "tier1/utlvector.h"
 #include "tier1/stringpool.h"
+#include "MRecipientFilter.h"
+#include "SRecipientFilter.h"
 
 #include "SizzPluginContext.h"
 
@@ -242,10 +244,10 @@ void SizzlingMatches::SM_SingleUserChatMessage( edict_t *pEntity, const char *pF
 {
 	va_list argList;
 	va_start( argList, pFormat );
-	char message[254];
 
-	V_vsnprintf( message, 254, pFormat, argList );
-	CPlayerMessage::SingleUserChatMessage( pEntity, message );
+	int ent_index = SCHelpers::EntIndexFromEdict(pEntity);
+	SRecipientFilter filter(ent_index);
+	m_plugin_context->ChatMessageArg(&filter, pFormat, argList);
 
 	va_end( argList );
 }
@@ -257,7 +259,10 @@ void SizzlingMatches::SM_AllUserChatMessage( const char *pFormat, ... )
 	char message[254];
 
 	V_vsnprintf( message, 254, pFormat, argList );
-	CPlayerMessage::AllUserChatMessage( message, "\x04[\x05SizzlingMatches\x04]\x06: \x03" );
+
+	MRecipientFilter filter;
+	filter.AddAllPlayers();
+	m_plugin_context->ChatMessage(&filter, "%s%s", "\x04[\x05SizzlingMatches\x04]\x06: \x03", message);
 	//CPlayerMessage::AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 
 	va_end( argList );
@@ -517,15 +522,36 @@ void SizzlingMatches::SM_GetNamesLists( char RedTeamPlayers[], int RedArraySize,
 
 void SizzlingMatches::SM_DisplayNames( const char *RedTeamPlayers, const char *BluTeamPlayers )			// my layout with green team names and white names
 {
-	colour clrgreen, clrwhite;
-	//clrgreen.b = clrgreen.r = clrgreen.a = clrwhite.a = 0;
-	clrwhite.r = clrwhite.g = clrwhite.b = clrgreen.g = 85;
+	Color clrgreen(0, 85, 0, 0);
+	Color clrwhite(85, 85, 85, 0);
 
-	CPlayerMessage::AllUserHudReset();
-	CPlayerMessage::AllUserHudMsg( "Red:", clrgreen, 4.0f, 0.55, 0.09, 2 );				// y values the same because hudmsg has auto position correction
-	CPlayerMessage::AllUserHudMsg( "Blu:", clrgreen, 4.0f, 0.05, 0.09, 3 );
-	CPlayerMessage::AllUserHudMsg( RedTeamPlayers, clrwhite, 4.0f, 0.55, 0.09, 4 );
-	CPlayerMessage::AllUserHudMsg( BluTeamPlayers, clrwhite, 4.0f, 0.05, 0.09, 5 );
+	MRecipientFilter filter;
+	filter.AddAllPlayers();
+	m_plugin_context->HudResetMessage(&filter);
+
+	hud_msg_cfg_t cfg;
+	cfg.screentime = 4.0f;
+	cfg.y = 0.09f;
+
+	// y values the same because hudmsg has auto position correction
+	cfg.rgba = clrgreen;
+	cfg.x = 0.55f;
+	cfg.channel = 2;
+	m_plugin_context->HudMessage(&filter, cfg, "Red:");
+
+	cfg.rgba = clrwhite;
+	cfg.channel = 3;
+	m_plugin_context->HudMessage(&filter, cfg, RedTeamPlayers);
+
+	cfg.rgba = clrgreen;
+	cfg.x = 0.05f;
+	cfg.channel = 4;
+	m_plugin_context->HudMessage(&filter, cfg, "Blu:");
+
+	cfg.rgba = clrwhite;
+	cfg.channel = 5;
+	m_plugin_context->HudMessage(&filter, cfg, BluTeamPlayers);
+
 	if ( m_n12sectimer > 3 )
 	{
 		SM_AllUserChatMessage( "Type \".ready\" to ready up and \".notready\" to unready.\n" );

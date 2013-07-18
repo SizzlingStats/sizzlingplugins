@@ -617,12 +617,13 @@ void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 {
 	char version[32] = {};
 	V_snprintf( version, 32, "\x03SizzlingStats v%s\n", pszVersion );
-	CPlayerMessage::SingleUserChatMessage( entindex, "========================\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, version );
-	CPlayerMessage::SingleUserChatMessage( entindex, "\x03\x42y:\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "\x03\tSizzlingCalamari\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "\x03\tTechnosex\n" );
-	CPlayerMessage::SingleUserChatMessage( entindex, "========================\n" );
+	SRecipientFilter filter(entindex);
+	m_plugin_context->ChatMessage(&filter, "========================\n");
+	m_plugin_context->ChatMessage(&filter, version);
+	m_plugin_context->ChatMessage(&filter, "\x03\x42y:\n");
+	m_plugin_context->ChatMessage(&filter, "\x03\tSizzlingCalamari\n");
+	m_plugin_context->ChatMessage(&filter, "\x03\tTechnosex\n");
+	m_plugin_context->ChatMessage(&filter, "========================\n");
 }
 
 void SizzlingStats::SetTeamScores( int redscore, int bluscore )
@@ -696,24 +697,27 @@ void SizzlingStats::SS_UploadStats()
 void SizzlingStats::SS_ShowHtmlStats( int entindex, bool reload_page )
 {
 	//V_snprintf(temp, 256, "%s/sizzlingstats/asdf.html", web_hostname.GetString());
+	SRecipientFilter filter(entindex);
 	if (m_pWebStatsHandler->HasMatchUrl())
 	{
+		motd_msg_cfg_t cfg;
+		cfg.type = MOTDPANEL_TYPE_URL;
 		// reload the page when using the ".ss" method
 		// don't reload the page when using the script to show stats
 		if (reload_page)
 		{
 			char temp[128] = {};
 			m_pWebStatsHandler->GetMatchUrl(temp, 128);
-			CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", temp, true );
+			m_plugin_context->MOTDPanelMessage(&filter, temp, cfg);
 		}
 		else
 		{
-			CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", "", true );
+			m_plugin_context->MOTDPanelMessage(&filter, "", cfg);
 		}
 	}
 	else
 	{
-		CPlayerMessage::SingleUserChatMessage( entindex, "\x03No match stats to view.\n" );
+		m_plugin_context->ChatMessage(&filter, "\x03No match stats to view.\n");
 	}
 }
 
@@ -722,7 +726,11 @@ void SizzlingStats::SS_HideHtmlStats( int entindex )
 	// send a blank/invisible html page to clear 
 	// the visible one if it's open, but make it 
 	// match the ss url so the site is still cached
-	CPlayerMessage::SingleUserMotdPanel( entindex, "SizzlingStats", "", false );
+	SRecipientFilter filter(entindex);
+	motd_msg_cfg_t cfg;
+	cfg.type = MOTDPANEL_TYPE_URL;
+	cfg.visible = false;
+	m_plugin_context->MOTDPanelMessage(&filter, "", cfg);
 }
 
 void SizzlingStats::OnSessionIdReceived( sizz::CString sessionid )
@@ -746,12 +754,16 @@ void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
 void SizzlingStats::CacheSiteOnPlayer( const sizz::CString &match_url )
 {
 	const char *url = match_url.ToCString();
+	motd_msg_cfg_t cfg;
+	cfg.type = MOTDPANEL_TYPE_URL;
+	cfg.visible = false;
 	for (int i = 1; i <= MAX_PLAYERS; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
 		{
-			CPlayerMessage::SingleUserMotdPanel(i, "SizzlingStats", url, false);
+			SRecipientFilter filter(i);
+			m_plugin_context->MOTDPanelMessage(&filter, url, cfg);
 		}
 	}
 }
