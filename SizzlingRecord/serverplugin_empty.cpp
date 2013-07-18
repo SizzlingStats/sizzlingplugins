@@ -26,7 +26,6 @@
 #include "igameevents.h"
 
 #include "NetPropUtils.h"
-#include "PlayerMessage.h"
 #include "Helpers.h"
 #include "SC_helpers.h"
 #include "ConCommandHook.h"

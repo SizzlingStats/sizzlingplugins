@@ -248,6 +248,30 @@ ServerClass *CSizzPluginContext::GetAllServerClasses()
 	return m_pServerGameDLL->GetAllServerClasses();
 }
 
+//	COLOURS
+//[CSS]         Print       SayText2
+//-----------------------------------
+//    \x01      Yellow      Yellow
+//    \x02      Yellow      Yellow
+//    \x03      LightGreen  Red,Blue,Grey
+//    \x04      Green       Green
+//    
+//[TF]
+//-----------------------------------
+//    \x01      White       White
+//    \x02      White       White
+//    \x03      LightGreen  Red,Blue,Grey
+//    \x04      Green       Green
+//    \x05      Olive       Olive
+//    
+//[DOD]
+//-----------------------------------
+//    \x01      Grey          -
+//    \x02      Grey          -
+//    \x03      Grey          -
+//    \x04      Green         -
+//    \x05      Olive         -
+
 void CSizzPluginContext::ChatMessage( IRecipientFilter *pFilter, const char *format, ... )
 {
 	if (pFilter && format)

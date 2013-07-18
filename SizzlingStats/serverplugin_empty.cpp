@@ -25,7 +25,6 @@
 #include "dt_send.h"
 #include "server_class.h"
 
-#include "PlayerMessage.h"
 #include "SizzlingStats.h"
 #include "ThreadCallQueue.h"
 
@@ -42,6 +41,7 @@
 #include "teamplay_gamerule_states.h"
 
 #include "SizzPluginContext.h"
+#include "MRecipientFilter.h"
 
 #ifdef PROTO_STATS
 #include "EventSender.h"
@@ -919,11 +919,13 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( FStrEq( name, "teamplay_game_over" ) || FStrEq( name, "tf_game_over" ) )
 	{
-		CPlayerMessage::AllUserChatMessage( "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n" );
-		CPlayerMessage::AllUserChatMessage( "\x03\x46or credits type \".ss_credits\"\n" ); // \x03F is recognised as '?'
+		MRecipientFilter filter;
+		filter.AddAllPlayers();
+		m_plugin_context.ChatMessage(&filter, "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n");
+		m_plugin_context.ChatMessage(&filter, "\x03\x46or credits type \".ss_credits\"\n"); // \x03F is recognised as '?'
 		if (m_bTournamentMatchStarted)
 		{
-			CPlayerMessage::AllUserChatMessage( "\x03To view the match stats, type \".sizzlingstats\" or \".ss\"\n" );
+			m_plugin_context.ChatMessage(&filter, "\x03To view the match stats, type \".sizzlingstats\" or \".ss\"\n");
 		}
 	}
 	else if ( FStrEq( name, "player_say" ) )

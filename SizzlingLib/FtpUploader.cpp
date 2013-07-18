@@ -16,7 +16,6 @@
 #include "FtpUploader.h"
 #include "utlbuffer.h"
 #include "curlconnection.h"
-#include "PlayerMessage.h"
 
 static int dbgCurl(CURL *curl, curl_infotype type, char *info, size_t, void *)
 {

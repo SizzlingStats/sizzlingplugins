@@ -26,7 +26,6 @@
 #include "tier1/utlmap.h"
 
 #include "playerdata.h"
-#include "PlayerMessage.h"
 #include "SC_helpers.h"
 
 #include "steam/steamclientpublic.h"

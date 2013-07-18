@@ -22,7 +22,6 @@
     <ClCompile Include="PlayerClassTracker.cpp" />
     <ClCompile Include="playerdata.cpp" />
     <ClCompile Include=".\StaticSizeVector.cpp" />
-    <ClCompile Include="PlayerMessage.cpp" />
     <ClCompile Include="SC_helpers.cpp" />
     <ClCompile Include="SizzFileSystem.cpp" />
     <ClCompile Include="SizzlingProtect.cpp" />
@@ -44,7 +43,6 @@
     <ClInclude Include="include\PlayerClassTracker.h" />
     <ClInclude Include="include\playerdata.h" />
     <ClInclude Include=".\include\StaticSizeVector.h" />
-    <ClInclude Include="include\PlayerMessage.h" />
     <ClInclude Include="include\PlayerPostData.h" />
     <ClInclude Include="include\SC_helpers.h" />
     <ClInclude Include="include\ServerPluginHandler.h" />
