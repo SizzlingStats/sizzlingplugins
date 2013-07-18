@@ -615,13 +615,13 @@ void SizzlingStats::SS_Credits( int entindex, const char *pszVersion )
 {
 	char version[32] = {};
 	V_snprintf( version, 32, "\x03SizzlingStats v%s\n", pszVersion );
-	SRecipientFilter filter(entindex);
-	m_plugin_context->ChatMessage(&filter, "========================\n");
-	m_plugin_context->ChatMessage(&filter, version);
-	m_plugin_context->ChatMessage(&filter, "\x03\x42y:\n");
-	m_plugin_context->ChatMessage(&filter, "\x03\tSizzlingCalamari\n");
-	m_plugin_context->ChatMessage(&filter, "\x03\tTechnosex\n");
-	m_plugin_context->ChatMessage(&filter, "========================\n");
+	CUserMessageHelpers h(m_plugin_context);
+	h.SingleUserChatMessage(entindex, "========================\n");
+	h.SingleUserChatMessage(entindex, version);
+	h.SingleUserChatMessage(entindex, "\x03\x42y:\n");
+	h.SingleUserChatMessage(entindex, "\x03\tSizzlingCalamari\n");
+	h.SingleUserChatMessage(entindex, "\x03\tTechnosex\n");
+	h.SingleUserChatMessage(entindex, "========================\n");
 }
 
 void SizzlingStats::SetTeamScores( int redscore, int bluscore )
@@ -695,7 +695,7 @@ void SizzlingStats::SS_UploadStats()
 void SizzlingStats::SS_ShowHtmlStats( int entindex, bool reload_page )
 {
 	//V_snprintf(temp, 256, "%s/sizzlingstats/asdf.html", web_hostname.GetString());
-	SRecipientFilter filter(entindex);
+	CUserMessageHelpers h(m_plugin_context);
 	if (m_pWebStatsHandler->HasMatchUrl())
 	{
 		motd_msg_cfg_t cfg;
@@ -706,16 +706,16 @@ void SizzlingStats::SS_ShowHtmlStats( int entindex, bool reload_page )
 		{
 			char temp[128] = {};
 			m_pWebStatsHandler->GetMatchUrl(temp, 128);
-			m_plugin_context->MOTDPanelMessage(&filter, temp, cfg);
+			h.SingleUserMOTDPanelMessage(entindex, temp, cfg);
 		}
 		else
 		{
-			m_plugin_context->MOTDPanelMessage(&filter, "", cfg);
+			h.SingleUserMOTDPanelMessage(entindex, "", cfg);
 		}
 	}
 	else
 	{
-		m_plugin_context->ChatMessage(&filter, "\x03No match stats to view.\n");
+		h.SingleUserChatMessage(entindex, "\x03No match stats to view.\n");
 	}
 }
 
@@ -751,20 +751,11 @@ void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
 
 void SizzlingStats::CacheSiteOnPlayer( const sizz::CString &match_url )
 {
-	const char *url = match_url.ToCString();
-	SRecipientFilter filter;
 	motd_msg_cfg_t cfg;
 	cfg.type = MOTDPANEL_TYPE_URL;
 	cfg.visible = false;
-	for (int i = 1; i <= MAX_PLAYERS; ++i)
-	{
-		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
-		if (data.m_pPlayerData)
-		{
-			filter.SetRecipient(i);
-			m_plugin_context->MOTDPanelMessage(&filter, url, cfg);
-		}
-	}
+	CUserMessageHelpers h(m_plugin_context);
+	h.AllUserMOTDPanelMessage(match_url.ToCString(), cfg);
 }
 
 void SizzlingStats::GetPropOffsets()

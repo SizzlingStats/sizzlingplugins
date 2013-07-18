@@ -526,9 +526,8 @@ void SizzlingMatches::SM_DisplayNames( const char *RedTeamPlayers, const char *B
 	Color clrgreen(0, 85, 0, 0);
 	Color clrwhite(85, 85, 85, 0);
 
-	MRecipientFilter filter;
-	filter.AddAllPlayers(m_plugin_context);
-	m_plugin_context->HudResetMessage(&filter);
+	CUserMessageHelpers h(m_plugin_context);
+	h.AllUserHudResetMessage();
 
 	hud_msg_cfg_t cfg;
 	cfg.screentime = 4.0f;
@@ -538,20 +537,20 @@ void SizzlingMatches::SM_DisplayNames( const char *RedTeamPlayers, const char *B
 	cfg.rgba = clrgreen;
 	cfg.x = 0.55f;
 	cfg.channel = 2;
-	m_plugin_context->HudMessage(&filter, cfg, "Red:");
+	h.AllUserHudMessage(cfg, "Red:");
 
 	cfg.rgba = clrwhite;
 	cfg.channel = 3;
-	m_plugin_context->HudMessage(&filter, cfg, RedTeamPlayers);
+	h.AllUserHudMessage(cfg, RedTeamPlayers);
 
 	cfg.rgba = clrgreen;
 	cfg.x = 0.05f;
 	cfg.channel = 4;
-	m_plugin_context->HudMessage(&filter, cfg, "Blu:");
+	h.AllUserHudMessage(cfg, "Blu:");
 
 	cfg.rgba = clrwhite;
 	cfg.channel = 5;
-	m_plugin_context->HudMessage(&filter, cfg, BluTeamPlayers);
+	h.AllUserHudMessage(cfg, BluTeamPlayers);
 
 	if ( m_n12sectimer > 3 )
 	{

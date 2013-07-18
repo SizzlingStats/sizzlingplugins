@@ -91,41 +91,45 @@ CBaseEntity *GetBaseFromID(int id);
 
 void ShowMenu( edict_t *pEntity, int buttons, int time, const char *pText) // STOLE IT FROM TONY AND MODIFIED IT LOL
 {
-	SRecipientFilter filter( pEngine->IndexOfEdict( pEntity ) );
-
-	int umsg = 9;	// showmenu is 9
-	if(umsg != -1)
+	int ent_index = pEngine->IndexOfEdict( pEntity );
+	if (ent_index != -1)
 	{
-		char text[2048];
-		char buf[251];
-		char *p = text;
-		//int limit = strlen(pText);
+		SRecipientFilter filter(ent_index);
 
-		strncpy(text, pText, sizeof(text));
-		text[sizeof(text)-1] = '\0';
-
-		// write messages with more option enabled while there is enough data
-		while(strlen(p) > sizeof(buf)-1)
+		int umsg = 9;	// showmenu is 9
+		if(umsg != -1)
 		{
-			strncpy(buf, p, sizeof(buf));
-			buf[sizeof(buf)-1] = '\0';
+			char text[2048];
+			char buf[251];
+			char *p = text;
+			//int limit = strlen(pText);
 
+			strncpy(text, pText, sizeof(text));
+			text[sizeof(text)-1] = '\0';
+
+			// write messages with more option enabled while there is enough data
+			while(strlen(p) > sizeof(buf)-1)
+			{
+				strncpy(buf, p, sizeof(buf));
+				buf[sizeof(buf)-1] = '\0';
+
+				bf_write *pBuffer = pEngine->UserMessageBegin(&filter, umsg);
+				pBuffer->WriteShort(buttons);       // Sets how many options the menu has
+				pBuffer->WriteChar(time);           // Sets how long the menu stays open -1 for stay until option selected
+				pBuffer->WriteByte(true);           // more?
+				pBuffer->WriteString(buf);          // The text shown on the menu
+				pEngine->MessageEnd();
+
+				p += sizeof(buf) - 1;
+			}
+			// then send last bit
 			bf_write *pBuffer = pEngine->UserMessageBegin(&filter, umsg);
 			pBuffer->WriteShort(buttons);       // Sets how many options the menu has
 			pBuffer->WriteChar(time);           // Sets how long the menu stays open -1 for stay until option selected
-			pBuffer->WriteByte(true);           // more?
-			pBuffer->WriteString(buf);          // The text shown on the menu
+			pBuffer->WriteByte(false);          // more?
+			pBuffer->WriteString(p);            // The text shown on the menu
 			pEngine->MessageEnd();
-
-			p += sizeof(buf) - 1;
 		}
-		// then send last bit
-		bf_write *pBuffer = pEngine->UserMessageBegin(&filter, umsg);
-		pBuffer->WriteShort(buttons);       // Sets how many options the menu has
-		pBuffer->WriteChar(time);           // Sets how long the menu stays open -1 for stay until option selected
-		pBuffer->WriteByte(false);          // more?
-		pBuffer->WriteString(p);            // The text shown on the menu
-		pEngine->MessageEnd();
 	}
 }
 
