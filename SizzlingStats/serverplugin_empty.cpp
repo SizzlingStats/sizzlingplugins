@@ -542,11 +542,11 @@ void CEmptyServerPlugin::LevelShutdown( void ) // !!!!this can get called multip
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 {
-	int ent_index = m_plugin_context.ClientActive(pEdict);
-	if( !pEdict || pEdict->IsFree() )
-		return;
-
-	m_SizzlingStats.SS_InsertPlayer( pEdict );
+	if (pEdict && !pEdict->IsFree())
+	{
+		m_plugin_context.ClientActive(pEdict);
+		m_SizzlingStats.SS_InsertPlayer( pEdict );
+	}
 }
 
 //---------------------------------------------------------------------------------
@@ -554,19 +554,19 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 {
-	// ClientDisconnect isn't called for bots 
-	// on LevelShutdown, so I just call 
-	// ClientDisconnect myself in LevelShutdown 
-	// for all players.
-	// This check makes sure that ClientDisconnect 
-	// isn't called twice for the same player.
-	if (!m_bAlreadyLevelShutdown)
+	if (pEdict && !pEdict->IsFree())
 	{
-		int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
-		if( !pEdict || pEdict->IsFree() )
-			return;
-		m_SizzlingStats.SS_DeletePlayer( pEdict );
-		m_plugin_context.ClientDisconnect(pEdict);
+		// ClientDisconnect isn't called for bots 
+		// on LevelShutdown, so I just call 
+		// ClientDisconnect myself in LevelShutdown 
+		// for all players.
+		// This check makes sure that ClientDisconnect 
+		// isn't called twice for the same player.
+		if (!m_bAlreadyLevelShutdown)
+		{
+			m_SizzlingStats.SS_DeletePlayer(pEdict);
+			m_plugin_context.ClientDisconnect(pEdict);
+		}
 	}
 }
 
@@ -582,8 +582,7 @@ void CEmptyServerPlugin::ClientPutInServer( edict_t *pEntity, char const *player
 //---------------------------------------------------------------------------------
 void CEmptyServerPlugin::SetCommandClient( int index )
 {
-	++index;
-	m_iClientCommandIndex = index;
+	m_iClientCommandIndex = ++index;
 }
 
 //---------------------------------------------------------------------------------
@@ -764,8 +763,8 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 		{
 			if (pServerEnts->EdictToBaseEntity(pEdict))
 			{
-				int ent_index = m_plugin_context.ClientActive(pEdict);
-				m_SizzlingStats.SS_InsertPlayer( pEdict );
+				m_plugin_context.ClientActive(pEdict);
+				m_SizzlingStats.SS_InsertPlayer(pEdict);
 			}
 		}
 	}
