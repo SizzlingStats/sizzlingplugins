@@ -26,7 +26,6 @@
     <ClCompile Include="SizzFileSystem.cpp" />
     <ClCompile Include="SizzlingProtect.cpp" />
     <ClCompile Include="SizzPluginContext.cpp" />
-    <ClCompile Include="SRecipientFilter.cpp" />
     <ClCompile Include="ThreadCallQueue.cpp" />
     <ClCompile Include="UserIdTracker.cpp" />
     <ClCompile Include="UserMessageHelpers.cpp" />

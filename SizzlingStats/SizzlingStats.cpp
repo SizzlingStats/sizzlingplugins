@@ -13,7 +13,6 @@
 // Filename: SizzlingStats.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "SizzlingStats.h"
-#include "PlayerMessage.h"
 #include "playerdata.h"
 #include "SC_helpers.h"
 #include "functors.h"
@@ -22,7 +21,7 @@
 #include "game/server/iplayerinfo.h"
 #include "SizzPluginContext.h"
 #include "SRecipientFilter.h"
-#include "MRecipientFilter.h"
+#include "UserMessageHelpers.h"
 
 #include <functional>
 
@@ -375,8 +374,8 @@ void SizzlingStats::SS_SingleUserChatMessage( int ent_index, const char *szMessa
 {
 	if (show_msg.GetInt() != 0)
 	{
-		SRecipientFilter filter(ent_index);
-		m_plugin_context->ChatMessage(&filter, szMessage);
+		CUserMessageHelpers h(m_plugin_context);
+		h.SingleUserChatMessage(ent_index, szMessage);
 	}
 }
 
@@ -384,9 +383,8 @@ void SizzlingStats::SS_AllUserChatMessage( const char *szMessage )
 {
 	if (show_msg.GetInt() != 0)
 	{
-		MRecipientFilter filter;
-		filter.AddAllPlayers();
-		m_plugin_context->ChatMessage(&filter, "%s%s", "\x04[\x05SizzlingStats\x04]\x06: \x03", szMessage);
+		CUserMessageHelpers h(m_plugin_context);
+		h.AllUserChatMessage("%s%s", "\x04[\x05SizzlingStats\x04]\x06: \x03", szMessage);
 	}
 	//g_pMessage->AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 }
@@ -726,11 +724,11 @@ void SizzlingStats::SS_HideHtmlStats( int entindex )
 	// send a blank/invisible html page to clear 
 	// the visible one if it's open, but make it 
 	// match the ss url so the site is still cached
-	SRecipientFilter filter(entindex);
+	CUserMessageHelpers h(m_plugin_context);
 	motd_msg_cfg_t cfg;
 	cfg.type = MOTDPANEL_TYPE_URL;
 	cfg.visible = false;
-	m_plugin_context->MOTDPanelMessage(&filter, "", cfg);
+	h.SingleUserMOTDPanelMessage(entindex, "", cfg);
 }
 
 void SizzlingStats::OnSessionIdReceived( sizz::CString sessionid )
@@ -754,6 +752,7 @@ void SizzlingStats::OnMatchUrlReceived( sizz::CString matchurl )
 void SizzlingStats::CacheSiteOnPlayer( const sizz::CString &match_url )
 {
 	const char *url = match_url.ToCString();
+	SRecipientFilter filter;
 	motd_msg_cfg_t cfg;
 	cfg.type = MOTDPANEL_TYPE_URL;
 	cfg.visible = false;
@@ -762,7 +761,7 @@ void SizzlingStats::CacheSiteOnPlayer( const sizz::CString &match_url )
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
 		{
-			SRecipientFilter filter(i);
+			filter.SetRecipient(i);
 			m_plugin_context->MOTDPanelMessage(&filter, url, cfg);
 		}
 	}

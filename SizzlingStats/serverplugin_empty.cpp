@@ -41,6 +41,7 @@
 #include "teamplay_gamerule_states.h"
 
 #include "SizzPluginContext.h"
+#include "UserMessageHelpers.h"
 #include "MRecipientFilter.h"
 
 #ifdef PROTO_STATS
@@ -919,13 +920,12 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( FStrEq( name, "teamplay_game_over" ) || FStrEq( name, "tf_game_over" ) )
 	{
-		MRecipientFilter filter;
-		filter.AddAllPlayers();
-		m_plugin_context.ChatMessage(&filter, "\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n");
-		m_plugin_context.ChatMessage(&filter, "\x03\x46or credits type \".ss_credits\"\n"); // \x03F is recognised as '?'
+		CUserMessageHelpers h(&m_plugin_context);
+		h.AllUserChatMessage("\x03This server is running SizzlingStats v" PLUGIN_VERSION "\n");
+		h.AllUserChatMessage("\x03\x46or credits type \".ss_credits\"\n"); // \x03F is recognised as '?'
 		if (m_bTournamentMatchStarted)
 		{
-			m_plugin_context.ChatMessage(&filter, "\x03To view the match stats, type \".sizzlingstats\" or \".ss\"\n");
+			h.AllUserChatMessage("\x03To view the match stats, type \".sizzlingstats\" or \".ss\"\n");
 		}
 	}
 	else if ( FStrEq( name, "player_say" ) )

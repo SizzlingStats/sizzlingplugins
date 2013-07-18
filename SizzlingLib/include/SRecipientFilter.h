@@ -12,33 +12,11 @@
 #define _SRECIPIENT_FILTER_H
 
 #include "irecipientfilter.h"
-//#include "bitvec.h"
-//#include "tier1/utlvector.h"
 
-class SRecipientFilter : public IRecipientFilter		// a version of MRecipientFilter
+class SRecipientFilter: public IRecipientFilter		// a version of MRecipientFilter
 {														// that is optimized for 1 recipient
 public:
-	SRecipientFilter(int iPlayer = 0): m_Recipient(iPlayer) {};
-	~SRecipientFilter(void) {};
-
-	virtual bool	IsReliable( void ) const { return false; }
-	virtual bool	IsInitMessage( void ) const { return false; }
-
-	virtual int		GetRecipientCount( void ) const { return 1; };
-	virtual int		GetRecipientIndex( int slot ) const;
-
-	void			SetRecipient(int iPlayer);
-
-private:
-	int m_Recipient;
-};
-
-class CSizzPluginContext;
-
-class SRecipientFilter_new: public IRecipientFilter		// a version of MRecipientFilter
-{														// that is optimized for 1 recipient
-public:
-	SRecipientFilter_new( CSizzPluginContext &context, int ent_index = -1 );
+	SRecipientFilter( int ent_index = -1 );
 
 	virtual bool IsReliable( void ) const { return false; }
 	virtual bool IsInitMessage( void ) const { return false; }
@@ -49,8 +27,23 @@ public:
 	void SetRecipient(int iPlayer);
 
 private:
-	CSizzPluginContext *m_context;
 	int m_recipient;
 };
+
+inline SRecipientFilter::SRecipientFilter( int ent_index /*= -1*/ ):
+	m_recipient(-1)
+{
+	SetRecipient(ent_index);
+}
+
+inline int SRecipientFilter::GetRecipientIndex( int slot ) const
+{
+	return (slot != 0) ? -1 : m_recipient;
+}
+
+inline void SRecipientFilter::SetRecipient( int ent_index )
+{
+	m_recipient = ent_index;
+}
 
 #endif // _SRECIPIENT_FILTER_H

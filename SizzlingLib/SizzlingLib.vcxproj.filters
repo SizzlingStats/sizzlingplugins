@@ -39,9 +39,6 @@
     <ClCompile Include="SizzFileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SRecipientFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ThreadCallQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

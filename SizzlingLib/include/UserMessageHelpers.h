@@ -13,6 +13,8 @@
 #define USER_MESSAGE_HELPERS
 
 #include <stdarg.h>
+#include "MRecipientFilter.h"
+#include "SRecipientFilter.h"
 
 class CSizzPluginContext;
 typedef struct hud_msg_cfg_s hud_msg_cfg_t;
@@ -21,7 +23,7 @@ typedef struct motd_msg_cfg_s motd_msg_cfg_t;
 class CUserMessageHelpers
 {
 public:
-	CUserMessageHelpers( CSizzPluginContext &context );
+	CUserMessageHelpers( CSizzPluginContext *context );
 
 	void SingleUserChatMessage( int ent_index, const char *format, ... );
 	void SingleUserChatMessageArg( int ent_index, const char *format, va_list args );
@@ -52,7 +54,7 @@ private:
 	CUserMessageHelpers &operator=( const CUserMessageHelpers &other );
 
 private:
-	CSizzPluginContext &m_context;
+	CSizzPluginContext *m_context;
 };
 
 #endif // USER_MESSAGE_HELPERS

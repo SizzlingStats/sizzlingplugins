@@ -17,7 +17,7 @@
 #include "tier1/utlvector.h"
 #include "tier1/stringpool.h"
 #include "MRecipientFilter.h"
-#include "SRecipientFilter.h"
+#include "UserMessageHelpers.h"
 
 #include "SizzPluginContext.h"
 
@@ -246,9 +246,11 @@ void SizzlingMatches::SM_SingleUserChatMessage( edict_t *pEntity, const char *pF
 	va_start( argList, pFormat );
 
 	int ent_index = SCHelpers::EntIndexFromEdict(pEntity);
-	SRecipientFilter filter(ent_index);
-	m_plugin_context->ChatMessageArg(&filter, pFormat, argList);
-
+	if (ent_index != -1)
+	{
+		CUserMessageHelpers h(m_plugin_context);
+		h.SingleUserChatMessageArg(ent_index, pFormat, argList);
+	}
 	va_end( argList );
 }
 
@@ -260,9 +262,8 @@ void SizzlingMatches::SM_AllUserChatMessage( const char *pFormat, ... )
 
 	V_vsnprintf( message, 254, pFormat, argList );
 
-	MRecipientFilter filter;
-	filter.AddAllPlayers();
-	m_plugin_context->ChatMessage(&filter, "%s%s", "\x04[\x05SizzlingMatches\x04]\x06: \x03", message);
+	CUserMessageHelpers h(m_plugin_context);
+	h.AllUserChatMessage("%s%s", "\x04[\x05SizzlingMatches\x04]\x06: \x03", message);
 	//CPlayerMessage::AllUserChatMessage( szMessage, "\x01\\x01\x02\\x02\x03\\x03\x04\\x04\x05\\x05\x06\\x06\x07\\x07\x08\\x08\x09\\x09\n" );
 
 	va_end( argList );
@@ -526,7 +527,7 @@ void SizzlingMatches::SM_DisplayNames( const char *RedTeamPlayers, const char *B
 	Color clrwhite(85, 85, 85, 0);
 
 	MRecipientFilter filter;
-	filter.AddAllPlayers();
+	filter.AddAllPlayers(m_plugin_context);
 	m_plugin_context->HudResetMessage(&filter);
 
 	hud_msg_cfg_t cfg;

@@ -14,44 +14,53 @@
 #include "irecipientfilter.h"
 #include "tier1/utlvector.h"
 
-class MRecipientFilter : public IRecipientFilter
-{
-public:
-	MRecipientFilter(void) {};
-	~MRecipientFilter(void) {};
-
-	virtual bool	IsReliable( void ) const { return false; }
-	virtual bool	IsInitMessage( void ) const { return false; }
-
-	virtual int		GetRecipientCount( void ) const;
-	virtual int		GetRecipientIndex( int slot ) const;
-
-	void			AddAllPlayers();
-	void			AddRecipient(int iPlayer);
-
-private:
-	CUtlVector<int> m_Recipients;
-};
-
 class CSizzPluginContext;
 
-class MRecipientFilter_new: public IRecipientFilter
+class MRecipientFilter: public IRecipientFilter
 {
 public:
-	MRecipientFilter_new( CSizzPluginContext &context );
-
 	virtual bool IsReliable( void ) const { return false; }
 	virtual bool IsInitMessage( void ) const { return false; }
 
 	virtual int GetRecipientCount( void ) const;
 	virtual int GetRecipientIndex( int slot ) const;
 
-	void AddAllPlayers();
+	void AddAllPlayers( CSizzPluginContext *context );
 	void AddRecipient(int ent_index);
 
+	void RemoveAll();
+
 private:
-	CSizzPluginContext *m_context;
 	CUtlVector<char> m_recipients;
 };
+
+inline int MRecipientFilter::GetRecipientCount( void ) const
+{
+	return m_recipients.Count();
+}
+
+inline int MRecipientFilter::GetRecipientIndex( int slot ) const
+{
+	if (slot < 0 || slot >= GetRecipientCount())
+	{
+		return -1;
+	}
+
+	return m_recipients[slot];
+}
+
+inline void MRecipientFilter::AddRecipient(int ent_index)
+{
+	// Return if the recipient is already in the vector
+	if (m_recipients.Find(ent_index) == m_recipients.InvalidIndex())
+	{
+		m_recipients.AddToTail(ent_index);
+	}
+}
+
+inline void MRecipientFilter::RemoveAll()
+{
+	m_recipients.RemoveAll();
+}
 
 #endif
