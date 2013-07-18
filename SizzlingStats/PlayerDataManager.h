@@ -48,8 +48,8 @@ public:
 	
 	bool InsertPlayer( engineContext_t &context, edict_t *pEdict );
 	void RemovePlayer( engineContext_t &context, edict_t *pEdict );
-	void RemoveArchivedPlayers( engineContext_t &context );
-	void RemoveAllPlayers( engineContext_t &context );
+	void RemoveArchivedPlayers();
+	void RemoveAllPlayers();
 	
 	playerAndExtra_t GetPlayerData( int entindex );
 	int GetNumPlayers() const;

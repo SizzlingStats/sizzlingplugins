@@ -336,8 +336,7 @@ void SizzlingStats::SS_DeleteAllPlayerData()
 {
 	SS_Msg( "deleting all data\n" );
 	m_vecMedics.RemoveAll();
-	engineContext_t context = { playerinfomanager, pEngine };
-	m_PlayerDataManager.RemoveAllPlayers(context);
+	m_PlayerDataManager.RemoveAllPlayers();
 }
 
 void SizzlingStats::SS_Msg( const char *pMsg, ... )
@@ -449,8 +448,7 @@ void SizzlingStats::SS_RoundEnded()
 	m_PlayerDataManager.StopClassTracking(SCHelpers::RoundDBL(curtime));
 	SS_AllUserChatMessage( "Stats Recording Stopped\n" );
 	SS_EndOfRound();
-	engineContext_t context = { playerinfomanager, pEngine };
-	m_PlayerDataManager.RemoveArchivedPlayers(context);
+	m_PlayerDataManager.RemoveArchivedPlayers();
 }
 
 void SizzlingStats::SS_DisplayStats( int ent_index )

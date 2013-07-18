@@ -132,7 +132,7 @@ void CPlayerDataManager::RemovePlayer( engineContext_t &context, edict_t *pEdict
 	PD_Msg( "size after delete: %i\n", m_nPlayers );
 }
 
-void CPlayerDataManager::RemoveArchivedPlayers( engineContext_t &context )
+void CPlayerDataManager::RemoveArchivedPlayers()
 {
 	// clean up the archived memory saved in the hash table
 	FOR_EACH_LL( m_playerDataArchive.m_aDataPool, it )
@@ -144,7 +144,7 @@ void CPlayerDataManager::RemoveArchivedPlayers( engineContext_t &context )
 	m_playerDataArchive.RemoveAll();
 }
 
-void CPlayerDataManager::RemoveAllPlayers( engineContext_t &context )
+void CPlayerDataManager::RemoveAllPlayers()
 {
 	// clean up the memory allocated in the arrays
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -164,7 +164,7 @@ void CPlayerDataManager::RemoveAllPlayers( engineContext_t &context )
 	}
 
 	// remove the rest of the player data
-	RemoveArchivedPlayers(context);
+	RemoveArchivedPlayers();
 }
 
 playerAndExtra_t CPlayerDataManager::GetPlayerData( int entindex )
