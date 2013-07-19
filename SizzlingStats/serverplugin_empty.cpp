@@ -62,8 +62,6 @@ IEngineTrace			*enginetrace = NULL;
 IServerGameDLL			*pServerDLL = NULL;
 IServerGameEnts			*pServerEnts = NULL;
 
-CGlobalVars				*gpGlobals = NULL;
-
 //===========================================================================//
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
@@ -263,8 +261,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	{
 		return false;
 	}
-
-	gpGlobals = playerinfomanager->GetGlobalVars();
 
 	plugin_context_init_t init;
 	init.pEngine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);

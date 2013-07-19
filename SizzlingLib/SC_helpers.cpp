@@ -27,11 +27,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-extern IVEngineServer	*pEngine; // helper functions (messaging clients, loading content, making entities, running commands, etc)
-extern CGlobalVars		*gpGlobals;
-extern IServerGameEnts	*pServerEnts;
 extern IServerGameDLL	*pServerDLL;
-//extern s_ServerPlugin	*g_pServerPluginHandler;
 
 namespace SCHelpers
 {
