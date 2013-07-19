@@ -39,6 +39,9 @@
     <ClCompile Include="SizzEvent.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SSPlayerData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SizzlingStats.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SizzEvent.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SSPlayerData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

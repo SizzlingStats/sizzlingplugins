@@ -17,7 +17,7 @@
 
 #include "utlbuffer.h"
 #include "ThreadFunctorQueue.h"
-#include "playerdata.h"
+#include "SSPlayerData.h"
 #include "sizzstring.h"
 #include <functional>
 

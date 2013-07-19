@@ -13,7 +13,6 @@
 // Filename: SizzlingStats.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "SizzlingStats.h"
-#include "playerdata.h"
 #include "SC_helpers.h"
 #include "functors.h"
 #include "engine/IEngineTrace.h"
@@ -22,6 +21,7 @@
 #include "SizzPluginContext.h"
 #include "SRecipientFilter.h"
 #include "UserMessageHelpers.h"
+#include "SSPlayerData.h"
 
 #include <functional>
 

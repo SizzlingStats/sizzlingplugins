@@ -12,7 +12,7 @@
 #include "PlayerDataManager.h"
 
 #include "game/server/iplayerinfo.h" // for IPlayerInfo
-#include "playerdata.h"
+#include "SSPlayerData.h"
 #include "strtools.h"
 #include "const.h"
 #include "SC_helpers.h"
