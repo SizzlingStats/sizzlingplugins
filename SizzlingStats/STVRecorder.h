@@ -13,7 +13,6 @@
 #define STV_RECORDER_H
 
 #include "eiface.h"
-#include "PlayerMessage.h"
 #include <time.h>
 
 #include "convar.h"

@@ -15,13 +15,8 @@
 
 #include "autoupdate.h"
 
-#include "eiface.h"
 #include "SC_helpers.h"
-#include "functors.h"
-
 #include "SizzFileSystem.h"
-#include "ThreadCallQueue.h"
-
 #include "utlbuffer.h"
 
 //#include "lzss.h"
@@ -32,10 +27,6 @@
 //#include "LzmaEnc.h"
 
 using namespace sizzFile;
-
-// Interfaces from the engine
-extern IVEngineServer		*pEngine;
-extern CTSCallQueue			*g_pTSCallQueue;
 
 bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 {
