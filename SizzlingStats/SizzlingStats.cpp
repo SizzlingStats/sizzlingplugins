@@ -269,8 +269,8 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
 			CBaseEntity *pMedigun = m_plugin_context->BaseEntityFromBaseHandle(hMedigun);
 
-			const char **ppWeapon = SCHelpers::GetClassname(pMedigun);
-			if ( ppWeapon && SCHelpers::FStrEq(*ppWeapon, "tf_weapon_medigun") )
+			const char *szWeapon = SCHelpers::GetClassName(pMedigun);
+			if ( szWeapon && SCHelpers::FStrEq(szWeapon, "tf_weapon_medigun") )
 			{
 				float flChargeLevel = *ByteOffsetFromPointer<float>(pMedigun, m_iChargeLevelOffset);
 				uint32 charge = static_cast<uint32>(flChargeLevel);

@@ -79,7 +79,7 @@ namespace SCHelpers
 
 	// gets the m_iClassname value for the entity
 	// doesn't check pEnt for NULL
-	const char **GetClassname( CBaseEntity * const pEnt );
+	const char *GetClassName( CBaseEntity * const pEnt );
 
 	CBaseEntity *GetEntityByClassname( const char *pszClassname, int start_index = 0, int *ent_index_out = NULL );
 
