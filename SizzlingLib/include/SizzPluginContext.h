@@ -93,7 +93,7 @@ public:
 	CSizzPluginContext();
 	~CSizzPluginContext();
 
-	void Initialize( const plugin_context_init_t &init );
+	bool Initialize( const plugin_context_init_t &init );
 
 	// get a pointer to the engine interface
 	IVEngineServer *GetEngine() const;

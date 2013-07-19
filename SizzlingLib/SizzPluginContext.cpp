@@ -47,15 +47,50 @@ CSizzPluginContext::~CSizzPluginContext()
 	delete m_pUserIDTracker;
 }
 
-void CSizzPluginContext::Initialize( const plugin_context_init_t &init )
+bool CSizzPluginContext::Initialize( const plugin_context_init_t &init )
 {
 	m_pEngine = init.pEngine;
 	m_pPlayerInfoManager = init.pPlayerInfoManager;
 	m_pPluginManager = reinterpret_cast<CServerPlugin*>(init.pHelpers);
 	m_pGameEventManager = init.pGameEventManager;
 	m_pServerGameDLL = init.pServerGameDLL;
+
+	bool ret = true;
+	if (!m_pEngine)
+	{
+		Warning( "Unable to load engine, aborting load\n" );
+		ret = false;
+	}
+	if (!m_pPlayerInfoManager)
+	{
+		Warning( "Unable to load playerinfomanager, aborting load\n" );
+		ret = false;
+	}
+	if (!m_pPluginManager)
+	{
+		Warning( "Unable to load helpers, aborting load\n" );
+		ret = false;
+	}
+	if (!m_pGameEventManager)
+	{
+		Warning( "Unable to load gameeventmanager, aborting load\n" );
+		ret = false;
+	}
+	if (!m_pServerGameDLL)
+	{
+		Warning( "Unable to load pServerDLL, aborting load\n" );
+		ret = false;
+	}
+
 	m_pGlobals = m_pPlayerInfoManager->GetGlobalVars();
+	if (!m_pGlobals)
+	{
+		Warning( "Unable to load globals, aborting load\n" );
+		ret = false;
+	}
+
 	m_pUserIDTracker->Reset();
+	return ret;
 }
 
 IVEngineServer *CSizzPluginContext::GetEngine() const

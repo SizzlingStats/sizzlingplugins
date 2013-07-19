@@ -52,15 +52,8 @@
 #include "tier0/memdbgon.h"
 
 // Interfaces from the engine
-IVEngineServer			*pEngine = NULL; // helper functions (messaging clients, loading content, making entities, running commands, etc)
-IGameEventManager2		*gameeventmanager = NULL; // game events interface
-IPlayerInfoManager		*playerinfomanager = NULL; // game dll interface to interact with players
-//IBotManager			*botmanager = NULL; // game dll interface to interact with bots
-IServerPluginHelpers	*helpers = NULL; // special 3rd party plugin helpers from the engine
 IEngineTrace			*enginetrace = NULL;
-
 IServerGameDLL			*pServerDLL = NULL;
-IServerGameEnts			*pServerEnts = NULL;
 
 //===========================================================================//
 
@@ -248,13 +241,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	    g_pCVar = cvar;
 	}
 
-	playerinfomanager = (IPlayerInfoManager *)gameServerFactory(INTERFACEVERSION_PLAYERINFOMANAGER,NULL);
-	pEngine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
-	gameeventmanager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
-	helpers = (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 	enginetrace = (IEngineTrace*)interfaceFactory(INTERFACEVERSION_ENGINETRACE_SERVER, NULL);
-
-	pServerEnts = (IServerGameEnts *)gameServerFactory(INTERFACEVERSION_SERVERGAMEENTS, NULL);
 	pServerDLL = (IServerGameDLL *)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
 
 	if ( !ConfirmInterfaces() )
@@ -269,7 +256,10 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	init.pGameEventManager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
 	init.pServerGameDLL = (IServerGameDLL *)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
 
-	m_plugin_context.Initialize(init);
+	if (!m_plugin_context.Initialize(init))
+	{
+		return false;
+	}
 
 	//GetGameRules();
 	GetPropOffsets();
@@ -704,29 +694,6 @@ void CEmptyServerPlugin::OnEdictFreed( const edict_t *edict )
 //---------------------------------------------------------------------------------
 bool CEmptyServerPlugin::ConfirmInterfaces( void )
 {
-	if (!playerinfomanager)
-	{
-		Warning( "Unable to load playerinfomanager, aborting load\n" );
-		return false;
-	}
-	if (!pEngine)
-	{
-		Warning( "Unable to load engine, aborting load\n" );
-		return false;
-	}
-
-	if (!gameeventmanager)
-	{
-		Warning( "Unable to load gameeventmanager, aborting load\n" );
-		return false;
-	}
-
-	if (!helpers)
-	{
-		Warning( "Unable to load helpers, aborting load\n" );
-		return false;
-	}
-
 	if (!enginetrace)
 	{
 		Warning( "Unable to load enginetrace, aborting load\n" );
@@ -736,12 +703,6 @@ bool CEmptyServerPlugin::ConfirmInterfaces( void )
 	if (!pServerDLL)
 	{
 		Warning( "Unable to load pServerDLL, aborting load\n" );
-		return false;
-	}
-
-	if (!pServerEnts)
-	{
-		Warning( "Unable to load pServerEnts, aborting load\n" );
 		return false;
 	}
 
