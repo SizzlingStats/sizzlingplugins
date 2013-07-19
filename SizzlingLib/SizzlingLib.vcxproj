@@ -36,6 +36,7 @@
     <ClInclude Include="include\curlconnection.h" />
     <ClInclude Include="include\downloader.h" />
     <ClInclude Include="include\FtpUploader.h" />
+    <ClInclude Include="include\GameEventManager.h" />
     <ClInclude Include="include\HtmlGenerator.h" />
     <ClInclude Include="include\JsonUtils.h" />
     <ClInclude Include="include\MRecipientFilter.h" />
@@ -126,7 +127,6 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

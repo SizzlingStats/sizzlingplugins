@@ -146,6 +146,9 @@
     <ClInclude Include="include\UserMessageHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\GameEventManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\sizzlingplugins.licenseheader" />
