@@ -9,6 +9,8 @@
     
 */
 
+// reversed from valve binaries
+
 #ifndef SERVER_PLUGIN_HANDLER_H
 #define SERVER_PLUGIN_HANDLER_H
 
@@ -33,8 +35,8 @@ class CServerPlugin: public IServerPluginHelpers
 {
 public:
 	CUtlVector<CPlugin*> m_plugins;
-	// this member might be part of
-	// a new version of the vector
+	// some unreferenced member
+	// not part of a CUtlVector update
 	uint32 m_unk;
 };
 
