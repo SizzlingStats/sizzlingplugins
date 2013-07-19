@@ -21,6 +21,7 @@
 #include "ThreadCallQueue.h"
 #include "irecipientfilter.h"
 #include "SC_helpers.h"
+#include "server_class.h"
 
 #define USERMSG_MAX_LENGTH 192
 
@@ -504,6 +505,57 @@ IHandleEntity *CSizzPluginContext::HandleEntityFromEntIndex( int ent_index )
 		if (pServerEnt)
 		{
 			return static_cast<IHandleEntity*>(pServerEnt);
+		}
+	}
+	return nullptr;
+}
+
+int CSizzPluginContext::GetEntityByClassName( const char *name, edict_t *out[], int max_out )
+{
+	int cur_ents = 0;
+	if (name && out)
+	{
+		int max_ents = m_pGlobals->maxEntities;
+		for (int i = 0; ((i < max_ents) && (cur_ents < max_out)); ++i)
+		{
+			edict_t *pEdict = EdictFromEntIndex(i);
+			if (pEdict && !pEdict->IsFree())
+			{
+				IServerNetworkable *pNetworkable = pEdict->GetNetworkable();
+				if (pNetworkable)
+				{
+					ServerClass *pServerClass = pNetworkable->GetServerClass();
+					if (pServerClass && SCHelpers::FStrEq(pServerClass->GetName(), name))
+					{
+						out[cur_ents++] = pEdict;
+					}
+				}
+			}
+		}
+	}
+	return cur_ents;
+}
+
+edict_t *CSizzPluginContext::GetEntityByClassName( const char *name, int start_ent /*= 0*/ )
+{
+	if (name)
+	{
+		int max_ents = m_pGlobals->maxEntities;
+		for (int i = start_ent; i < max_ents; ++i)
+		{
+			edict_t *pEdict = EdictFromEntIndex(i);
+			if (pEdict && !pEdict->IsFree())
+			{
+				IServerNetworkable *pNetworkable = pEdict->GetNetworkable();
+				if (pNetworkable)
+				{
+					ServerClass *pServerClass = pNetworkable->GetServerClass();
+					if (pServerClass && SCHelpers::FStrEq(pServerClass->GetName(), name))
+					{
+						return pEdict;
+					}
+				}
+			}
 		}
 	}
 	return nullptr;

@@ -204,6 +204,16 @@ public:
 	// returns the IHandleEntity pointer from the given ent index
 	IHandleEntity *HandleEntityFromEntIndex( int ent_index );
 
+	// finds the entities with the class name that matches 'name' and 
+	// puts them in the 'out' param to a maximum of max_out.
+	// returns the number of entities written to 'out'
+	int GetEntityByClassName( const char *name, edict_t *out[], int max_out );
+
+	// returns the first entity that matches the passed in name.
+	// the starting entity to search from can be specified with start_ent.
+	// returns null on error
+	edict_t *GetEntityByClassName( const char *name, int start_ent = 0 );
+
 protected:
 	void LevelShutdown();
 

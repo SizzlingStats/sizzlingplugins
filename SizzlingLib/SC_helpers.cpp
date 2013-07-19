@@ -22,6 +22,7 @@
 #include "UserIdTracker.h"
 
 #include "basehandle.h"
+#include "SizzPluginContext.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -67,86 +68,34 @@ namespace SCHelpers
 		return *ByteOffsetFromPointer<const char*>(pEnt, classname_offset);
 	}
 
-	CBaseEntity *GetEntityByClassname( const char *pszClassname, int start_index /*= 0*/, int *ent_index_out /*= NULL*/ )
-	{
-		for ( int i = start_index; i < gpGlobals->maxEntities; ++i )
-		{
-			edict_t *pEdict = pEngine->PEntityOfEntIndex( i );
-			if ( !pEdict )
-			{
-				//Msg( "bad edict\n" );
-				continue;
-			}
-			IServerNetworkable *pNetworkable = pEdict->GetNetworkable();
-			if (!pNetworkable)
-			{
-				continue;
-			}
-			ServerClass *pClass = pNetworkable->GetServerClass();
-			if (pClass)
-			{
-				//Msg( "%s\n", pClass->GetName() );
-				if ( FStrEq( pClass->GetName(), pszClassname ) )
-				{
-					if (ent_index_out)
-					{
-						*ent_index_out = i+1;
-					}
-					return pNetworkable->GetBaseEntity();
-				}
-			}
-			/*
-			CBaseEntity *pEntity = pServerEnts->EdictToBaseEntity( pEdict );
-			if ( !pEntity )
-			{
-				//Msg( "bad entity\n" );
-				continue;
-			}
-			datamap_t *pDatamap = GetDataDescMap( pEntity );
-			if ( !pDatamap )
-			{
-				//Msg( "bad datamap\n" );
-				continue;
-			}
-			Msg( "%s\n", pDatamap->dataClassName );
-			if ( FStrEq( pDatamap->dataClassName, pszClassname ) )
-			{
-				if (ent_index_out)
-				{
-					*ent_index_out = i;
-				}
-				return pEntity;
-			}*/
-		}
-		//Msg( "CLASSNAME NOT FOUND NOOOOOOO\n" );
-		return NULL;
-	}
-
 	// gets the blu and red team entities and puts them in the pointers passed in
-	void GetTeamEnts( CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset )
+	void GetTeamEnts( CSizzPluginContext *context, CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset )
 	{
-		int cur_index = gpGlobals->maxClients;
-		*ppBluTeam = NULL;
-		*ppRedTeam = NULL;
-
-		CBaseEntity *pTeam = NULL;
-		do
+		if (context && ppBluTeam && ppRedTeam)
 		{
-			pTeam = GetEntityByClassname( "CTFTeam", cur_index, &cur_index );
-			//CBaseEntity *pTeam = GetEntityByClassname( "", cur_index, &cur_index );
-			if (pTeam)
+			*ppBluTeam = NULL;
+			*ppRedTeam = NULL;
+
+			edict_t *pTeamEdict = context->GetEntityByClassName("CTFTeam", context->GetMaxClients());
+			while (pTeamEdict && (!(*ppBluTeam) || !(*ppRedTeam)))
 			{
-				int *team_num = ByteOffsetFromPointer<int>(pTeam, team_num_offset);
-				if (*team_num == 2)
+				CBaseEntity *pTeam = SCHelpers::EdictToBaseEntity(pTeamEdict);
+				if (pTeam)
 				{
-					*ppRedTeam = pTeam;
+					int *team_num = ByteOffsetFromPointer<int>(pTeam, team_num_offset);
+					if (*team_num == 2)
+					{
+						*ppRedTeam = pTeam;
+					}
+					else if (*team_num == 3)
+					{
+						*ppBluTeam = pTeam;
+					}
 				}
-				else if (*team_num == 3)
-				{
-					*ppBluTeam = pTeam;
-				}
+				int ent_index = SCHelpers::EntIndexFromEdict(pTeamEdict);
+				pTeamEdict = context->GetEntityByClassName("CTFTeam", ent_index+1);
 			}
-		} while ( pTeam && (!(*ppBluTeam) || !(*ppRedTeam)) );
+		}
 	}
 
 	//-----------------------------------------------------------------------------

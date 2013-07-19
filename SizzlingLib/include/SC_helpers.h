@@ -12,7 +12,6 @@
 #define SC_HELPERS_H
 
 #include "strtools.h"
-
 #include <stddef.h>
 
 class CBaseEntity;
@@ -27,6 +26,7 @@ class IGameEventManager2;
 class IGameEventListener2;
 class CServerPlugin;
 class IServerPluginCallbacks;
+class CSizzPluginContext;
 
 namespace SCHelpers
 {
@@ -81,9 +81,7 @@ namespace SCHelpers
 	// doesn't check pEnt for NULL
 	const char *GetClassName( CBaseEntity * const pEnt );
 
-	CBaseEntity *GetEntityByClassname( const char *pszClassname, int start_index = 0, int *ent_index_out = NULL );
-
-	void GetTeamEnts( CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset );
+	void GetTeamEnts( CSizzPluginContext *context, CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: Returns the 4 bit nibble for a hex character

@@ -348,7 +348,8 @@ void SizzlingMatches::SM_GetEntities()
 {
 	// TODO: this stuff doesn't work yet, cause i need to get the proxy function
 	// to give me the ctfgamerulesproxy pointer, look in the tf2dm files for it
-	m_pTeamplayRoundBasedRulesProxy = SCHelpers::GetEntityByClassname( "CTFGameRulesProxy" );
+	edict_t *pEdict = m_plugin_context->GetEntityByClassName( "CTFGameRulesProxy" );
+	m_pTeamplayRoundBasedRulesProxy = SCHelpers::EdictToBaseEntity(pEdict);
 
 	if ( m_pTeamplayRoundBasedRulesProxy )
 	{

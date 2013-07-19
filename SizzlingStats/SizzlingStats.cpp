@@ -801,5 +801,5 @@ void SizzlingStats::GetPropOffsets()
 
 void SizzlingStats::GetEntities()
 {
-	SCHelpers::GetTeamEnts(&m_pBluTeam, &m_pRedTeam, m_iTeamNumOffset);
+	SCHelpers::GetTeamEnts(m_plugin_context, &m_pBluTeam, &m_pRedTeam, m_iTeamNumOffset);
 }
