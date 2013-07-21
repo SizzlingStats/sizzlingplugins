@@ -974,7 +974,17 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
-	m_event_sender.SendNamedEvent("ss_tournament_match_start", tick);
+	{
+		CSizzEvent event(m_event_sender.AllocEvent(), tick);
+		event.SetName("ss_tournament_match_start");
+		event.SetString("hostname", hostname);
+		event.SetString("mapname", mapname);
+		event.SetString("bluname", bluname);
+		event.SetString("redname", redname);
+		//event.SetString("ip", ipppppppppp);
+		//event.SetShort("port", poooooort);
+		m_event_sender.SendEvent(&event);
+	}
 	int max_clients = m_plugin_context.GetMaxClients();
 	for (int i = 1; i < max_clients; ++i)
 	{
