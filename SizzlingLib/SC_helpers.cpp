@@ -338,31 +338,5 @@ namespace SCHelpers
 		return 0;
 	}
 
-	void RegisterForAllEvents( IGameEventManager2 *pEventMgr, IGameEventListener2 *pListener, bool bServerSize /*= true*/ )
-	{
-		if (pEventMgr && pListener)
-		{
-			const static int NUM_EVENTS_OFFSET = 16;
-			const static int EVENT_NAMES_OFFSET = 4;
-			const static int EVENT_NAMES_MAXSIZE = 64;
-
-			int *p_num_events = ByteOffsetFromPointer<int>(pEventMgr, NUM_EVENTS_OFFSET);
-			const char **p_event_name = ByteOffsetFromPointer<const char*>(pEventMgr, EVENT_NAMES_OFFSET);
-
-			if (p_num_events && p_event_name)
-			{
-				int num_events = *p_num_events;
-				const char *event_name = *p_event_name;
-
-				pEventMgr->RemoveListener(pListener);
-				for (int i = 0; i < num_events; ++i, event_name += EVENT_NAMES_MAXSIZE)
-				{
-					//Msg("registering for event %i: '%s'\n", i, event_name);
-					pEventMgr->AddListener(pListener, event_name, true);
-				}
-			}
-		}
-	}
-
 } // namespace SCHelpers
 

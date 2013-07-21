@@ -22,6 +22,7 @@
 #include "irecipientfilter.h"
 #include "SC_helpers.h"
 #include "server_class.h"
+#include "GameEventManager.h"
 
 #define USERMSG_MAX_LENGTH 192
 
@@ -52,7 +53,7 @@ bool CSizzPluginContext::Initialize( const plugin_context_init_t &init )
 	m_pEngine = init.pEngine;
 	m_pPlayerInfoManager = init.pPlayerInfoManager;
 	m_pPluginManager = reinterpret_cast<CServerPlugin*>(init.pHelpers);
-	m_pGameEventManager = init.pGameEventManager;
+	m_pGameEventManager = reinterpret_cast<CGameEventManager*>(init.pGameEventManager);
 	m_pServerGameDLL = init.pServerGameDLL;
 
 	bool ret = true;
@@ -251,6 +252,23 @@ bool CSizzPluginContext::IsPaused()
 bool CSizzPluginContext::AddListener( IGameEventListener2 *listener, const char *name, bool bServerSide )
 {
 	return m_pGameEventManager->AddListener(listener, name, bServerSide);
+}
+
+bool CSizzPluginContext::AddListenerAll( IGameEventListener2 *listener, bool bServerSide )
+{
+	bool res = false;
+	if (listener)
+	{
+		m_pGameEventManager->RemoveListener(listener);
+		auto pEvents = &m_pGameEventManager->m_events;
+		int num_events = pEvents->Count();
+		for (int i = 0; ((i < num_events) && !res); ++i)
+		{
+			//Msg("registering for event %i: '%s'\n", i, event_name);
+			res = m_pGameEventManager->AddListener(listener, pEvents->Element(i).m_name, bServerSide) || res;
+		}
+	}
+	return res;
 }
 
 void CSizzPluginContext::RemoveListener( IGameEventListener2 *listener )

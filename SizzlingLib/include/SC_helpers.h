@@ -131,8 +131,6 @@ namespace SCHelpers
 
 	int GetOffsetForDatamapVar( const CBaseEntity *pEntity, const char *szVarName );
 
-	void RegisterForAllEvents( IGameEventManager2 *pEventMgr, IGameEventListener2 *pListener, bool bServerSize = true );
-
 } // namespace SCHelpers
 
 #endif	// SC_HELPERS_H

@@ -20,12 +20,11 @@
 #include "igameevents.h"
 #include "KeyValues.h"
 
-typedef int CGameEventCallback;
-
 class CGameEventDescriptor
 {
 public:
-	char m_name[64];
+	char m_name[32];
+	char m_other[32];
 };
 
 class CGameEventCallback
@@ -48,10 +47,7 @@ class CGameEventManager: public IGameEventManager2
 {
 public:
 	CUtlVector<CGameEventDescriptor> m_events;
-
-	// might be CUtlVector<CGameEventCallback*>
-	CUtlVector<CGameEventCallback> m_callbacks;
-
+	CUtlVector<CGameEventCallback*> m_callbacks;
 	CUtlSymbolTable m_member3;
 	CUtlVector<int> m_member4;
 	bool m_bClientListenersSomething;

@@ -34,6 +34,7 @@ class ServerClass;
 class IServerGameDLL;
 class KeyValues;
 class IRecipientFilter;
+class CGameEventManager;
 
 typedef struct plugin_context_init_s
 {
@@ -159,6 +160,9 @@ public:
 
 	// adds a listener for a particular event
 	bool AddListener( IGameEventListener2 *listener, const char *name, bool bServerSide );
+
+	// adds a listener for all events
+	bool AddListenerAll( IGameEventListener2 *listener, bool bServerSide );
 	
 	// removes a listener
 	void RemoveListener( IGameEventListener2 *listener );
@@ -236,7 +240,7 @@ private:
 	IVEngineServer *m_pEngine;
 	IPlayerInfoManager *m_pPlayerInfoManager;
 	CServerPlugin *m_pPluginManager;
-	IGameEventManager2 *m_pGameEventManager;
+	CGameEventManager *m_pGameEventManager;
 	IServerGameDLL *m_pServerGameDLL;
 	CGlobalVars *m_pGlobals;
 
