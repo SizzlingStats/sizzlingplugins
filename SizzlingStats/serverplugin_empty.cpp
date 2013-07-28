@@ -306,6 +306,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//m_plugin_context.AddListener( this, "teamplay_overtime_end", true );
 #ifdef PROTO_STATS
 	m_event_sender.BeginConnection( "sizzlingstats.com:8007" );
+	m_plugin_context.AddListenerAll(this, true);
 #endif
 	m_SizzlingStats.Load(&m_plugin_context);
 
