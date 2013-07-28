@@ -53,7 +53,7 @@ bool CPlayerDataManager::InsertPlayer( int ent_index, CBaseEntity *pEnt )
 		// allocate new memory for the player
 		m_pPlayerData[ent_index] = m_PlayerDataMemPool.Alloc();
 		m_pEntIndexToExtraData[ent_index] = m_ExtraDataMemPool.Alloc();
-	}
+	}/*
 	else // we have previous data of the player, load it
 	{
 		// reuse the old memory and 
@@ -62,7 +62,7 @@ bool CPlayerDataManager::InsertPlayer( int ent_index, CBaseEntity *pEnt )
 		m_pPlayerData[ent_index] = data.m_pPlayerData;
 		m_pEntIndexToExtraData[ent_index] = data.m_pExtraData;
 		m_playerDataArchive.Remove(hHash);
-	}
+	}*/
 
 	// reset the entity pointers
 	m_pPlayerData[ent_index]->SetBaseEntity(pEnt);
@@ -78,6 +78,7 @@ void CPlayerDataManager::RemovePlayer( int ent_index, IPlayerInfo *pPlayerInfo, 
 	--ent_index;
 
 	// we don't want to archive these types of players
+	/*
 	if (!pPlayerInfo->IsFakeClient() && !pPlayerInfo->IsHLTV() && !pPlayerInfo->IsReplay())
 	{
 		// archives the data for players who 
@@ -85,7 +86,7 @@ void CPlayerDataManager::RemovePlayer( int ent_index, IPlayerInfo *pPlayerInfo, 
 		playerAndExtra_t data = {m_pPlayerData[ent_index], m_pEntIndexToExtraData[ent_index]};
 		// fastinsert doesn't check for duplicates
 		m_playerDataArchive.FastInsert(account_id, data);
-	}
+	}*/
 
 	// clear the array pointers
 	m_pPlayerData[ent_index] = NULL;
