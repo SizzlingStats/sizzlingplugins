@@ -996,6 +996,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 			event.SetName("ss_player_info");
 			event.SetString("name", pInfo->GetName());
 			event.SetShort("userid", m_plugin_context.UserIDFromEntIndex(i));
+			event.SetByte("entindex", i);
 			event.SetString("steamid", pInfo->GetNetworkIDString());
 			event.SetByte("teamid", pInfo->GetTeamIndex());
 			//event.SetByte("classid", blah);
