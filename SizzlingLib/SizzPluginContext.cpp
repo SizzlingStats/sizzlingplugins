@@ -256,16 +256,16 @@ bool CSizzPluginContext::AddListener( IGameEventListener2 *listener, const char 
 
 bool CSizzPluginContext::AddListenerAll( IGameEventListener2 *listener, bool bServerSide )
 {
-	bool res = false;
+	bool res = true;
 	if (listener)
 	{
 		m_pGameEventManager->RemoveListener(listener);
 		auto pEvents = &m_pGameEventManager->m_events;
 		int num_events = pEvents->Count();
-		for (int i = 0; ((i < num_events) && !res); ++i)
+		for (int i = 0; ((i < num_events) && res); ++i)
 		{
 			//Msg("registering for event %i: '%s'\n", i, event_name);
-			res = m_pGameEventManager->AddListener(listener, pEvents->Element(i).m_name, bServerSide) || res;
+			res = m_pGameEventManager->AddListener(listener, pEvents->Element(i).m_name, bServerSide);
 		}
 	}
 	return res;
