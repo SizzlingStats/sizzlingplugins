@@ -961,8 +961,8 @@ void CEmptyServerPlugin::GetPropOffsets()
 	int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
 	int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
 
-	m_iRoundState = ByteOffsetFromPointer<int>(m_pTeamplayRoundBasedRules, roundstateoffset);
-	m_bInWaitingForPlayers = ByteOffsetFromPointer<bool>(m_pTeamplayRoundBasedRules, waitingoffset);
+	m_iRoundState = ByteOffsetFromPointer<int*>(m_pTeamplayRoundBasedRules, roundstateoffset);
+	m_bInWaitingForPlayers = ByteOffsetFromPointer<bool*>(m_pTeamplayRoundBasedRules, waitingoffset);
 }
 
 void CEmptyServerPlugin::TournamentMatchStarted()

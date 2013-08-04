@@ -61,7 +61,7 @@ namespace SCHelpers
 		{
 			classname_offset = GetOffsetForDatamapVar(pEnt, "m_iClassname");
 		}
-		return *ByteOffsetFromPointer<const char*>(pEnt, classname_offset);
+		return *ByteOffsetFromPointer<const char**>(pEnt, classname_offset);
 	}
 
 	// gets the blu and red team entities and puts them in the pointers passed in
@@ -78,12 +78,12 @@ namespace SCHelpers
 				CBaseEntity *pTeam = SCHelpers::EdictToBaseEntity(pTeamEdict);
 				if (pTeam)
 				{
-					int *team_num = ByteOffsetFromPointer<int>(pTeam, team_num_offset);
-					if (*team_num == 2)
+					int team_num = *ByteOffsetFromPointer<int*>(pTeam, team_num_offset);
+					if (team_num == 2)
 					{
 						*ppRedTeam = pTeam;
 					}
-					else if (*team_num == 3)
+					else if (team_num == 3)
 					{
 						*ppBluTeam = pTeam;
 					}

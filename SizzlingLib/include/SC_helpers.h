@@ -66,9 +66,9 @@ namespace SCHelpers
 	}
 
 	template<typename T, typename U>
-	inline T *ByteOffsetFromPointer( U *pBase, uint32 byte_offset )
+	inline T ByteOffsetFromPointer( U pBase, uint32 byte_offset )
 	{
-		return reinterpret_cast<T*>((reinterpret_cast<uint8*>(pBase) + byte_offset));
+		return reinterpret_cast<T>((reinterpret_cast<uint8*>(pBase) + byte_offset));
 	}
 
 	CBaseEntity *EdictToBaseEntity( edict_t *pEdict );

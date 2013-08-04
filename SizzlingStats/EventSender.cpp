@@ -141,14 +141,14 @@ void CEventSender::SendEvent( IGameEvent *pEvent, unsigned int server_tick )
 {
 	// these are the event data keyvalues
 	//static const int KV_VALUES_OFFSET = 8;
-	//KeyValues *kv = *SCHelpers::ByteOffsetFromPointer<KeyValues*>(pEvent, KV_VALUES_OFFSET);
+	//KeyValues *kv = *SCHelpers::ByteOffsetFromPointer<KeyValues**>(pEvent, KV_VALUES_OFFSET);
 
 	static const int EVENT_DESC_OFFSET = 4;
 	static const int KV_TYPES_OFFSET = 36;
 
 	// these are the event data TYPE keyvalues
-	char *event_desc = *SCHelpers::ByteOffsetFromPointer<char*>(pEvent, EVENT_DESC_OFFSET);
-	KeyValues *kv_types = *SCHelpers::ByteOffsetFromPointer<KeyValues*>(event_desc, KV_TYPES_OFFSET);
+	char *event_desc = *SCHelpers::ByteOffsetFromPointer<char**>(pEvent, EVENT_DESC_OFFSET);
+	KeyValues *kv_types = *SCHelpers::ByteOffsetFromPointer<KeyValues**>(event_desc, KV_TYPES_OFFSET);
 	
 	if (kv_types && SCHelpers::FStrCmp("descriptor", kv_types->GetName()))
 	{

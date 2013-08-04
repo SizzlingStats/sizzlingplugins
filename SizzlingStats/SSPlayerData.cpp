@@ -66,10 +66,10 @@ CPlayerClassTracker *SS_PlayerData::GetClassTracker()
 
 int	SS_PlayerData::GetClass(unsigned int playerClassOffset)
 {
-	return *SCHelpers::ByteOffsetFromPointer<int>(m_base_entity, playerClassOffset);
+	return *SCHelpers::ByteOffsetFromPointer<int*>(m_base_entity, playerClassOffset);
 }
 
 int	SS_PlayerData::GetDataFromOffset( int PropName, const unsigned int pPropOffsets[] )
 {
-	return *SCHelpers::ByteOffsetFromPointer<int>(m_base_entity, pPropOffsets[PropName]);
+	return *SCHelpers::ByteOffsetFromPointer<int*>(m_base_entity, pPropOffsets[PropName]);
 }

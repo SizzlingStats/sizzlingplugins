@@ -242,12 +242,12 @@ void SizzlingStats::GiveUber( int entindex )
 	{
 		CBaseEntity *pPlayer = m_plugin_context->BaseEntityFromEntIndex(entindex);
 		// +4 because we want the medigun slot
-		CBaseHandle *hMedigun = *SCHelpers::ByteOffsetFromPointer<CBaseHandle*>(pPlayer, m_iWeaponsOffset + 4);
+		CBaseHandle *hMedigun = SCHelpers::ByteOffsetFromPointer<CBaseHandle*>(pPlayer, m_iWeaponsOffset + 4);
 		CBaseEntity *pMedigun = m_plugin_context->BaseEntityFromBaseHandle(hMedigun);
 
 		if (pMedigun)
 		{
-			float *flChargeLevel = *SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, m_iChargeLevelOffset);
+			float *flChargeLevel = SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, m_iChargeLevelOffset);
 			*flChargeLevel = 1.0f;
 		}
 	}
@@ -266,21 +266,21 @@ void SizzlingStats::CheckPlayerDropped( int victimIndex )
 		if ( pMedPlayerInfo->GetTeamIndex() == pVictimPlayerInfo->GetTeamIndex() )
 		{
 			using namespace SCHelpers;
-			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
+			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle*>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
 			CBaseEntity *pMedigun = m_plugin_context->BaseEntityFromBaseHandle(hMedigun);
 
 			const char *szWeapon = SCHelpers::GetClassName(pMedigun);
 			if ( szWeapon && SCHelpers::FStrEq(szWeapon, "tf_weapon_medigun") )
 			{
-				float flChargeLevel = *ByteOffsetFromPointer<float>(pMedigun, m_iChargeLevelOffset);
+				float flChargeLevel = *ByteOffsetFromPointer<float*>(pMedigun, m_iChargeLevelOffset);
 				uint32 charge = static_cast<uint32>(flChargeLevel);
 
-				bool bReleasingCharge = *ByteOffsetFromPointer<bool>(pMedigun, m_iChargeReleaseOffset);
+				bool bReleasingCharge = *ByteOffsetFromPointer<bool*>(pMedigun, m_iChargeReleaseOffset);
 
 				if (charge == 1 || bReleasingCharge)
 				{
-					Vector *victimPos = ByteOffsetFromPointer<Vector>(pVictimData->GetBaseEntity(), m_iOriginOffset);
-					Vector *medPos = ByteOffsetFromPointer<Vector>(pMedData->GetBaseEntity(), m_iOriginOffset);
+					Vector *victimPos = ByteOffsetFromPointer<Vector*>(pVictimData->GetBaseEntity(), m_iOriginOffset);
+					Vector *medPos = ByteOffsetFromPointer<Vector*>(pMedData->GetBaseEntity(), m_iOriginOffset);
 		
 					vec_t distance = victimPos->DistToSqr( *medPos );
 					SS_AllUserChatMessage( UTIL_VarArgs("distance: %.2f\n", distance) );
@@ -451,8 +451,8 @@ void SizzlingStats::SS_PreRoundFreeze()
 void SizzlingStats::SS_RoundStarted()
 {
 	Msg( "round started\n" );
-	m_iOldBluScore = *SCHelpers::ByteOffsetFromPointer<uint32>(m_pBluTeam, m_iTeamScoreOffset);
-	m_iOldRedScore = *SCHelpers::ByteOffsetFromPointer<uint32>(m_pRedTeam, m_iTeamScoreOffset);
+	m_iOldBluScore = *SCHelpers::ByteOffsetFromPointer<uint32*>(m_pBluTeam, m_iTeamScoreOffset);
+	m_iOldRedScore = *SCHelpers::ByteOffsetFromPointer<uint32*>(m_pRedTeam, m_iTeamScoreOffset);
 	m_bFirstCapOfRound = true;
 	m_hostInfo.m_iFirstCapTeamIndex = 0;
 	SS_AllUserChatMessage( "Stats Recording Started\n" );
