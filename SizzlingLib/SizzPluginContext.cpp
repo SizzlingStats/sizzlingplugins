@@ -23,6 +23,7 @@
 #include "SC_helpers.h"
 #include "server_class.h"
 #include "GameEventManager.h"
+#include "inetchannelinfo.h"
 
 #define USERMSG_MAX_LENGTH 192
 
@@ -610,6 +611,16 @@ edict_t *CSizzPluginContext::GetEntityByClassName( const char *name, int start_e
 				}
 			}
 		}
+	}
+	return nullptr;
+}
+
+const char *CSizzPluginContext::GetPlayerIPString( int ent_index )
+{
+	INetChannelInfo *pNetInfo = m_pEngine->GetPlayerNetInfo(ent_index);
+	if (pNetInfo)
+	{
+		return pNetInfo->GetAddress();
 	}
 	return nullptr;
 }

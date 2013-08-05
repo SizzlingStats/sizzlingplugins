@@ -999,6 +999,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 			event.SetByte("entindex", i);
 			event.SetString("steamid", pInfo->GetNetworkIDString());
 			event.SetByte("teamid", pInfo->GetTeamIndex());
+			event.SetString("netaddr", m_plugin_context.GetPlayerIPString(i));
 			//event.SetByte("classid", blah);
 			event.SetBool("isstv", pInfo->IsHLTV());
 			event.SetBool("isbot", pInfo->IsFakeClient());

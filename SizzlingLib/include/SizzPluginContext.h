@@ -218,6 +218,10 @@ public:
 	// returns null on error
 	edict_t *GetEntityByClassName( const char *name, int start_ent = 0 );
 
+	// returns the IP address in string form of the player 
+	// with the passed in ent index.
+	const char *GetPlayerIPString( int ent_index );
+
 protected:
 	void LevelShutdown();
 
