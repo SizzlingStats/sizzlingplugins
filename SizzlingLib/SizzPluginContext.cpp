@@ -257,12 +257,13 @@ bool CSizzPluginContext::AddListener( IGameEventListener2 *listener, const char 
 
 bool CSizzPluginContext::AddListenerAll( IGameEventListener2 *listener, bool bServerSide )
 {
-	bool res = true;
+	bool res = false;
 	if (listener)
 	{
 		m_pGameEventManager->RemoveListener(listener);
 		auto pEvents = &m_pGameEventManager->m_events;
 		int num_events = pEvents->Count();
+		res = true;
 		for (int i = 0; ((i < num_events) && res); ++i)
 		{
 			//Msg("registering for event %i: '%s'\n", i, event_name);
