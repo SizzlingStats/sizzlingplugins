@@ -29,18 +29,26 @@ static ISteamGameServer011 *GetSteamServerInterface()
 		GetSteamPipeFn fnGameServerSteamPipe = (GetSteamPipeFn)GetProcAddress( (HMODULE)hSteamApi, "SteamGameServer_GetHSteamPipe" );
 		GetSteamUserFn fnGameServerSteamUser = (GetSteamPipeFn)GetProcAddress( (HMODULE)hSteamApi, "SteamGameServer_GetHSteamUser" );
 
-		CDllDemandLoader steam_client( "steamclient" );
-		CreateInterfaceFn steamFactory = steam_client.GetFactory();
-		if (steamFactory && fnGameServerSteamPipe && fnGameServerSteamUser)
+#ifdef _WIN32
+		HMODULE hSteamClient = LoadLibrary("steamclient");
+#else
+		HMODULE hSteamClient = dlopen("steamclient", RTLD_NOW);
+#endif
+		if (hSteamClient)
 		{
-			ISteamClient012 *pSteamClient = (ISteamClient012*)steamFactory(STEAMCLIENT_INTERFACE_VERSION_012, NULL);
-			if (pSteamClient)
+			CreateInterfaceFn steamFactory = (CreateInterfaceFn)GetProcAddress( (HMODULE)hSteamClient, "CreateInterface" );
+			if (steamFactory && fnGameServerSteamPipe && fnGameServerSteamUser)
 			{
-				HSteamPipe pipe = fnGameServerSteamPipe();
-				HSteamUser user = fnGameServerSteamUser();
+				ISteamClient012 *pSteamClient = (ISteamClient012*)steamFactory(STEAMCLIENT_INTERFACE_VERSION_012, NULL);
+				if (pSteamClient)
+				{
+					HSteamPipe pipe = fnGameServerSteamPipe();
+					HSteamUser user = fnGameServerSteamUser();
 
-				pSteamGameServer = (ISteamGameServer011*)pSteamClient->GetISteamGameServer(user, pipe, STEAMGAMESERVER_INTERFACE_VERSION_011);
+					pSteamGameServer = (ISteamGameServer011*)pSteamClient->GetISteamGameServer(user, pipe, STEAMGAMESERVER_INTERFACE_VERSION_011);
+				}
 			}
+			Sys_UnloadModule((CSysModule*)hSteamClient);
 		}
 		Sys_UnloadModule(hSteamApi);
 	}
