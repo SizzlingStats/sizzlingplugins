@@ -100,6 +100,7 @@ void CPlayerDataManager::RemovePlayer( int ent_index, IPlayerInfo *pPlayerInfo, 
 
 void CPlayerDataManager::RemoveArchivedPlayers()
 {
+	/*
 	// clean up the archived memory saved in the hash table
 	FOR_EACH_LL( m_playerDataArchive.m_aDataPool, it )
 	{
@@ -108,6 +109,7 @@ void CPlayerDataManager::RemoveArchivedPlayers()
 		m_ExtraDataMemPool.Free(data.m_pExtraData);
 	}
 	m_playerDataArchive.RemoveAll();
+	*/
 }
 
 void CPlayerDataManager::RemoveAllPlayers()
