@@ -29,9 +29,8 @@ ALL_INC = \
 	$(HL2SDK_INC) \
 	$(SIZZLINGSTATS_INC)
 
-CPLUS=/usr/bin/g++-4.7
-CLINK=/usr/bin/gcc-4.7
-
+CPLUS=/home/jordan/crosstool-ng/xtool_staging/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc
+CLINK=/home/jordan/crosstool-ng/xtool_staging/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-gcc
 LDFLAGS=-m32 -lm -ldl libtier0_srv.so libvstdlib_srv.so
 
 BUILD_DIR=$(SIZZLINGSTATS_DIR)
@@ -46,7 +45,7 @@ else
 endif
 
 ARCH=i486
-ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32 -std=c++0x -fno-rtti
+ARCH_CFLAGS=-mtune=i686 -march=pentium4 -mmmx -msse -mfpmath=sse -msse2 -O3 -m32 -std=c++11 -fno-rtti
 
 # -fpermissive is so gcc 3.4.x doesn't complain about some template stuff
 BASE_CFLAGS=-fpermissive -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DNO_MALLOC_OVERRIDE=1 -D_FORTIFY_SOURCE=0
@@ -98,24 +97,22 @@ SIZZLINGLIB_OBJS = \
 	$(SIZZLIB_OBJ_DIR)/HtmlGenerator.o \
 	$(SIZZLIB_OBJ_DIR)/JsonUtils.o \
 	$(SIZZLIB_OBJ_DIR)/MRecipientFilter.o \
-	$(SIZZLIB_OBJ_DIR)/playerdata.o \
 	$(SIZZLIB_OBJ_DIR)/PlayerClassTracker.o \
-	$(SIZZLIB_OBJ_DIR)/PlayerMessage.o \
 	$(SIZZLIB_OBJ_DIR)/SC_helpers.o \
-	$(SIZZLIB_OBJ_DIR)/ServerPluginHandler.o \
 	$(SIZZLIB_OBJ_DIR)/SizzFileSystem.o \
-	$(SIZZLIB_OBJ_DIR)/SRecipientFilter.o \
+	$(SIZZLIB_OBJ_DIR)/SizzPluginContext.o \
 	$(SIZZLIB_OBJ_DIR)/StaticSizeVector.o \
-	$(SIZZLIB_OBJ_DIR)/ThreadCallQueue.o \
-	$(SIZZLIB_OBJ_DIR)/UserIdTracker.o
+	$(SIZZLIB_OBJ_DIR)/UserIdTracker.o \
+	$(SIZZLIB_OBJ_DIR)/UserMessageHelpers.o \
 
 SIZZLINGSTATS_OBJS = \
 	$(PLUGIN_OBJ_DIR)/EventSender.o \
-	$(PLUGIN_OBJ_DIR)/LogStats.o \
 	$(PLUGIN_OBJ_DIR)/PlayerDataManager.o \
 	$(PLUGIN_OBJ_DIR)/serverplugin_empty.o \
 	$(PLUGIN_OBJ_DIR)/SizzEvent.pb.o \
 	$(PLUGIN_OBJ_DIR)/SizzlingStats.o \
+	$(PLUGIN_OBJ_DIR)/SSPlayerData.o \
+	$(PLUGIN_OBJ_DIR)/ThreadFunctorQueueTests.o \
 	$(PLUGIN_OBJ_DIR)/WebStatsHandler.o
 
 TIER0_OBJS = \

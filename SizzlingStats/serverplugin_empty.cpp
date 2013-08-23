@@ -54,6 +54,7 @@
 // Interfaces from the engine
 IEngineTrace			*enginetrace = NULL;
 IServerGameDLL			*pServerDLL = NULL;
+IFileSystem			*g_pFullFileSystem = NULL;
 
 //===========================================================================//
 
@@ -1101,3 +1102,4 @@ void CEmptyServerPlugin::PrintServerTables( const CCommand &args )
 		pClass = pClass->m_pNext;
 	}
 }
+

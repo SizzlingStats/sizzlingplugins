@@ -105,8 +105,16 @@ void SizzlingStats::Load( CSizzPluginContext *context )
 	m_pWebStatsHandler->Initialize();
 
 	using namespace std::placeholders;
+#ifdef _WIN32
+	// this hack makes it so that VC++11 outputs 2 moves instead of a copy and a move when calling the std::functions
+	// this also doesn't compile on gcc or clang
 	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, std::bind(sizz::move<sizz::CString>, _1)));
 	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, std::bind(sizz::move<sizz::CString>, _1)));
+#else
+	// the gcc implementation does 2 moves with no extra tricks (apparantly. need to test this)
+	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, _1));
+	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, _1));
+#endif
 }
 
 void SizzlingStats::Unload()
