@@ -15,6 +15,7 @@
 //#define DEV_COMMANDS_ON
 //#define PROTO_STATS
 //#define FTP_STATS
+//#define LOG_STATS
 
 #define PLUGIN_VERSION "0.9.3.1"
 #define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
