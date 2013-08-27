@@ -90,6 +90,7 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EventSender.cpp" />
+    <ClCompile Include="EventStats.cpp" />
     <ClCompile Include="LogStats.cpp" />
     <ClCompile Include="PlayerDataManager.cpp" />
     <ClCompile Include="serverplugin_empty.cpp" />
@@ -101,6 +102,7 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EventSender.h" />
+    <ClInclude Include="EventStats.h" />
     <ClInclude Include="LogStats.h" />
     <ClInclude Include="PlayerDataManager.h" />
     <ClInclude Include="PluginDefines.h" />
