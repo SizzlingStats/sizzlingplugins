@@ -57,11 +57,7 @@ namespace SCHelpers
 
 	const char *GetClassName( CBaseEntity * const pEnt )
 	{
-		static uint32 classname_offset = 0xffff;
-		if (classname_offset == 0xffff)
-		{
-			classname_offset = GetOffsetForDatamapVar(pEnt, "m_iClassname");
-		}
+		static uint32 classname_offset = GetOffsetForDatamapVar(pEnt, "m_iClassname");
 		return *ByteOffsetFromPointer<const char**>(pEnt, classname_offset);
 	}
 
