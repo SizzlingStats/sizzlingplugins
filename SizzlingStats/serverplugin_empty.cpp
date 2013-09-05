@@ -46,7 +46,7 @@
 #include "MRecipientFilter.h"
 
 #ifdef PROTO_STATS
-#include "EventSender.h"
+#include "EventStats.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -137,7 +137,7 @@ private:
 private:
 	CSizzPluginContext m_plugin_context;
 #ifdef PROTO_STATS
-	CEventSender m_event_sender;
+	CEventStats m_EventStats;
 #endif
 #ifdef LOG_STATS
 	CLogStats m_logstats;
@@ -309,7 +309,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	//m_plugin_context.AddListener( this, "teamplay_suddendeath_end", true );
 	//m_plugin_context.AddListener( this, "teamplay_overtime_end", true );
 #ifdef PROTO_STATS
-	m_event_sender.BeginConnection( "sizzlingstats.com:8007" );
+	m_EventStats.Initialize();
 	m_plugin_context.AddListenerAll(this, true);
 #endif
 	m_SizzlingStats.Load(&m_plugin_context);
@@ -370,7 +370,7 @@ void CEmptyServerPlugin::Unload( void )
 
 	m_SizzlingStats.Unload();
 #ifdef PROTO_STATS
-	m_event_sender.EndConnection();
+	m_EventStats.Shutdown();
 #endif
 	m_logstats.Unload();
 	
@@ -769,7 +769,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			bool paused = m_plugin_context.IsPaused();
 			if (!paused)
 			{
-				m_event_sender.SendNamedEvent("ss_pause", m_plugin_context.GetCurrentTick());
+				m_EventStats.SendNamedEvent("ss_pause", m_plugin_context.GetCurrentTick());
 			}
 		}
 		else if ( FStrEq( szCommand, "unpause" ) )
@@ -777,7 +777,7 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 			bool paused = m_plugin_context.IsPaused();
 			if (paused)
 			{
-				m_event_sender.SendNamedEvent("ss_unpause", m_plugin_context.GetCurrentTick());
+				m_EventStats.SendNamedEvent("ss_unpause", m_plugin_context.GetCurrentTick());
 			}
 		}
 #endif
@@ -799,7 +799,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 #ifdef PROTO_STATS
 	if (m_bTournamentMatchStarted)
 	{
-		m_event_sender.SendEvent(event, m_plugin_context.GetCurrentTick());
+		m_EventStats.OnFireGameEvent(event, m_plugin_context.GetCurrentTick());
 	}
 #endif
 	using namespace SCHelpers;
@@ -984,39 +984,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
-	{
-		CSizzEvent event(m_event_sender.AllocEvent(), tick);
-		event.SetName("ss_tournament_match_start");
-		event.SetString("hostname", hostname);
-		event.SetString("mapname", mapname);
-		event.SetString("bluname", bluname);
-		event.SetString("redname", redname);
-		//event.SetString("ip", ipppppppppp);
-		//event.SetShort("port", poooooort);
-		m_event_sender.SendEvent(&event);
-	}
-	int max_clients = m_plugin_context.GetMaxClients();
-	for (int i = 1; i < max_clients; ++i)
-	{
-		IPlayerInfo *pInfo = m_plugin_context.GetPlayerInfo(i);
-		if (pInfo && pInfo->IsConnected())
-		{
-			CSizzEvent event(m_event_sender.AllocEvent(), tick);
-			event.SetName("ss_player_info");
-			event.SetString("name", pInfo->GetName());
-			event.SetShort("userid", m_plugin_context.UserIDFromEntIndex(i));
-			event.SetByte("entindex", i);
-			event.SetString("steamid", pInfo->GetNetworkIDString());
-			event.SetByte("teamid", pInfo->GetTeamIndex());
-			event.SetString("netaddr", m_plugin_context.GetPlayerIPString(i));
-			//event.SetByte("classid", blah);
-			event.SetBool("isstv", pInfo->IsHLTV());
-			event.SetBool("isbot", pInfo->IsFakeClient());
-			event.SetBool("isreplay", pInfo->IsReplay());
-
-			m_event_sender.SendEvent(&event);
-		}
-	}
+	m_EventStats.OnTournamentMatchStart(&m_plugin_context, tick);
 #endif
 	m_bTournamentMatchStarted = true;
 }
@@ -1026,7 +994,7 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	m_logstats.TournamentMatchEnded();
 	m_SizzlingStats.SS_TournamentMatchEnded();
 #ifdef PROTO_STATS
-	m_event_sender.SendNamedEvent("ss_tournament_match_end", m_plugin_context.GetCurrentTick());
+	m_EventStats.SendNamedEvent("ss_tournament_match_end", m_plugin_context.GetCurrentTick());
 #endif
 	m_bTournamentMatchStarted = false;
 }
