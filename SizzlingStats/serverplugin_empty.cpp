@@ -421,7 +421,7 @@ void CEmptyServerPlugin::LevelInit( char const *pMapName )
 	m_pAutoUpdater->StartThread();
 	m_plugin_context.LogPrint( "[SizzlingStats]: Update attempt complete.\n" );
 	
-	m_SizzlingStats.LevelInit(pMapName);
+	m_SizzlingStats.LevelInit(&m_plugin_context, pMapName);
 	m_logstats.LevelInit(pMapName);
 }
 
@@ -435,7 +435,7 @@ void CEmptyServerPlugin::ServerActivate( edict_t *pEdictList, int edictCount, in
 	m_plugin_context.ServerActivate(pEdictList, edictCount, clientMax);
 	//GetGameRules();
 	GetPropOffsets();
-	m_SizzlingStats.ServerActivate();
+	m_SizzlingStats.ServerActivate(&m_plugin_context);
 	//HookProps();
 }
 
@@ -495,7 +495,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 				break;
 			case GR_STATE_RND_RUNNING:
 				{
-					m_SizzlingStats.SS_RoundStarted();
+					m_SizzlingStats.SS_RoundStarted(&m_plugin_context);
 				}
 				break;
 			/*case GR_STATE_TEAM_WIN:
@@ -540,7 +540,7 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 	if (pEdict && !pEdict->IsFree())
 	{
 		int ent_index = m_plugin_context.ClientActive(pEdict);
-		m_SizzlingStats.SS_InsertPlayer(pEdict);
+		m_SizzlingStats.SS_InsertPlayer(&m_plugin_context, pEdict);
 		m_logstats.ClientActive(ent_index);
 	}
 }
@@ -560,7 +560,7 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 		// isn't called twice for the same player.
 		if (!m_bAlreadyLevelShutdown)
 		{
-			m_SizzlingStats.SS_DeletePlayer(pEdict);
+			m_SizzlingStats.SS_DeletePlayer(&m_plugin_context, pEdict);
 			m_logstats.ClientDisconnect(SCHelpers::EntIndexFromEdict(pEdict));
 			m_plugin_context.ClientDisconnect(pEdict);
 		}
@@ -615,11 +615,11 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 	{
 		if ( FStrEq(pcmd, "sizz_show_stats") )
 		{
-			m_SizzlingStats.SS_ShowHtmlStats(entindex, false);
+			m_SizzlingStats.SS_ShowHtmlStats(&m_plugin_context, entindex, false);
 		}
 		else if ( FStrEq(pcmd, "sizz_hide_stats") )
 		{
-			m_SizzlingStats.SS_HideHtmlStats(entindex);
+			m_SizzlingStats.SS_HideHtmlStats(&m_plugin_context, entindex);
 		}
 #ifdef DEV_COMMANDS_ON
 		else if ( FStrEq( pcmd, "gibuber" ) )
@@ -733,7 +733,7 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 			if (SCHelpers::EdictToBaseEntity(pEdict))
 			{
 				int ent_index = m_plugin_context.ClientActive(pEdict);
-				m_SizzlingStats.SS_InsertPlayer(pEdict);
+				m_SizzlingStats.SS_InsertPlayer(&m_plugin_context, pEdict);
 				m_logstats.ClientActive(ent_index);
 			}
 		}
@@ -751,11 +751,11 @@ bool CEmptyServerPlugin::CommandPreExecute( const CCommand &args )
 		{
 			if ( FStrEq( szCommand, "say" ) )
 			{
-				m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), false );
+				m_SizzlingStats.ChatEvent( &m_plugin_context, m_iClientCommandIndex, args.ArgS(), false );
 			}
 			else if ( FStrEq( szCommand, "say_team" ) )
 			{
-				m_SizzlingStats.ChatEvent( m_iClientCommandIndex, args.ArgS(), true );
+				m_SizzlingStats.ChatEvent( &m_plugin_context, m_iClientCommandIndex, args.ArgS(), true );
 			}
 		}
 
@@ -822,7 +822,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	else if ( m_bShouldRecord && FStrEq( name, "player_death" ) )
 	{
 		int victim = event->GetInt( "victim_entindex" );
-		m_SizzlingStats.CheckPlayerDropped( victim );
+		m_SizzlingStats.CheckPlayerDropped( &m_plugin_context, victim );
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{
@@ -882,7 +882,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		}
 
 		m_bShouldRecord = false; // stop extra stats recording
-		m_SizzlingStats.SS_RoundEnded();
+		m_SizzlingStats.SS_RoundEnded(&m_plugin_context);
 	}
 	else if ( FStrEq( name, "teamplay_game_over" ) || FStrEq( name, "tf_game_over" ) )
 	{
@@ -905,7 +905,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			// don't try to send messages to worldspawn
 			if ( entindex != 0 )
 			{
-				m_SizzlingStats.SS_Credits( entindex, PLUGIN_VERSION );
+				m_SizzlingStats.SS_Credits( &m_plugin_context, entindex, PLUGIN_VERSION );
 			}
 		}
 		else if ( FStrEq( text, ".ss" ) ||
@@ -918,7 +918,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		{
 			int userid = event->GetInt( "userid" );
 			int entindex = m_plugin_context.EntIndexFromUserID(userid);
-			m_SizzlingStats.SS_ShowHtmlStats( entindex, true );
+			m_SizzlingStats.SS_ShowHtmlStats( &m_plugin_context, entindex, true );
 		}
 	}
 }
@@ -981,7 +981,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 	const char *RESTRICT redname = m_plugin_context.GetRedTeamName();
 
 	m_logstats.TournamentMatchStarted(hostname, mapname, bluname, redname);
-	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);
+	m_SizzlingStats.SS_TournamentMatchStarted(&m_plugin_context);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
 	m_EventStats.OnTournamentMatchStart(&m_plugin_context, tick);

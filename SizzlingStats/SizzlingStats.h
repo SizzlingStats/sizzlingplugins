@@ -33,19 +33,19 @@ public:
 	~SizzlingStats(void);
 
 	// called when the plugin is loaded
-	void	Load( CSizzPluginContext *context );
+	void	Load( CSizzPluginContext *pPluginContext );
 
 	// called when the plugin is unloaded
 	void	Unload();
 
 	// called on level start
-	void	LevelInit(const char *pMapName);
+	void	LevelInit( CSizzPluginContext *pPluginContext, const char *pMapName );
 
-	void	ServerActivate();
+	void	ServerActivate( CSizzPluginContext *pPluginContext );
 
 	void	GameFrame();
 
-	void	LoadConfig();
+	void	LoadConfig( CSizzPluginContext *pPluginContext );
 	
 	void	PlayerHealed( int entindex, int amount );
 	void	MedPick( int entindex );
@@ -55,23 +55,23 @@ public:
 	// set player_class to k_ePlayerClassUndefined if switching to spec
 	void	PlayerChangedClass( int entindex, EPlayerClass player_class );
 	
-	void	ChatEvent( int entindex, const char *pText, bool bTeamChat );
+	void	ChatEvent( CSizzPluginContext *pPluginContext, int entindex, const char *pText, bool bTeamChat );
 
 	void	TeamCapped( int team_index );
 
-	void	GiveUber( int entindex );
+	void	GiveUber( CSizzPluginContext *pPluginContext, int entindex );
 
 	// checks to see if any of the medics with uber on the same team 
 	// as the player that died dropped him
-	void	CheckPlayerDropped( int victimIndex );
+	void	CheckPlayerDropped( CSizzPluginContext *pPluginContext, int victimIndex );
 
 	void	CapFix( const char *cappers, int length );
 
 	// insert and player and add them to the map
-	bool	SS_InsertPlayer( edict_t *pEdict );
+	bool	SS_InsertPlayer( CSizzPluginContext *pPluginContext, edict_t *pEdict );
 
 	// delete a player and remove them from the map
-	void	SS_DeletePlayer( edict_t *pEdict );
+	void	SS_DeletePlayer( CSizzPluginContext *pPluginContext, edict_t *pEdict );
 
 	// deletes all player data and empties the map
 	void	SS_DeleteAllPlayerData();
@@ -80,35 +80,32 @@ public:
 	void	SS_Msg( const char *pMsg, ... );
 
 	//	chat message to be sent to one user
-	void	SS_SingleUserChatMessage( int ent_index, const char *szMessage );
+	void	SS_SingleUserChatMessage( CSizzPluginContext *pPluginContext, int ent_index, const char *szMessage );
 
 	//	chat message to be sent to all users
-	void	SS_AllUserChatMessage( const char *szMessage );
+	void	SS_AllUserChatMessage( CSizzPluginContext *pPluginContext, const char *szMessage );
 
-	void	SS_TournamentMatchStarted( const char *RESTRICT hostname, 
-										const char *RESTRICT mapname, 
-										const char *RESTRICT bluname, 
-										const char *RESTRICT redname );
+	void	SS_TournamentMatchStarted( CSizzPluginContext *pPluginContext );
 
 	void	SS_TournamentMatchEnded();
 
 	void	SS_PreRoundFreeze();
 
-	void	SS_RoundStarted();
+	void	SS_RoundStarted( CSizzPluginContext *pPluginContext );
 
-	void	SS_RoundEnded();
+	void	SS_RoundEnded( CSizzPluginContext *pPluginContext );
 
 	//	displays the stats for use at the end of a round
-	void	SS_DisplayStats( int ent_index );
+	void	SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent_index );
 
 	//	called when the round ends
-	void	SS_EndOfRound();
+	void	SS_EndOfRound( CSizzPluginContext *pPluginContext );
 
 	// resets the player data
 	void	SS_ResetData();
 
 	//	called when a user types ".ss_credits"
-	void	SS_Credits( int entindex, const char *pszVersion );
+	void	SS_Credits( CSizzPluginContext *pPluginContext, int entindex, const char *pszVersion );
 
 	void	SetTeamScores( int redscore, int bluscore );
 
@@ -116,24 +113,23 @@ public:
 
 	void	SS_UploadStats();
 
-	void	SS_ShowHtmlStats( int entindex, bool reload_page );
+	void	SS_ShowHtmlStats( CSizzPluginContext *pPluginContext, int entindex, bool reload_page );
 
-	void	SS_HideHtmlStats( int endindex );
+	void	SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int endindex );
 
 private:
-	void	OnSessionIdReceived( sizz::CString sessionid );
-	void	LogSessionId( const sizz::CString &str );
+	void	OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid );
+	void	LogSessionId( CSizzPluginContext *pPluginContext, const sizz::CString &str );
 
-	void	OnMatchUrlReceived( sizz::CString matchurl );
-	void	CacheSiteOnPlayer( const sizz::CString &match_url );
+	void	OnMatchUrlReceived( CSizzPluginContext *pPluginContext, sizz::CString matchurl );
+	void	CacheSiteOnPlayer( CSizzPluginContext *pPluginContext, const sizz::CString &match_url );
 
 	//	gets the prop offests
 	void	GetPropOffsets();
 
-	void	GetEntities();
+	void	GetEntities( CSizzPluginContext *pPluginContext );
 
 private:
-	CSizzPluginContext *m_plugin_context;
 	unsigned int	m_aPropOffsets[20];
 	unsigned int	m_PlayerFlagsOffset;
 	unsigned int	m_TeamRoundsWonOffset;
