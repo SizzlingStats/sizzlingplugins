@@ -39,7 +39,10 @@ CSizzPluginContext::CSizzPluginContext():
 	m_tickcount(0),
 	m_flTime(0.0f),
 	m_max_clients(0),
-	m_edict_list(nullptr)
+	m_edict_list(nullptr),
+	m_refHostname((IConVar*)nullptr),
+	m_refBlueTeamName((IConVar*)nullptr),
+	m_refRedTeamName((IConVar*)nullptr)
 {
 }
 
@@ -92,6 +95,11 @@ bool CSizzPluginContext::Initialize( const plugin_context_init_t &init )
 	}
 
 	m_pUserIDTracker->Reset();
+
+	m_refHostname.Init("hostname", false);
+	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
+	m_refRedTeamName.Init("mp_tournament_redteamname", false);
+
 	return ret;
 }
 
@@ -179,9 +187,24 @@ int CSizzPluginContext::GetMaxClients() const
 	return m_max_clients;
 }
 
+const char *CSizzPluginContext::GetHostName() const
+{
+	return m_refHostname.GetString();
+}
+
 const char *CSizzPluginContext::GetMapName() const
 {
 	return m_pGlobals->mapname.ToCStr();
+}
+
+const char *CSizzPluginContext::GetRedTeamName() const
+{
+	return m_refRedTeamName.GetString();
+}
+
+const char *CSizzPluginContext::GetBluTeamName() const
+{
+	return m_refBlueTeamName.GetString();
 }
 
 int CSizzPluginContext::GetPluginIndex( const IServerPluginCallbacks *pPlugin ) const

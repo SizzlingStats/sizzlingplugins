@@ -151,9 +151,6 @@ private:
 	CConCommandHook m_PauseHook;
 	CConCommandHook m_UnpauseHook;
 	ConVarRef m_refTournamentMode;
-	ConVarRef m_refHostname;
-	ConVarRef m_refBlueTeamName;
-	ConVarRef m_refRedTeamName;
 	CAutoUpdateThread	*m_pAutoUpdater;
 	CTeamplayRoundBasedRules *m_pTeamplayRoundBasedRules;
 	int	*m_iRoundState;
@@ -188,9 +185,6 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_PauseHook(),
 	m_UnpauseHook(),
 	m_refTournamentMode((IConVar*)NULL),
-	m_refHostname((IConVar*)NULL),
-	m_refBlueTeamName((IConVar*)NULL),
-	m_refRedTeamName((IConVar*)NULL),
 	m_pAutoUpdater(NULL),
 	m_pTeamplayRoundBasedRules(NULL),
 	m_iRoundState(NULL),
@@ -340,9 +334,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_UnpauseHook.Hook(this, cvar, "unpause");
 
 	m_refTournamentMode.Init("mp_tournament", false);
-	m_refHostname.Init("hostname", false);
-	m_refBlueTeamName.Init("mp_tournament_blueteamname", false);
-	m_refRedTeamName.Init("mp_tournament_redteamname", false);
+
 
 	MathLib_Init( 2.2f, 2.2f, 0.0f, 2 );
 	ConVar_Register( 0 );
@@ -983,10 +975,10 @@ void CEmptyServerPlugin::GetPropOffsets()
 
 void CEmptyServerPlugin::TournamentMatchStarted()
 {
-	const char *RESTRICT hostname = m_refHostname.GetString();
+	const char *RESTRICT hostname = m_plugin_context.GetHostName();
 	const char *RESTRICT mapname = m_plugin_context.GetMapName();
-	const char *RESTRICT bluname = m_refBlueTeamName.GetString();
-	const char *RESTRICT redname = m_refRedTeamName.GetString();
+	const char *RESTRICT bluname = m_plugin_context.GetBluTeamName();
+	const char *RESTRICT redname = m_plugin_context.GetRedTeamName();
 
 	m_logstats.TournamentMatchStarted(hostname, mapname, bluname, redname);
 	m_SizzlingStats.SS_TournamentMatchStarted(hostname, mapname, bluname, redname);

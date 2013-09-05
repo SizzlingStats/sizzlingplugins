@@ -12,6 +12,8 @@
 #include "EventStats.h"
 #include "SizzEvent.pb.h"
 
+#include "SizzPluginContext.h"
+#include "game/server/iplayerinfo.h"
 #include "igameevents.h"
 #include "SC_helpers.h"
 #include "KeyValues.h"
@@ -41,22 +43,45 @@ void CEventStats::Shutdown()
 	m_event_sender.EndConnection();
 }
 
-void CEventStats::OnTournamentMatchStart( const char *RESTRICT hostname, const char *RESTRICT mapname, 
-										const char *RESTRICT bluname, const char *RESTRICT redname, 
-										unsigned int server_tick )
+void CEventStats::OnTournamentMatchStart( CSizzPluginContext *pPluginContext, unsigned int server_tick )
 {
-	CSizzEvent event(m_event_sender.AllocEvent(), server_tick);
-	event.SetName("ss_tournament_match_start");
-	event.SetString("hostname", hostname);
-	event.SetString("mapname", mapname);
-	event.SetString("bluname", bluname);
-	event.SetString("redname", redname);
-	//event.SetString("ip", ipppppppppp);
-	//event.SetShort("port", poooooort);
-	m_event_sender.SendEvent(&event);
+	{
+		CSizzEvent event(m_event_sender.AllocEvent(), server_tick);
+		event.SetName("ss_tournament_match_start");
+		event.SetString("hostname", pPluginContext->GetHostName());
+		event.SetString("mapname", pPluginContext->GetMapName());
+		event.SetString("bluname", pPluginContext->GetBluTeamName());
+		event.SetString("redname", pPluginContext->GetRedTeamName());
+		//event.SetString("ip", ipppppppppp);
+		//event.SetShort("port", poooooort);
+		m_event_sender.SendEvent(&event);
+	}
+
+	int max_clients = pPluginContext->GetMaxClients();
+	for (int i = 1; i < max_clients; ++i)
+	{
+		IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(i);
+		if (pInfo && pInfo->IsConnected())
+		{
+			CSizzEvent event(m_event_sender.AllocEvent(), server_tick);
+			event.SetName("ss_player_info");
+			event.SetString("name", pInfo->GetName());
+			event.SetShort("userid", pPluginContext->UserIDFromEntIndex(i));
+			event.SetByte("entindex", i);
+			event.SetString("steamid", pInfo->GetNetworkIDString());
+			event.SetByte("teamid", pInfo->GetTeamIndex());
+			event.SetString("netaddr", pPluginContext->GetPlayerIPString(i));
+			//event.SetByte("classid", blah);
+			event.SetBool("isstv", pInfo->IsHLTV());
+			event.SetBool("isbot", pInfo->IsFakeClient());
+			event.SetBool("isreplay", pInfo->IsReplay());
+
+			m_event_sender.SendEvent(&event);
+		}
+	}
 }
 
-void CEventStats::OnTournamentMatchEnd( unsigned int server_tick )
+void CEventStats::OnTournamentMatchEnd( CSizzPluginContext *pPluginContext, unsigned int server_tick )
 {
 	
 }

@@ -13,6 +13,7 @@
 
 #include "EventSender.h"
 
+class CSizzPluginContext;
 class IGameEvent;
 
 class CEventStats
@@ -21,11 +22,8 @@ public:
 	bool Initialize();
 	void Shutdown();
 
-	void OnTournamentMatchStart( const char *RESTRICT hostname, const char *RESTRICT mapname, 
-								const char *RESTRICT bluname, const char *RESTRICT redname, 
-								unsigned int server_tick );
-
-	void OnTournamentMatchEnd( unsigned int server_tick );
+	void OnTournamentMatchStart( CSizzPluginContext *pPluginContext, unsigned int server_tick );
+	void OnTournamentMatchEnd( CSizzPluginContext *pPluginContext, unsigned int server_tick );
 
 	void OnFireGameEvent( IGameEvent *pEvent, unsigned int server_tick );
 

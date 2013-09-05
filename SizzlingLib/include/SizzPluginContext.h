@@ -16,6 +16,7 @@
 
 #include "engine/iserverplugin.h"
 #include "Color.h"
+#include "convar.h"
 
 class IVEngineServer;
 class CGlobalVars;
@@ -130,8 +131,16 @@ public:
 	// the max number of clients
 	int GetMaxClients() const;
 
+	// returns the name of the server
+	// from the hostname cvar
+	const char *GetHostName() const;
+
 	// returns the name of the current running map
 	const char *GetMapName() const;
+
+	// returns the team name strings
+	const char *GetRedTeamName() const;
+	const char *GetBluTeamName() const;
 
 	// returns the index of the plugin attached 
 	// to the passed in plugin callbacks
@@ -255,6 +264,10 @@ private:
 	int m_max_clients;
 
 	edict_t *m_edict_list;
+
+	ConVarRef m_refHostname;
+	ConVarRef m_refBlueTeamName;
+	ConVarRef m_refRedTeamName;
 };
 
 #endif // SIZZ_PLUGIN_CONTEXT_H
