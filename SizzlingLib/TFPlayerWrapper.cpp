@@ -14,27 +14,36 @@
 #include "SC_helpers.h"
 #include "SizzPluginContext.h"
 
+#include "mathlib/mathlib.h"
+
 using namespace SCHelpers;
 
-CTFPlayerWrapper::CTFPlayerWrapper():
-	m_pPlayer(nullptr)
+unsigned int CTFPlayerWrapper::flags_offset = 0;
+unsigned int CTFPlayerWrapper::class_offset = 0;
+unsigned int CTFPlayerWrapper::weapons_offset = 0;
+unsigned int CTFPlayerWrapper::release_offset = 0;
+unsigned int CTFPlayerWrapper::origin_offset = 0;
+unsigned int CTFPlayerWrapper::charge_offset = 0;
+
+CTFPlayerWrapper::CTFPlayerWrapper( CBaseEntity *pPlayer /*= nullptr*/ ):
+	m_pPlayer(pPlayer)
 {
 }
 
-void CTFPlayerWrapper::Initialize( CSizzPluginContext *pPluginContext, CBaseEntity *pPlayer /*= nullptr*/ )
+void CTFPlayerWrapper::InitializeOffsets()
 {
-	SetPlayer(pPlayer);
-	// call each method once to init the static vars
-	// for performance reasons
-	//
-	// should make sure that nothing bad happens
-	// when calling these functions on worldspawn
-	GetFlags();
-	GetClass();
-	GetWeapon(0);
-	GetChargeLevel(pPluginContext);
-	GetPlayerOrigin();
-	IsReleasingCharge();
+	flags_offset = GetPropOffsetFromTable("DT_BasePlayer", "m_fFlags");
+	class_offset = GetPropOffsetFromTable("DT_TFPlayer", "m_PlayerClass") + 
+		GetPropOffsetFromTable("DT_TFPlayerClassShared", "m_iClass");
+
+	// should get the 0 offsets before it incase something changes
+	weapons_offset = GetPropOffsetFromTable("DT_BaseCombatCharacter", "m_hMyWeapons");
+
+	origin_offset = GetPropOffsetFromTable( "DT_BaseEntity", "m_vecOrigin" );
+	release_offset = GetPropOffsetFromTable( "DT_WeaponMedigun", "m_bChargeRelease" );
+
+	// should get the 0 offsets before it incase something changes
+	charge_offset = GetPropOffsetFromTable("DT_LocalTFWeaponMedigunData", "m_flChargeLevel");
 }
 
 void CTFPlayerWrapper::SetPlayer( CBaseEntity *pPlayer )
@@ -44,8 +53,6 @@ void CTFPlayerWrapper::SetPlayer( CBaseEntity *pPlayer )
 
 unsigned int CTFPlayerWrapper::GetFlags() const
 {
-	static unsigned int flags_offset = GetPropOffsetFromTable("DT_BasePlayer", "m_fFlags");
-
 	unsigned int flags = 0;
 	if (m_pPlayer)
 	{
@@ -56,9 +63,6 @@ unsigned int CTFPlayerWrapper::GetFlags() const
 
 unsigned int CTFPlayerWrapper::GetClass() const
 {
-	static unsigned int class_offset = GetPropOffsetFromTable("DT_TFPlayer", "m_PlayerClass") + 
-		GetPropOffsetFromTable("DT_TFPlayerClassShared", "m_iClass");
-
 	unsigned int playerclass = 0;
 	if (m_pPlayer)
 	{
@@ -69,9 +73,6 @@ unsigned int CTFPlayerWrapper::GetClass() const
 
 CBaseHandle *CTFPlayerWrapper::GetWeapon( unsigned int slot ) const
 {
-	// should get the 0 offsets before it incase something changes
-	static unsigned int weapons_offset = GetPropOffsetFromTable("DT_BaseCombatCharacter", "m_hMyWeapons");
-
 	CBaseHandle *hWeapon = nullptr;
 	if (m_pPlayer)
 	{
@@ -82,9 +83,36 @@ CBaseHandle *CTFPlayerWrapper::GetWeapon( unsigned int slot ) const
 
 float CTFPlayerWrapper::GetChargeLevel( CSizzPluginContext *pPluginContext ) const
 {
-	// should get the 0 offsets before it incase something changes
-	static unsigned int charge_offset = GetPropOffsetFromTable("DT_LocalTFWeaponMedigunData", "m_flChargeLevel");
+	return AccessChargeLevel(pPluginContext, ACCESS_GET, 0.0f);
+}
 
+void CTFPlayerWrapper::SetChargeLevel( CSizzPluginContext *pPluginContext, float charge_level )
+{
+	AccessChargeLevel(pPluginContext, ACCESS_SET, clamp(charge_level, 0.0f, 1.0f));
+}
+
+Vector *CTFPlayerWrapper::GetPlayerOrigin() const
+{
+	Vector *pOrigin = nullptr;
+	if (m_pPlayer)
+	{
+		pOrigin = ByteOffsetFromPointer<Vector*>(m_pPlayer, origin_offset);
+	}
+	return pOrigin;
+}
+
+bool CTFPlayerWrapper::IsReleasingCharge() const
+{
+	bool releasing = false;
+	if (m_pPlayer)
+	{
+		releasing = *ByteOffsetFromPointer<bool*>(m_pPlayer, release_offset);
+	}
+	return releasing;
+}
+
+float CTFPlayerWrapper::AccessChargeLevel( CSizzPluginContext *pPluginContext, ACCESS_METHOD access, float set_charge ) const
+{
 	float charge = 0.0f;
 	if (m_pPlayer)
 	{
@@ -97,33 +125,16 @@ float CTFPlayerWrapper::GetChargeLevel( CSizzPluginContext *pPluginContext ) con
 			CBaseEntity *pMedigun = pPluginContext->BaseEntityFromBaseHandle(hMedigun);
 			if (pMedigun)
 			{
-				charge = *SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, charge_offset);
+				if (access == ACCESS_GET)
+				{
+					charge = *SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, charge_offset);
+				}
+				else
+				{
+					*SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, charge_offset) = set_charge;
+				}
 			}
 		}
 	}
 	return charge;
-}
-
-Vector *CTFPlayerWrapper::GetPlayerOrigin() const
-{
-	static unsigned int origin_offset = GetPropOffsetFromTable( "DT_BaseEntity", "m_vecOrigin" );
-
-	Vector *pOrigin = nullptr;
-	if (m_pPlayer)
-	{
-		pOrigin = ByteOffsetFromPointer<Vector*>(m_pPlayer, origin_offset);
-	}
-	return pOrigin;
-}
-
-bool CTFPlayerWrapper::IsReleasingCharge() const
-{
-	static unsigned int release_offset = GetPropOffsetFromTable( "DT_WeaponMedigun", "m_bChargeRelease" );
-
-	bool releasing = false;
-	if (m_pPlayer)
-	{
-		releasing = *ByteOffsetFromPointer<bool*>(m_pPlayer, release_offset);
-	}
-	return releasing;
 }

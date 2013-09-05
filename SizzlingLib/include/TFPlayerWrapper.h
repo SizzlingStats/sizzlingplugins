@@ -20,10 +20,10 @@ class CBaseHandle;
 class CTFPlayerWrapper
 {
 public:
-	CTFPlayerWrapper();
+	CTFPlayerWrapper( CBaseEntity *pPlayer = nullptr );
 
 	// setup
-	void Initialize( CSizzPluginContext *pPluginContext, CBaseEntity *pPlayer = nullptr );
+	static void InitializeOffsets();
 
 	// set the player that the data will come from
 	void SetPlayer( CBaseEntity *pPlayer );
@@ -41,6 +41,7 @@ public:
 	// returns the charge level of the medic
 	// returns 0.0f for non medics
 	float GetChargeLevel( CSizzPluginContext *pPluginContext ) const;
+	void SetChargeLevel( CSizzPluginContext *pPluginContext, float charge_level );
 
 	// returns true if the player is a medic 
 	// and is currently releasing ubercharge
@@ -48,6 +49,22 @@ public:
 
 	// returns the player origin
 	Vector *GetPlayerOrigin() const;
+
+private:
+	static unsigned int flags_offset;
+	static unsigned int class_offset;
+	static unsigned int weapons_offset;
+	static unsigned int release_offset;
+	static unsigned int origin_offset;
+	static unsigned int charge_offset;
+
+private:
+	enum ACCESS_METHOD
+	{
+		ACCESS_GET = 0,
+		ACCESS_SET = 1
+	};
+	float AccessChargeLevel( CSizzPluginContext *pPluginContext, ACCESS_METHOD access, float set_charge ) const;
 
 private:
 	CBaseEntity *m_pPlayer;
