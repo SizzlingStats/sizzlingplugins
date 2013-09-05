@@ -45,6 +45,8 @@
 #include "UserMessageHelpers.h"
 #include "MRecipientFilter.h"
 
+#include "TFPlayerWrapper.h"
+
 #ifdef PROTO_STATS
 #include "EventStats.h"
 #endif
@@ -262,6 +264,8 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	{
 		return false;
 	}
+
+	CTFPlayerWrapper::InitializeOffsets();
 
 	m_logstats.Load(m_plugin_context);
 

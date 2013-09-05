@@ -60,11 +60,6 @@ SizzlingStats::SizzlingStats():
 	m_aPropOffsets(),
 	m_PlayerFlagsOffset(0), 
 	m_TeamRoundsWonOffset(0),
-	m_PlayerClassOffset(0),
-	m_iWeaponsOffset(0),
-	m_iChargeLevelOffset(0),
-	m_iOriginOffset(0),
-	m_iChargeReleaseOffset(0),
 	m_pRedTeam(NULL),
 	m_pBluTeam(NULL),
 	m_iTeamScoreOffset(0),
@@ -243,19 +238,8 @@ static char *UTIL_VarArgs( char *format, ... )
 void SizzlingStats::GiveUber( CSizzPluginContext *pPluginContext, int entindex )
 {
 	SS_PlayerData *pData = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData;
-	if (pData && (pData->GetClass(m_PlayerClassOffset) == 5))
-	{
-		CBaseEntity *pPlayer = pPluginContext->BaseEntityFromEntIndex(entindex);
-		// +4 because we want the medigun slot
-		CBaseHandle *hMedigun = SCHelpers::ByteOffsetFromPointer<CBaseHandle*>(pPlayer, m_iWeaponsOffset + 4);
-		CBaseEntity *pMedigun = pPluginContext->BaseEntityFromBaseHandle(hMedigun);
-
-		if (pMedigun)
-		{
-			float *flChargeLevel = SCHelpers::ByteOffsetFromPointer<float*>(pMedigun, m_iChargeLevelOffset);
-			*flChargeLevel = 1.0f;
-		}
-	}
+	CTFPlayerWrapper player(pData->GetBaseEntity());
+	player.SetChargeLevel(pPluginContext, 1.0f);
 }
 
 void SizzlingStats::CheckPlayerDropped( CSizzPluginContext *pPluginContext, int victimIndex )
@@ -271,30 +255,32 @@ void SizzlingStats::CheckPlayerDropped( CSizzPluginContext *pPluginContext, int 
 		if ( pMedPlayerInfo->GetTeamIndex() == pVictimPlayerInfo->GetTeamIndex() )
 		{
 			using namespace SCHelpers;
-			CBaseHandle *hMedigun = ByteOffsetFromPointer<CBaseHandle*>(pMedData->GetBaseEntity(), m_iWeaponsOffset+4); // +4 because we want the medigun slot
-			CBaseEntity *pMedigun = pPluginContext->BaseEntityFromBaseHandle(hMedigun);
+			CTFPlayerWrapper medic(pMedData->GetBaseEntity());
+			
+			//CBaseEntity *pMedigun = pPluginContext->BaseEntityFromBaseHandle(hMedigun);
 
-			const char *szWeapon = SCHelpers::GetClassName(pMedigun);
-			if ( szWeapon && SCHelpers::FStrEq(szWeapon, "tf_weapon_medigun") )
-			{
-				float flChargeLevel = *ByteOffsetFromPointer<float*>(pMedigun, m_iChargeLevelOffset);
-				uint32 charge = static_cast<uint32>(flChargeLevel);
+			//const char *szWeapon = SCHelpers::GetClassName(pMedigun);
+			//if ( szWeapon && SCHelpers::FStrEq(szWeapon, "tf_weapon_medigun") )
+			//{
+				float flChargeLevel = medic.GetChargeLevel(pPluginContext);
+				bool bReleasingCharge = medic.IsReleasingCharge();
 
-				bool bReleasingCharge = *ByteOffsetFromPointer<bool*>(pMedigun, m_iChargeReleaseOffset);
-
-				if (charge == 1 || bReleasingCharge)
+				if (flChargeLevel == 1.0f || bReleasingCharge)
 				{
-					Vector *victimPos = ByteOffsetFromPointer<Vector*>(pVictimData->GetBaseEntity(), m_iOriginOffset);
-					Vector *medPos = ByteOffsetFromPointer<Vector*>(pMedData->GetBaseEntity(), m_iOriginOffset);
+					CTFPlayerWrapper victim(pVictimData->GetBaseEntity());
+					Vector *victimPos = victim.GetPlayerOrigin();
+					Vector *medPos = medic.GetPlayerOrigin();
 		
 					vec_t distance = victimPos->DistToSqr( *medPos );
 					SS_AllUserChatMessage( pPluginContext, UTIL_VarArgs("distance: %.2f\n", distance) );
-					if (static_cast<uint32>(distance) <= 230400) // ~480 units is max target distance for medigun
+					if (distance <= 230400.0f) // ~480 units is max target distance for medigun
 					{
+						IHandleEntity *pMedHandleEnt = pPluginContext->HandleEntityFromEntIndex(medIndex);
+						// slot 2 because we want the medigun
+						IHandleEntity *pMedigunHandleEnt = pPluginContext->HandleEntityFromEntIndex(medic.GetWeapon(2)->GetEntryIndex());
+
 						Ray_t ray;
 						ray.Init(*medPos, *victimPos);
-						IHandleEntity *pMedHandleEnt = pPluginContext->HandleEntityFromEntIndex(medIndex);
-						IHandleEntity *pMedigunHandleEnt = pPluginContext->HandleEntityFromEntIndex(hMedigun->GetEntryIndex());
 						CTraceFilterSkipTwo traceFilter(pMedHandleEnt, pMedigunHandleEnt);
 						trace_t trace;
 						enginetrace->TraceRay(ray, MASK_SHOT_HULL, &traceFilter, &trace);
@@ -304,7 +290,7 @@ void SizzlingStats::CheckPlayerDropped( CSizzPluginContext *pPluginContext, int 
 						}
 					}
 				}
-			}
+			//}
 		}
 	}
 }
@@ -410,17 +396,19 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_hostInfo.m_roundduration = m_flRoundDuration;
 	m_pWebStatsHandler->SetHostData(m_hostInfo);
 
+	CTFPlayerWrapper player;
 	for (int i = 1; i <= MAX_PLAYERS; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
 		{
+			player.SetPlayer(pPluginContext->BaseEntityFromEntIndex(i));
 			IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(i);
 			playerInfo_t info;
 			V_strncpy(info.m_name, pInfo->GetName(), 32);
 			V_strncpy(info.m_steamid, pInfo->GetNetworkIDString(), 32);
 			info.m_teamid = pInfo->GetTeamIndex();
-			info.m_mostPlayedClass = data.m_pPlayerData->GetClass(m_PlayerClassOffset);
+			info.m_mostPlayedClass = player.GetClass();
 			m_pWebStatsHandler->EnqueuePlayerInfo(info);
 		}
 	}
@@ -447,7 +435,7 @@ void SizzlingStats::SS_PreRoundFreeze()
 	SS_ResetData();
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime;
-	m_PlayerDataManager.ResetAndStartClassTracking(m_PlayerClassOffset, SCHelpers::RoundDBL(curtime));
+	m_PlayerDataManager.ResetAndStartClassTracking(SCHelpers::RoundDBL(curtime));
 }
 
 void SizzlingStats::SS_RoundStarted( CSizzPluginContext *pPluginContext )
@@ -491,6 +479,7 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 	int medpicks = playerData.GetStat(MedPicks);
 	
 	IPlayerInfo *pPlayerInfo = pPluginContext->GetPlayerInfo(ent_index);
+	CTFPlayerWrapper player(pPluginContext->BaseEntityFromEntIndex(ent_index));
 
 	V_snprintf( pText, 64, "\x04[\x05SizzlingStats\x04]\x06: \x03%s\n", pPlayerInfo->GetName() );
 	SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
@@ -504,7 +493,7 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 
 	memset( pText, 0, sizeof(pText) );
 	//Msg( "class: %i\n", *((int *)(((unsigned char *)playerData.GetBaseEntity()) + m_PlayerClassOffset)) );
-	if ( (playerData.GetClass(m_PlayerClassOffset) - 5) != 0 ) // if the player isn't a medic
+	if ( (player.GetClass() - 5) != 0 ) // if the player isn't a medic
 	{
 		V_snprintf( pText, 64, "Damage Done: %i, Heals Received (not incl. buffs): %i\n", damagedone, healsrecv );
 	}
@@ -787,13 +776,8 @@ void SizzlingStats::GetPropOffsets()
 	m_aPropOffsets[18] = iTFPlayerScoreingDataExclusiveOffset + GetPropOffsetFromTable( "DT_TFPlayerScoringDataExclusive", "m_iBonusPoints" );
 	m_aPropOffsets[19] = iTFPlayerScoreingDataExclusiveOffset + GetPropOffsetFromTable( "DT_TFPlayerScoringDataExclusive", "m_iPoints" );
 
-	m_PlayerClassOffset = GetPropOffsetFromTable( "DT_TFPlayer", "m_PlayerClass" ) + GetPropOffsetFromTable( "DT_TFPlayerClassShared", "m_iClass" );
 	m_PlayerFlagsOffset = GetPropOffsetFromTable( "DT_BasePlayer", "m_fFlags" );
 	m_TeamRoundsWonOffset = GetPropOffsetFromTable( "DT_Team", "m_iRoundsWon" ); 
-	m_iWeaponsOffset = GetPropOffsetFromTable( "DT_BaseCombatCharacter", "m_hMyWeapons" ); // should get the 0 offsets before it incase something changes
-	m_iChargeLevelOffset = GetPropOffsetFromTable( "DT_LocalTFWeaponMedigunData", "m_flChargeLevel" ); // should get the 0 offsets before it incase something changes
-	m_iOriginOffset = GetPropOffsetFromTable( "DT_BaseEntity", "m_vecOrigin" );
-	m_iChargeReleaseOffset = GetPropOffsetFromTable( "DT_WeaponMedigun", "m_bChargeRelease" );
 
 	m_iTeamScoreOffset = GetPropOffsetFromTable( "DT_Team", "m_iScore" );
 	m_iTeamNumOffset = GetPropOffsetFromTable( "DT_Team", "m_iTeamNum" );

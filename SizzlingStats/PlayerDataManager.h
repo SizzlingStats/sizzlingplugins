@@ -46,7 +46,7 @@ public:
 	playerAndExtra_t GetPlayerData( int entindex );
 	int GetNumPlayers() const;
 	
-	void ResetAndStartClassTracking( unsigned int playerClassOffset, uint64 curtime );
+	void ResetAndStartClassTracking( uint64 curtime );
 	void StopClassTracking( uint64 curtime );
 	void PlayerChangedClass( int entindex, EPlayerClass player_class, uint64 curtime );
 

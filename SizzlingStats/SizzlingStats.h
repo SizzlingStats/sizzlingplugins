@@ -133,11 +133,6 @@ private:
 	unsigned int	m_aPropOffsets[20];
 	unsigned int	m_PlayerFlagsOffset;
 	unsigned int	m_TeamRoundsWonOffset;
-	unsigned int	m_PlayerClassOffset;
-	uint32			m_iWeaponsOffset;
-	uint32			m_iChargeLevelOffset;
-	uint32			m_iOriginOffset;
-	uint32			m_iChargeReleaseOffset;
 
 	CBaseEntity		*m_pRedTeam;
 	CBaseEntity		*m_pBluTeam;

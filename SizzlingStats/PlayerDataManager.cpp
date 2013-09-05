@@ -17,6 +17,7 @@
 #include "const.h"
 #include "SC_helpers.h"
 #include "SizzPluginContext.h"
+#include "TFPlayerWrapper.h"
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
@@ -173,15 +174,17 @@ void CPlayerDataManager::PD_Msg( const char *pMsg, ... )
 	va_end( argList );
 }
 
-void CPlayerDataManager::ResetAndStartClassTracking(unsigned int playerClassOffset, uint64 curtime)
+void CPlayerDataManager::ResetAndStartClassTracking(uint64 curtime)
 {
+	CTFPlayerWrapper player;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (m_pPlayerData[i])
 		{
 			SS_PlayerData *pData = m_pPlayerData[i];
+			player.SetPlayer(pData->GetBaseEntity());
 			CPlayerClassTracker *pTracker = pData->GetClassTracker();
-			EPlayerClass player_class = static_cast<EPlayerClass>(pData->GetClass(playerClassOffset));
+			EPlayerClass player_class = static_cast<EPlayerClass>(player.GetClass());
 			pTracker->StartRecording(player_class, curtime);
 		}
 	}
