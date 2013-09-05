@@ -26,6 +26,7 @@
     <ClCompile Include="SizzFileSystem.cpp" />
     <ClCompile Include="SizzlingProtect.cpp" />
     <ClCompile Include="SizzPluginContext.cpp" />
+    <ClCompile Include="TFPlayerWrapper.cpp" />
     <ClCompile Include="UserIdTracker.cpp" />
     <ClCompile Include="UserMessageHelpers.cpp" />
   </ItemGroup>
@@ -51,6 +52,7 @@
     <ClInclude Include="include\SizzPluginContext.h" />
     <ClInclude Include="include\sizzstring.h" />
     <ClInclude Include="include\SRecipientFilter.h" />
+    <ClInclude Include="include\TFPlayerWrapper.h" />
     <ClInclude Include="include\ThreadCallQueue.h" />
     <ClInclude Include="include\threading.h" />
     <ClInclude Include="include\UserIdTracker.h" />
