@@ -22,6 +22,7 @@
 #include "SRecipientFilter.h"
 #include "UserMessageHelpers.h"
 #include "SSPlayerData.h"
+#include "TFPlayerWrapper.h"
 
 #include <functional>
 
