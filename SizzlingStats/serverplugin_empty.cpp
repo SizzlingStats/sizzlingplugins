@@ -46,6 +46,7 @@
 #include "MRecipientFilter.h"
 
 #include "TFPlayerWrapper.h"
+#include "TFTeamWrapper.h"
 
 #ifdef PROTO_STATS
 #include "EventStats.h"
@@ -266,6 +267,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	}
 
 	CTFPlayerWrapper::InitializeOffsets();
+	CTFTeamWrapper::InitializeOffsets();
 
 	m_logstats.Load(m_plugin_context);
 

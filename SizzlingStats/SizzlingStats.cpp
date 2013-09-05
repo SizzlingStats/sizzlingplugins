@@ -23,6 +23,7 @@
 #include "UserMessageHelpers.h"
 #include "SSPlayerData.h"
 #include "TFPlayerWrapper.h"
+#include "TFTeamWrapper.h"
 
 #include <functional>
 
@@ -59,12 +60,8 @@ static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If non
 #pragma warning( disable : 4351 )
 SizzlingStats::SizzlingStats():
 	m_aPropOffsets(),
-	m_PlayerFlagsOffset(0), 
-	m_TeamRoundsWonOffset(0),
 	m_pRedTeam(NULL),
 	m_pBluTeam(NULL),
-	m_iTeamScoreOffset(0),
-	m_iTeamNumOffset(0),
 	m_iOldRedScore(0),
 	m_iOldBluScore(0),
 	m_PlayerDataManager(),
@@ -442,8 +439,11 @@ void SizzlingStats::SS_PreRoundFreeze()
 void SizzlingStats::SS_RoundStarted( CSizzPluginContext *pPluginContext )
 {
 	Msg( "round started\n" );
-	m_iOldBluScore = *SCHelpers::ByteOffsetFromPointer<uint32*>(m_pBluTeam, m_iTeamScoreOffset);
-	m_iOldRedScore = *SCHelpers::ByteOffsetFromPointer<uint32*>(m_pRedTeam, m_iTeamScoreOffset);
+	CTFTeamWrapper team(m_pBluTeam);
+	m_iOldBluScore = team.GetScore();
+	team.SetTeam(m_pRedTeam);
+	m_iOldRedScore = team.GetScore();
+
 	m_bFirstCapOfRound = true;
 	m_hostInfo.m_iFirstCapTeamIndex = 0;
 	SS_AllUserChatMessage( pPluginContext, "Stats Recording Started\n" );
@@ -776,15 +776,9 @@ void SizzlingStats::GetPropOffsets()
 	m_aPropOffsets[17] = iTFPlayerScoreingDataExclusiveOffset + GetPropOffsetFromTable( "DT_TFPlayerScoringDataExclusive", "m_iKillAssists" );
 	m_aPropOffsets[18] = iTFPlayerScoreingDataExclusiveOffset + GetPropOffsetFromTable( "DT_TFPlayerScoringDataExclusive", "m_iBonusPoints" );
 	m_aPropOffsets[19] = iTFPlayerScoreingDataExclusiveOffset + GetPropOffsetFromTable( "DT_TFPlayerScoringDataExclusive", "m_iPoints" );
-
-	m_PlayerFlagsOffset = GetPropOffsetFromTable( "DT_BasePlayer", "m_fFlags" );
-	m_TeamRoundsWonOffset = GetPropOffsetFromTable( "DT_Team", "m_iRoundsWon" ); 
-
-	m_iTeamScoreOffset = GetPropOffsetFromTable( "DT_Team", "m_iScore" );
-	m_iTeamNumOffset = GetPropOffsetFromTable( "DT_Team", "m_iTeamNum" );
 }
 
 void SizzlingStats::GetEntities( CSizzPluginContext *pPluginContext )
 {
-	SCHelpers::GetTeamEnts(pPluginContext, &m_pBluTeam, &m_pRedTeam, m_iTeamNumOffset);
+	SCHelpers::GetTeamEnts(pPluginContext, &m_pBluTeam, &m_pRedTeam);
 }

@@ -23,6 +23,7 @@
 
 #include "basehandle.h"
 #include "SizzPluginContext.h"
+#include "TFTeamWrapper.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -65,7 +66,7 @@ namespace SCHelpers
 	}
 
 	// gets the blu and red team entities and puts them in the pointers passed in
-	void GetTeamEnts( CSizzPluginContext *context, CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset )
+	void GetTeamEnts( CSizzPluginContext *context, CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam )
 	{
 		if (context && ppBluTeam && ppRedTeam)
 		{
@@ -78,7 +79,8 @@ namespace SCHelpers
 				CBaseEntity *pTeam = SCHelpers::EdictToBaseEntity(pTeamEdict);
 				if (pTeam)
 				{
-					int team_num = *ByteOffsetFromPointer<int*>(pTeam, team_num_offset);
+					CTFTeamWrapper team(pTeam);
+					unsigned int team_num = team.GetTeamID();
 					if (team_num == 2)
 					{
 						*ppRedTeam = pTeam;

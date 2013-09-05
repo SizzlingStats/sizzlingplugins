@@ -81,7 +81,7 @@ namespace SCHelpers
 	// doesn't check pEnt for NULL
 	const char *GetClassName( CBaseEntity * const pEnt );
 
-	void GetTeamEnts( CSizzPluginContext *context, CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam, uint32 team_num_offset );
+	void GetTeamEnts( CSizzPluginContext *context, CBaseEntity **ppBluTeam, CBaseEntity **ppRedTeam );
 
 	//-----------------------------------------------------------------------------
 	// Purpose: Returns the 4 bit nibble for a hex character

@@ -131,13 +131,9 @@ private:
 
 private:
 	unsigned int	m_aPropOffsets[20];
-	unsigned int	m_PlayerFlagsOffset;
-	unsigned int	m_TeamRoundsWonOffset;
 
 	CBaseEntity		*m_pRedTeam;
 	CBaseEntity		*m_pBluTeam;
-	uint32			m_iTeamScoreOffset;
-	uint32			m_iTeamNumOffset;
 	uint16			m_iOldRedScore;
 	uint16			m_iOldBluScore;
 
