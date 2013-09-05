@@ -962,12 +962,11 @@ void CEmptyServerPlugin::GetPropOffsets()
 		GetGameRules();
 	}
 	
-	bool bError = false;
-	unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass", bError ) +
-		GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data", bError );
+	unsigned int gamerulesoffset = GetPropOffsetFromTable( "DT_TFGameRulesProxy", "baseclass" ) +
+		GetPropOffsetFromTable( "DT_TeamplayRoundBasedRulesProxy", "teamplayroundbased_gamerules_data" );
 		
-	int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState", bError );
-	int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers", bError );
+	int roundstateoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_iRoundState" );
+	int waitingoffset = gamerulesoffset + GetPropOffsetFromTable( "DT_TeamplayRoundBasedRules", "m_bInWaitingForPlayers" );
 
 	m_iRoundState = ByteOffsetFromPointer<int*>(m_pTeamplayRoundBasedRules, roundstateoffset);
 	m_bInWaitingForPlayers = ByteOffsetFromPointer<bool*>(m_pTeamplayRoundBasedRules, waitingoffset);

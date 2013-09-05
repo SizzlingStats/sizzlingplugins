@@ -251,12 +251,11 @@ namespace SCHelpers
 	// Purpose: returns the specified prop offset relative to the table provided.
 	//			if offset or table not found, bErr returns true and offset returned is 0
 	//---------------------------------------------------------------------------------
-	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr)
+	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName)
 	{
 		ServerClass *pClass = pServerDLL->GetAllServerClasses();
 		if (!pClass)
 		{
-			bErr = true;
 			Warning("servergamedll->GetAllServerClasses() returned null\n");
 			return 0;
 		}
@@ -274,14 +273,12 @@ namespace SCHelpers
 				SendProp *pProp = pTable->GetProp(i);
 				if ( FStrEq( pPropName, pProp->GetName() ) )
 				{
-					bErr = false;
 					return pProp->GetOffset();
 				}
 			}
 			pClass = pClass->m_pNext;
 		}
 		Warning("prop %s not found in %s or table name incorrect\n", pPropName, pTableName);
-		bErr = true;
 		return 0;
 	}
 

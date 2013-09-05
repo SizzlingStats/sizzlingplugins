@@ -123,7 +123,7 @@ namespace SCHelpers
 	// Purpose: returns the specified prop offset relative to the table provided.
 	//			if offset or table not found, bErr returns true and offset returned is 0
 	//---------------------------------------------------------------------------------
-	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName, bool &bErr); //TODO: make this optional bool
+	unsigned int GetPropOffsetFromTable(const char *pTableName, const char *pPropName);
 
 	CTeamplayRoundBasedRules *GetTeamplayRoundBasedGameRulesPointer();
 
