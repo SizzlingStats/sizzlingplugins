@@ -89,7 +89,7 @@ public:
 
 	void	SS_TournamentMatchEnded();
 
-	void	SS_PreRoundFreeze();
+	void	SS_PreRoundFreeze( CSizzPluginContext *pPluginContext );
 
 	void	SS_RoundStarted( CSizzPluginContext *pPluginContext );
 
@@ -102,7 +102,7 @@ public:
 	void	SS_EndOfRound( CSizzPluginContext *pPluginContext );
 
 	// resets the player data
-	void	SS_ResetData();
+	void	SS_ResetData( CSizzPluginContext *pPluginContext );
 
 	//	called when a user types ".ss_credits"
 	void	SS_Credits( CSizzPluginContext *pPluginContext, int entindex, const char *pszVersion );

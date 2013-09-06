@@ -496,7 +496,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 				{
 					m_bShouldRecord = true; // start extra stats recording
 					m_logstats.PreRoundFreezeStarted(m_bTournamentMatchStarted);
-					m_SizzlingStats.SS_PreRoundFreeze();
+					m_SizzlingStats.SS_PreRoundFreeze(&m_plugin_context);
 				}
 				break;
 			case GR_STATE_RND_RUNNING:

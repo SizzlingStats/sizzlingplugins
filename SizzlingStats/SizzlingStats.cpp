@@ -394,8 +394,9 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_hostInfo.m_roundduration = m_flRoundDuration;
 	m_pWebStatsHandler->SetHostData(m_hostInfo);
 
+	int max_clients = pPluginContext->GetMaxClients();
 	CTFPlayerWrapper player;
-	for (int i = 1; i <= MAX_PLAYERS; ++i)
+	for (int i = 1; i <= max_clients; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
@@ -427,10 +428,10 @@ void SizzlingStats::SS_TournamentMatchEnded()
 	//SetTeamScores(0, 0);
 }
 
-void SizzlingStats::SS_PreRoundFreeze()
+void SizzlingStats::SS_PreRoundFreeze( CSizzPluginContext *pPluginContext )
 {
 	Msg( "pre-round started\n" );
-	SS_ResetData();
+	SS_ResetData(pPluginContext);
 	double curtime = Plat_FloatTime();
 	m_flRoundDuration = curtime;
 	m_PlayerDataManager.ResetAndStartClassTracking(SCHelpers::RoundDBL(curtime));
@@ -552,7 +553,8 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 
 void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 {
-	for (int i = 1; i <= MAX_PLAYERS; ++i)
+	int max_clients = pPluginContext->GetMaxClients();
+	for (int i = 1; i <= max_clients; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
@@ -590,9 +592,10 @@ void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 	}
 }
 
-void SizzlingStats::SS_ResetData()
+void SizzlingStats::SS_ResetData( CSizzPluginContext *pPluginContext )
 {
-	for (int i = 1; i <= MAX_PLAYERS; ++i)
+	int max_clients = pPluginContext->GetMaxClients();
+	for (int i = 1; i <= max_clients; ++i)
 	{
 		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 		if (data.m_pPlayerData)
