@@ -144,7 +144,7 @@ private:
 	ConVarRef m_refHostIP;
 	ConVarRef m_refIP;
 	ConVarRef m_refHostPort;
-	hostInfo_t m_hostInfo;
+	hostInfo_t *m_pHostInfo;
 	double m_flRoundDuration;
 	double m_flMatchDuration;
 	bool m_bTournamentMatchRunning;

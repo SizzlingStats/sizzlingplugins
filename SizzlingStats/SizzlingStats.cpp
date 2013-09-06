@@ -69,12 +69,13 @@ SizzlingStats::SizzlingStats():
 	m_refHostIP((IConVar*)NULL),
 	m_refIP((IConVar*)NULL),
 	m_refHostPort((IConVar*)NULL),
-	m_hostInfo(),
+	m_pHostInfo(nullptr),
 	m_flRoundDuration(0),
 	m_flMatchDuration(0),
 	m_bTournamentMatchRunning(false),
 	m_bFirstCapOfRound(false)
 {
+	m_pHostInfo = new hostInfo_t();
 	m_pWebStatsHandler = new CWebStatsHandler();
 }
 #pragma warning( pop )
@@ -82,6 +83,7 @@ SizzlingStats::SizzlingStats():
 SizzlingStats::~SizzlingStats()
 {
 	delete m_pWebStatsHandler;
+	delete m_pHostInfo;
 }
 
 void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
@@ -189,7 +191,7 @@ void SizzlingStats::TeamCapped( int team_index )
 	if (m_bTournamentMatchRunning && m_bFirstCapOfRound)
 	{
 		m_bFirstCapOfRound = false;
-		m_hostInfo.m_iFirstCapTeamIndex = team_index;
+		m_pHostInfo->m_iFirstCapTeamIndex = team_index;
 	}
 }
 
@@ -384,15 +386,15 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_bTournamentMatchRunning = true;
 	m_flMatchDuration = Plat_FloatTime();
 
-	V_strncpy(m_hostInfo.m_hostname, pPluginContext->GetHostName(), 64);
-	V_strncpy(m_hostInfo.m_mapname, pPluginContext->GetMapName(), 64);
-	V_strncpy(m_hostInfo.m_bluname, pPluginContext->GetBluTeamName(), 32);
-	V_strncpy(m_hostInfo.m_redname, pPluginContext->GetRedTeamName(), 32);
-	m_hostInfo.m_hostip = m_refHostIP.GetInt();
-	V_strncpy(m_hostInfo.m_ip, m_refIP.GetString(), 32);
-	m_hostInfo.m_hostport = m_refHostPort.GetInt();
-	m_hostInfo.m_roundduration = m_flRoundDuration;
-	m_pWebStatsHandler->SetHostData(m_hostInfo);
+	V_strncpy(m_pHostInfo->m_hostname, pPluginContext->GetHostName(), 64);
+	V_strncpy(m_pHostInfo->m_mapname, pPluginContext->GetMapName(), 64);
+	V_strncpy(m_pHostInfo->m_bluname, pPluginContext->GetBluTeamName(), 32);
+	V_strncpy(m_pHostInfo->m_redname, pPluginContext->GetRedTeamName(), 32);
+	m_pHostInfo->m_hostip = m_refHostIP.GetInt();
+	V_strncpy(m_pHostInfo->m_ip, m_refIP.GetString(), 32);
+	m_pHostInfo->m_hostport = m_refHostPort.GetInt();
+	m_pHostInfo->m_roundduration = m_flRoundDuration;
+	m_pWebStatsHandler->SetHostData(*m_pHostInfo);
 
 	int max_clients = pPluginContext->GetMaxClients();
 	CTFPlayerWrapper player;
@@ -446,7 +448,7 @@ void SizzlingStats::SS_RoundStarted( CSizzPluginContext *pPluginContext )
 	m_iOldRedScore = team.GetScore();
 
 	m_bFirstCapOfRound = true;
-	m_hostInfo.m_iFirstCapTeamIndex = 0;
+	m_pHostInfo->m_iFirstCapTeamIndex = 0;
 	SS_AllUserChatMessage( pPluginContext, "Stats Recording Started\n" );
 }
 
@@ -586,8 +588,8 @@ void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 
 	if (m_bTournamentMatchRunning)
 	{
-		m_hostInfo.m_roundduration = m_flRoundDuration;
-		m_pWebStatsHandler->SetHostData(m_hostInfo);
+		m_pHostInfo->m_roundduration = m_flRoundDuration;
+		m_pWebStatsHandler->SetHostData(*m_pHostInfo);
 		m_pWebStatsHandler->SendStatsToWeb();
 	}
 }
@@ -620,8 +622,8 @@ void SizzlingStats::SS_Credits( CSizzPluginContext *pPluginContext, int entindex
 
 void SizzlingStats::SetTeamScores( int redscore, int bluscore )
 {
-	m_hostInfo.m_redscore = redscore - m_iOldRedScore;
-	m_hostInfo.m_bluscore = bluscore - m_iOldBluScore;
+	m_pHostInfo->m_redscore = redscore - m_iOldRedScore;
+	m_pHostInfo->m_bluscore = bluscore - m_iOldBluScore;
 }
 
 #ifdef FTP_STATS
