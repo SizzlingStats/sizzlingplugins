@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\external\tier0\memoverride.cpp" />
     <ClCompile Include="autoupdate.cpp" />
     <ClCompile Include="ConCommandHook.cpp" />
     <ClCompile Include="curlconnection.cpp" />
