@@ -80,6 +80,7 @@ static void TestMultiThreadItems( int threads, int num_iterations )
 		pTests->Join();
 	}
 	queue.JoinQueue();
+	delete [] pTests;
 }
 
 static void TestQueueRestart( int num_restarts )
