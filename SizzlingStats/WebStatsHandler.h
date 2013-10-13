@@ -65,6 +65,7 @@ typedef struct playerInfo_s
 	char m_name[32];
 	//uint64 m_steamid;
 	char m_steamid[32];
+	char m_ip[32];
 	uint16 m_mostPlayedClass;
 	uint16 m_playedClasses;
 	unsigned char m_teamid;

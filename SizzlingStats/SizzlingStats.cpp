@@ -406,8 +406,9 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 			player.SetPlayer(pPluginContext->BaseEntityFromEntIndex(i));
 			IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(i);
 			playerInfo_t info;
-			V_strncpy(info.m_name, pInfo->GetName(), 32);
-			V_strncpy(info.m_steamid, pInfo->GetNetworkIDString(), 32);
+			V_strncpy(info.m_name, pInfo->GetName(), sizeof(info.m_name));
+			V_strncpy(info.m_steamid, pInfo->GetNetworkIDString(), sizeof(info.m_steamid));
+			V_strncpy(info.m_ip, pPluginContext->GetPlayerIPPortString(i), sizeof(info.m_ip));
 			info.m_teamid = pInfo->GetTeamIndex();
 			info.m_mostPlayedClass = player.GetClass();
 			m_pWebStatsHandler->EnqueuePlayerInfo(info);
@@ -570,8 +571,9 @@ void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 			{
 				playerWebStats_t stats;
 				stats.m_scoreData = data.m_pPlayerData->GetRoundStatsData();
-				V_strncpy(stats.m_playerInfo.m_name, pInfo->GetName(), 32);
-				V_strncpy(stats.m_playerInfo.m_steamid, pInfo->GetNetworkIDString(), 32);
+				V_strncpy(stats.m_playerInfo.m_name, pInfo->GetName(), sizeof(stats.m_playerInfo.m_name));
+				V_strncpy(stats.m_playerInfo.m_steamid, pInfo->GetNetworkIDString(), sizeof(stats.m_playerInfo.m_steamid));
+				V_strncpy(stats.m_playerInfo.m_ip, pPluginContext->GetPlayerIPPortString(i), sizeof(stats.m_playerInfo.m_ip));
 				stats.m_playerInfo.m_teamid = pInfo->GetTeamIndex();
 				CPlayerClassTracker *pTracker = data.m_pPlayerData->GetClassTracker();
 				stats.m_playerInfo.m_mostPlayedClass = pTracker->GetMostPlayedClass();

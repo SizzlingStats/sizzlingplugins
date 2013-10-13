@@ -226,11 +226,12 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 					}
 					CJsonObject temp3(buff);
 					const playerInfo_t *pInfo = &data[i].m_playerInfo;
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("team", pInfo->m_teamid);
 					temp3.InsertKV("name", pInfo->m_name);
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("ip", pInfo->m_ip);
 					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
 					temp3.InsertKV("playedclasses", pInfo->m_playedClasses);
+					temp3.InsertKV("team", pInfo->m_teamid);
 
 					const ScoreData *pScores = &data[i].m_scoreData;
 					temp3.InsertKV("kills", pScores->getStat(Kills));
@@ -344,10 +345,11 @@ void CWebStatsHandler::createMatchPlayerInfo(CUtlBuffer &buff)
 					}
 					CJsonObject temp3(buff);
 					const playerInfo_t *pInfo = &m_playerInfo[i];
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("team", pInfo->m_teamid);
 					temp3.InsertKV("name", pInfo->m_name);
+					temp3.InsertKV("steamid", pInfo->m_steamid);
+					temp3.InsertKV("ip", pInfo->m_ip);
 					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
+					temp3.InsertKV("team", pInfo->m_teamid);
 				}
 				m_playerInfoMutex.Unlock();
 			}
