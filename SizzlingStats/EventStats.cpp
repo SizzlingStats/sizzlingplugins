@@ -70,7 +70,7 @@ void CEventStats::OnTournamentMatchStart( CSizzPluginContext *pPluginContext, un
 			event.SetByte("entindex", i);
 			event.SetString("steamid", pInfo->GetNetworkIDString());
 			event.SetByte("teamid", pInfo->GetTeamIndex());
-			event.SetString("netaddr", pPluginContext->GetPlayerIPString(i));
+			event.SetString("netaddr", pPluginContext->GetPlayerIPPortString(i));
 			//event.SetByte("classid", blah);
 			event.SetBool("isstv", pInfo->IsHLTV());
 			event.SetBool("isbot", pInfo->IsFakeClient());
