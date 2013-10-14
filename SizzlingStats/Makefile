@@ -101,7 +101,8 @@ SIZZLINGLIB_OBJS = \
 	$(SIZZLIB_OBJ_DIR)/SC_helpers.o \
 	$(SIZZLIB_OBJ_DIR)/SizzFileSystem.o \
 	$(SIZZLIB_OBJ_DIR)/SizzPluginContext.o \
-	$(SIZZLIB_OBJ_DIR)/StaticSizeVector.o \
+	$(SIZZLIB_OBJ_DIR)/TFPlayerWrapper.o \
+	$(SIZZLIB_OBJ_DIR)/TFTeamWrapper.o \
 	$(SIZZLIB_OBJ_DIR)/UserIdTracker.o \
 	$(SIZZLIB_OBJ_DIR)/UserMessageHelpers.o \
 
