@@ -535,6 +535,7 @@ void CSizzPluginContext::MOTDPanelMessage( IRecipientFilter *pFilter, const char
 
 				// Contents of the panel, it can be treated as an url, filename or plain text
 				// depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
+				// urls have to be prefixed with http:// or https:// !!!
 				pBuffer->WriteString("msg");							
 				pBuffer->WriteString(msg);
 

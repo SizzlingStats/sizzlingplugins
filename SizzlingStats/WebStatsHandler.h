@@ -21,9 +21,9 @@
 #include "sizzstring.h"
 #include <functional>
 
-#define STATS_UPDATE_URL "sizzlingstats.com/api/stats/update"
-#define GAME_START_URL "sizzlingstats.com/api/stats/new"
-#define GAMEOVER_URL "sizzlingstats.com/api/stats/gameover"
+#define STATS_UPDATE_URL "http://sizzlingstats.com/api/stats/update"
+#define GAME_START_URL "http://sizzlingstats.com/api/stats/new"
+#define GAMEOVER_URL "http://sizzlingstats.com/api/stats/gameover"
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.2"
 
 typedef struct chatInfo_s
