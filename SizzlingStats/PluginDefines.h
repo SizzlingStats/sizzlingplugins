@@ -18,7 +18,7 @@
 //#define LOG_STATS
 
 #define PLUGIN_VERSION "0.9.3.2"
-#define URL_BASE "http://dl.dropboxusercontent.com/u/45675887/permlinks/tf2plugins/SizzlingStats/beta/"
+#define URL_BASE "https://bitbucket.org/jcristiano/sizzlingplugins/downloads/"
 
 #ifdef _WIN32
 #define META  "metawin32.txt"

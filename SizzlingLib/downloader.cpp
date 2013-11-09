@@ -39,6 +39,12 @@ bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 		connection.SetBodyWriteFunction(&rcvData);
 		connection.SetBodyWriteUserdata(&buf);
 
+		connection.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
+		connection.SetOption(CURLOPT_MAXREDIRS, 5L);
+
+		// should probably fix having to do this
+		connection.SetOption(CURLOPT_SSL_VERIFYPEER, 0L);
+
 	#ifndef NDEBUG
 		connection.SetOption(CURLOPT_VERBOSE, 1L);
 	#endif
