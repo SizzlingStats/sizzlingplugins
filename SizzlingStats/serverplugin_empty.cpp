@@ -394,6 +394,24 @@ void CEmptyServerPlugin::Unload( void )
 	curl_global_cleanup();
 	//DisconnectTier2Libraries( );
 	//DisconnectTier1Libraries( );
+
+#ifdef _WIN32
+	// MS Fix
+	//
+	// http://connect.microsoft.com/VisualStudio/feedback/details/781665/stl-using-std-threading-objects-adds-extra-load-count-for-hosted-dll
+	//
+
+		// get the current module handle
+		MEMORY_BASIC_INFORMATION mbi;
+		static int address;
+		VirtualQuery(&address, &mbi, sizeof(mbi));
+
+		// decrement the reference count
+		FreeLibrary(reinterpret_cast<HMODULE>(mbi.AllocationBase));
+
+	//
+	//
+#endif
 }
 
 //---------------------------------------------------------------------------------
