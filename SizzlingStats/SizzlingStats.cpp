@@ -708,7 +708,7 @@ void SizzlingStats::SS_ShowHtmlStats( CSizzPluginContext *pPluginContext, int en
 		}
 		else
 		{
-			h.SingleUserMOTDPanelMessage(entindex, "", cfg);
+			h.SingleUserMOTDPanelMessage(entindex, "http://", cfg);
 		}
 	}
 	else
@@ -726,7 +726,7 @@ void SizzlingStats::SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int en
 	motd_msg_cfg_t cfg;
 	cfg.type = MOTDPANEL_TYPE_URL;
 	cfg.visible = false;
-	h.SingleUserMOTDPanelMessage(entindex, "", cfg);
+	h.SingleUserMOTDPanelMessage(entindex, "http://", cfg);
 }
 
 void SizzlingStats::OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid )
