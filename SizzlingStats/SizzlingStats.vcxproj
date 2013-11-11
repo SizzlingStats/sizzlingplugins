@@ -74,13 +74,10 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
