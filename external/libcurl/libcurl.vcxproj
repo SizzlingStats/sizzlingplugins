@@ -307,6 +307,11 @@
     <ClInclude Include="src\wildcard.h" />
     <ClInclude Include="src\x509asn1.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\polarssl\PolarSSL.vcxproj">
+      <Project>{b474073b-d98e-438d-97c3-6d423e9f7f5e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

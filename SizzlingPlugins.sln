@@ -42,19 +42,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SizzlingRecord", "SizzlingR
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "external", "external", "{06CBF9EC-C927-44AF-8E83-60AC1034DA4C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "curl", "curl", "{BEE6A9DA-EA23-4EC4-934A-02F0B847D5FB}"
-	ProjectSection(SolutionItems) = preProject
-		external\curl\curl.h = external\curl\curl.h
-		external\curl\curlbuild.h = external\curl\curlbuild.h
-		external\curl\curlrules.h = external\curl\curlrules.h
-		external\curl\curlver.h = external\curl\curlver.h
-		external\curl\easy.h = external\curl\easy.h
-		external\curl\mprintf.h = external\curl\mprintf.h
-		external\curl\multi.h = external\curl\multi.h
-		external\curl\stdcheaders.h = external\curl\stdcheaders.h
-		external\curl\typecheck-gcc.h = external\curl\typecheck-gcc.h
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "open_steamworks", "open_steamworks", "{7627B7C6-79EC-4EE6-8F96-8FBE54D9C561}"
 	ProjectSection(SolutionItems) = preProject
 		external\open_steamworks\AppsCommon.h = external\open_steamworks\AppsCommon.h
@@ -335,7 +322,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{BEE6A9DA-EA23-4EC4-934A-02F0B847D5FB} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
 		{7627B7C6-79EC-4EE6-8F96-8FBE54D9C561} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
 		{B474073B-D98E-438D-97C3-6D423E9F7F5E} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
 		{C3AAF454-B5C3-4BB3-885F-738E467BBD7F} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}

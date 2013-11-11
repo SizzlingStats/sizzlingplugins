@@ -40,9 +40,9 @@
     <Import Project="..\propertysheets\common.props" />
     <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
     <Import Project="..\propertysheets\sizzlinglib.props" />
-    <Import Project="..\propertysheets\libcurl.props" />
     <Import Project="..\propertysheets\protobuf.props" />
     <Import Project="..\propertysheets\srcds_settings.props" />
+    <Import Project="..\propertysheets\libcurl.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -50,9 +50,9 @@
     <Import Project="..\propertysheets\common.props" />
     <Import Project="..\propertysheets\hl2sdk-ob-valve.props" />
     <Import Project="..\propertysheets\sizzlinglib.props" />
-    <Import Project="..\propertysheets\libcurl.props" />
     <Import Project="..\propertysheets\protobuf.props" />
     <Import Project="..\propertysheets\srcds_settings.props" />
+    <Import Project="..\propertysheets\libcurl.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -115,6 +115,14 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
   <ItemGroup>
     <None Include="..\sizzlingplugins.licenseheader" />
     <None Include="proto_messages\SizzEvent.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\external\libcurl\libcurl.vcxproj">
+      <Project>{c3aaf454-b5c3-4bb3-885f-738e467bbd7f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SizzlingLib\SizzlingLib.vcxproj">
+      <Project>{20cd0a53-492f-47f6-9b09-dc747d36dbd7}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

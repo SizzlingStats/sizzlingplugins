@@ -4,19 +4,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <ItemDefinitionGroup>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcurl.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Lib>
-      <AdditionalDependencies>libcurl.lib</AdditionalDependencies>
-    </Lib>
-    <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib\win32\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-    </Lib>
+    <Link />
+    <Lib />
+    <Lib />
     <ClCompile>
       <PreprocessorDefinitions>CURL_STATICLIB;WIN32;_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Lib>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
