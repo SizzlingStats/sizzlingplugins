@@ -311,8 +311,13 @@ polarssl_connect_step1(struct connectdata *conn,
                    &connssl->crl,
                    conn->host.name);
 
+#if POLARSSL_VERSION_NUMBER>0x01020000
+  ssl_set_own_cert_rsa(&connssl->ssl,
+                   &connssl->clicert, &connssl->rsa);
+#else
   ssl_set_own_cert(&connssl->ssl,
                    &connssl->clicert, &connssl->rsa);
+#endif /* POLARSSL_VERSION_NUMBER>0x01020000 */
 
   if(!Curl_inet_pton(AF_INET, conn->host.name, &addr) &&
 #ifdef ENABLE_IPV6

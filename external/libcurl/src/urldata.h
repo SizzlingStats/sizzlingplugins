@@ -117,6 +117,9 @@
 #include <polarssl/entropy.h>
 #include <polarssl/ctr_drbg.h>
 #endif /* POLARSSL_VERSION_NUMBER<0x01010000 */
+#if POLARSSL_VERSION_NUMBER>0x01020000
+#include <polarssl/compat-1.2.h>
+#endif /* POLARSSL_VERSION_NUMBER>0x01020000 */
 #endif /* USE_POLARSSL */
 
 #ifdef USE_CYASSL
