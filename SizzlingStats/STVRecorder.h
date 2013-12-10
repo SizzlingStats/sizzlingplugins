@@ -30,11 +30,16 @@ public:
 	void StopRecording( IVEngineServer *pEngine );
 
 private:
+	static const uint32_t DEMONAME_MAX_LEN = 128;
+
+private:
 	ConVarRef m_refTvEnable;
+	char *m_pDemoName;
 };
 
 inline CSTVRecorder::CSTVRecorder():
-	m_refTvEnable((IConVar*)NULL)
+	m_refTvEnable((IConVar*)NULL),
+	m_pDemoName(NULL)
 {
 }
 
@@ -45,10 +50,12 @@ inline CSTVRecorder::~CSTVRecorder()
 inline void CSTVRecorder::Load()
 {
 	m_refTvEnable.Init("tv_enable", false);
+	m_pDemoName = new char[DEMONAME_MAX_LEN];
 }
 
 inline void CSTVRecorder::Unload( IVEngineServer *pEngine )
 {
+	delete [] m_pDemoName;
 	StopRecording(pEngine);
 }
 
@@ -65,8 +72,7 @@ inline bool CSTVRecorder::StartRecording( IVEngineServer *pEngine, const char *s
 	uint32 month = ltime.tm_mon + 1;
 
 	// create the record string
-	char recordstring[128] = {};
-	V_snprintf(recordstring, 128, "tv_record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
+	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "tv_record %d%d%d_%d%d_%s\n", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 	
 	// unload the sourcemod match recorder plugin so we can take over
 	pEngine->ServerCommand( "sm plugins unload matchrecorder\n" );
@@ -78,7 +84,7 @@ inline bool CSTVRecorder::StartRecording( IVEngineServer *pEngine, const char *s
 	pEngine->ServerCommand( "tv_stoprecord\n" );
 
 	// start recording our demo
-	pEngine->ServerCommand( recordstring );
+	pEngine->ServerCommand( m_pDemoName );
 }
 
 inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
