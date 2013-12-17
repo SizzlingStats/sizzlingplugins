@@ -92,6 +92,8 @@ inline bool CSTVRecorder::StartRecording( IVEngineServer *pEngine, const char *s
 
 	// start recording our demo
 	pEngine->ServerCommand( cmd );
+
+	return true;
 }
 
 inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )

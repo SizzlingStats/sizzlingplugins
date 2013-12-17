@@ -13,8 +13,11 @@
 // Filename: SizzFileSystem.cpp
 ////////////////////////////////////////////////////////////////////////////////
 #include "SizzFileSystem.h"
+#include "dbg.h"
 #include <stdio.h>
 #include <sys/stat.h>
+
+#include <cassert>
 
 // do i need to error check these for NULL?
 
@@ -28,6 +31,7 @@ FileHandle_t SizzFileSystem::OpenFile( const char *pszPath, const char *pszOptio
 void SizzFileSystem::CloseFile( FileHandle_t file )
 {
 	fclose(reinterpret_cast<FILE*>(file));
+	file = nullptr;
 }
 
 bool SizzFileSystem::FileExists( const char *pszPath )
@@ -51,7 +55,40 @@ bool SizzFileSystem::IsOk( FileHandle_t file )
 	return !ferror(reinterpret_cast<FILE*>(file));
 }
 
+int SizzFileSystem::GetFileSize( FileHandle_t file )
+{
+	FILE *pFile = reinterpret_cast<FILE*>(file);
+	int fd = fileno(pFile);
+	struct stat buf;
+	int retval = fstat(fd, &buf);
+	return retval == 0 ? buf.st_size : -1;
+}
+
+int	SizzFileSystem::GetFileSize( const char *pszPath )
+{
+	struct stat buf;
+	int retval = stat(pszPath, &buf);
+	return retval == 0 ? buf.st_size : -1;
+}
+
+unsigned int SizzFileSystem::Read( void *pOutput, unsigned int numBytes, FileHandle_t file )
+{
+	return fread(pOutput, 1, numBytes, reinterpret_cast<FILE*>(file));
+}
+
 unsigned int SizzFileSystem::Write( const void *pInput, unsigned int numBytes, FileHandle_t file )
 {
 	return fwrite(pInput, 1, numBytes, reinterpret_cast<FILE*>(file));
+}
+
+void SizzFileSystem::ReadToMem( void *pMem, unsigned int maxsize, FileHandle_t file )
+{
+	assert(file);
+	assert(pMem);
+	FILE *pFile = reinterpret_cast<FILE*>(file);
+	fpos_t oldPos;
+	fgetpos(pFile, &oldPos);
+	rewind(pFile);
+	fread(pMem, 1, maxsize, pFile);
+	fsetpos(pFile, &oldPos);
 }

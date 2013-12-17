@@ -34,7 +34,12 @@ namespace sizzFile
 
 		bool			IsOk( FileHandle_t file );
 
+		int				GetFileSize( FileHandle_t file );
+		int				GetFileSize( const char *pszPath );
+
+		unsigned int	Read( void *pOutput, unsigned int numBytes, FileHandle_t file );
 		unsigned int	Write( const void *pInput, unsigned int numBytes, FileHandle_t file );
+		void			ReadToMem( void *pMem, unsigned int maxsize, FileHandle_t file );
 	}
 
 	class CBaseFile
@@ -68,14 +73,14 @@ namespace sizzFile
 		char *ReadLine( char *pOutput, int maxChars )
 		{
 			return g_pFullFileSystem->ReadLine( pOutput, maxChars, m_FileHandle );
-		}
+		}*/
 
 		int Read( void* pOutput, int size )
 		{
-			return g_pFullFileSystem->Read( pOutput, size, m_FileHandle );
+			return SizzFileSystem::Read( pOutput, size, m_FileHandle );
 		}
 
-		void MustRead( void* pOutput, int size )
+		/*void MustRead( void* pOutput, int size )
 		{
 			int ret=Read( pOutput, size );
 			if (ret != size )
@@ -120,6 +125,24 @@ namespace sizzFile
 		{
 			return ( m_FileHandle != NULL) &&
 				( SizzFileSystem::IsOk( m_FileHandle ) );
+		}
+	};
+
+	class CInputFile : public CBaseFile
+	{
+	public:
+		void Open( char const *pFname )
+		{
+			CBaseFile::Open( pFname, "rb" );
+		}
+
+		CInputFile( char const *pFname ) : CBaseFile()
+		{
+			Open( pFname );
+		}
+
+		CInputFile( void ) : CBaseFile()
+		{
 		}
 	};
 
