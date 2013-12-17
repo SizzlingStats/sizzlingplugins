@@ -67,6 +67,7 @@ IFileSystem			*g_pFullFileSystem = NULL;
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
 static ConVar version("sizz_stats_version", PLUGIN_VERSION_STRING, FCVAR_NOTIFY, "The version of SizzlingStats running.", &VersionChangeCallback);
+static ConVar upload_demos("sizz_stats_auto_upload_demos", "1", FCVAR_NOTIFY, "If nonzero, automatically uploads STV demos to sizzlingstats.com");
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
@@ -1044,24 +1045,27 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	m_SizzlingStats.SS_TournamentMatchEnded();
 	m_STVRecorder.StopRecording(m_plugin_context.GetEngine());
 	
-	//Get the upload url
-	char uploadUrl[256];
-	m_SizzlingStats.SS_GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
+	if (upload_demos.GetInt() != 0)
+	{
+		//Get the upload url
+		char uploadUrl[256];
+		m_SizzlingStats.SS_GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
 
-	//Get the filename of the newest demo
-	char demoName[256];
-	m_STVRecorder.LastRecordedDemo(demoName, sizeof(demoName));
-	V_strcat(demoName, ".dem", sizeof(demoName));
+		//Get the filename of the newest demo
+		char demoName[256];
+		m_STVRecorder.LastRecordedDemo(demoName, sizeof(demoName));
+		V_strcat(demoName, ".dem", sizeof(demoName));
 
-	//SizzFileSystem doesn't use "tf" as the base directory, so we must prepend it
-	char demoPath[MAX_PATH] = "tf/";
-	V_strcat(demoPath, demoName, sizeof(demoPath));
+		//SizzFileSystem doesn't use "tf" as the base directory, so we must prepend it
+		char demoPath[MAX_PATH] = "tf/";
+		V_strcat(demoPath, demoName, sizeof(demoPath));
 
-	S3UploadInfo_t info;
-	V_strncpy(info.uploadUrl, uploadUrl, sizeof(info.uploadUrl));
-	V_strncpy(info.sourcePath, demoPath, sizeof(info.sourcePath));
-	m_pS3UploaderThread->SetUploadInfo(info);
-	m_pS3UploaderThread->StartThread();
+		S3UploadInfo_t info;
+		V_strncpy(info.uploadUrl, uploadUrl, sizeof(info.uploadUrl));
+		V_strncpy(info.sourcePath, demoPath, sizeof(info.sourcePath));
+		m_pS3UploaderThread->SetUploadInfo(info);
+		m_pS3UploaderThread->StartThread();
+	}
 
 #ifdef PROTO_STATS
 	m_EventStats.SendNamedEvent("ss_tournament_match_end", m_plugin_context.GetCurrentTick());
