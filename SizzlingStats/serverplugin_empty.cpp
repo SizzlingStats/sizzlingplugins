@@ -226,12 +226,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	autoUpdateInfo_t a = { FULL_PLUGIN_PATH, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
 	m_pAutoUpdater = new CAutoUpdateThread(a, s_pluginInfo);
 
-	m_pS3UploaderThread = new CS3UploaderThread();
-
 	using namespace std::placeholders;
 	m_pAutoUpdater->SetOnFinishedUpdateCallback(std::bind(&CEmptyServerPlugin::OnAutoUpdateReturn, this, _1));
 	m_pAutoUpdater->StartThread();
 
+	m_pS3UploaderThread = new CS3UploaderThread();
 	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&CEmptyServerPlugin::OnS3UploadReturn, this));
 
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
@@ -387,9 +386,9 @@ void CEmptyServerPlugin::Unload( void )
 	}
 
 	m_SizzlingStats.SS_DeleteAllPlayerData();
-	
+	m_STVRecorder.Unload(m_plugin_context.GetEngine());
 	m_SizzlingStats.Unload();
-	m_STVRecorder.Unload(m_plugin_context.m_pEngine);
+	
 #ifdef PROTO_STATS
 	m_EventStats.Shutdown();
 #endif
@@ -994,7 +993,7 @@ void CEmptyServerPlugin::OnAutoUpdateReturn( bool bLoadUpdate )
 void CEmptyServerPlugin::OnS3UploadReturn()
 {
 	char temp[128] = {};
-	V_snprintf(temp, 256, "[SizzlingStats]: S3Upload completed\n");
+	V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload completed\n");
 	m_plugin_context.LogPrint(temp);
 }
 
@@ -1065,7 +1064,7 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 #ifdef PROTO_STATS
 	m_EventStats.SendNamedEvent("ss_tournament_match_end", m_plugin_context.GetCurrentTick());
 #endif
-	m_bTournamentMatchStarted = false;	
+	m_bTournamentMatchStarted = false;
 }
 
 #ifdef GetProp
