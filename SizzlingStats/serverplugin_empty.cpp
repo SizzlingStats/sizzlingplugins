@@ -1057,7 +1057,9 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	char demoPath[MAX_PATH] = "tf/";
 	V_strcat(demoPath, demoName, sizeof(demoPath));
 
-	S3UploadInfo_t info = {uploadUrl, demoPath, NULL};
+	S3UploadInfo_t info;
+	V_strncpy(info.uploadUrl, uploadUrl, sizeof(info.uploadUrl));
+	V_strncpy(info.sourcePath, demoPath, sizeof(info.sourcePath));
 	m_pS3UploaderThread->SetUploadInfo(info);
 	m_pS3UploaderThread->StartThread();
 

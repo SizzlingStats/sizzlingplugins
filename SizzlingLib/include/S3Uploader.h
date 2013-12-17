@@ -22,16 +22,16 @@ class CUtlBuffer;
 
 typedef struct S3UploadInfo_s
 {
-	char* uploadUrl;
-	char* sourcePath;
-	char* destPath;
+	char uploadUrl[256];
+	char sourcePath[256];
+	char destPath[256];
 } S3UploadInfo_t;
 
 class CS3Uploader
 {
 public:
 	void SetUploadInfo( const S3UploadInfo_t &info ) { m_info = info; }
-    bool UploadFile();
+	bool UploadFile();
 
 private:
 	S3UploadInfo_t m_info;
