@@ -160,7 +160,7 @@ private:
 	CConCommandHook m_UnpauseHook;
 	ConVarRef m_refTournamentMode;
 	CAutoUpdateThread	*m_pAutoUpdater;
-	S3Uploader::CS3UploaderThread	*m_pS3UploaderThread;
+	CS3UploaderThread	*m_pS3UploaderThread;
 	CTeamplayRoundBasedRules *m_pTeamplayRoundBasedRules;
 	int	*m_iRoundState;
 	bool *m_bInWaitingForPlayers;
@@ -225,7 +225,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	autoUpdateInfo_t a = { FULL_PLUGIN_PATH, URL_TO_UPDATED, URL_TO_META, PLUGIN_PATH, 0, PLUGIN_VERSION };
 	m_pAutoUpdater = new CAutoUpdateThread(a, s_pluginInfo);
 
-	m_pS3UploaderThread = new S3Uploader::CS3UploaderThread();
+	m_pS3UploaderThread = new CS3UploaderThread();
 
 	using namespace std::placeholders;
 	m_pAutoUpdater->SetOnFinishedUpdateCallback(std::bind(&CEmptyServerPlugin::OnAutoUpdateReturn, this, _1));
@@ -1051,15 +1051,14 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	//Get the filename of the newest demo
 	char demoName[256];
 	m_STVRecorder.LastRecordedDemo(demoName, sizeof(demoName));
-	strcat(demoName,".dem");
+	V_strcat(demoName, ".dem", sizeof(demoName));
 
 	//SizzFileSystem doesn't use "tf" as the base directory, so we must prepend it
 	char demoPath[MAX_PATH] = "tf/";
-	strcat(demoPath,demoName);
+	V_strcat(demoPath, demoName, sizeof(demoPath));
 
-	m_pS3UploaderThread->SetUploadUrl(uploadUrl);
-	m_pS3UploaderThread->SetSourcePath(demoPath);
-	m_pS3UploaderThread->SetDestPath(demoName);
+	S3UploadInfo_t info = {uploadUrl, demoPath, NULL};
+	m_pS3UploaderThread->SetUploadInfo(info);
 	m_pS3UploaderThread->StartThread();
 
 #ifdef PROTO_STATS

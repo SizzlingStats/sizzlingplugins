@@ -44,29 +44,25 @@ static size_t sendData(void *ptr, size_t size, size_t nmemb, void *userdata)
 	}
 }
 
-bool S3Uploader::UploadFile( S3UploadInfo_t const &info )
+bool CS3Uploader::UploadFile()
 {
 	CCurlConnection connection;
 	if (connection.Initialize())
 	{
-		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(info.sourcePath, "rb");
+		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(m_info.sourcePath, "rb");
 		if (file)
 		{
 			//Read the file into memory
 			size_t size = sizzFile::SizzFileSystem::GetFileSize(file);
 			unsigned char *pMem = new unsigned char[size]();
 			sizzFile::SizzFileSystem::ReadToMem(pMem, size, file);
+			sizzFile::SizzFileSystem::CloseFile(file);
     
 			//Place the file that is in memory into a CUtlBuffer, which cURL needs
 			CUtlBuffer fileBuff;
-			fileBuff.AssumeMemory(pMem, size, size, 0x8); //0x8 == READ_ONLY
+			fileBuff.AssumeMemory(pMem, size, size, CUtlBuffer::READ_ONLY);
 
-			//cURL needs a full path to upload to, including destination filename
-			/*char destPath[MAX_PATH];
-			strcpy(destPath,info.uploadUrl);
-			strcat(destPath,info.destPath);*/
-
-			connection.SetUrl(const_cast<char*>(info.uploadUrl));
+			connection.SetUrl(const_cast<char*>(m_info.uploadUrl));
 			connection.SetBodyReadFunction(&sendData);
 			connection.SetBodyReadUserdata(&fileBuff);
 
@@ -91,7 +87,6 @@ bool S3Uploader::UploadFile( S3UploadInfo_t const &info )
 
 			CURLcode res = connection.Perform();
 			
-			sizzFile::SizzFileSystem::CloseFile(file);
 			connection.Close();
 
 			if (res != CURLE_OK)
@@ -103,7 +98,7 @@ bool S3Uploader::UploadFile( S3UploadInfo_t const &info )
 		}
 		else
 		{
-			Msg( "could not open demo file %s\n", info.sourcePath);
+			Msg( "could not open demo file %s\n", m_info.sourcePath);
 			return false;
 		}
 	}

@@ -22,36 +22,27 @@ class CUtlBuffer;
 
 typedef struct S3UploadInfo_s
 {
-	char uploadUrl[256];
-	char sourcePath[256];
-	char destPath[256];
+	char* uploadUrl;
+	char* sourcePath;
+	char* destPath;
 } S3UploadInfo_t;
 
-namespace S3Uploader
+class CS3Uploader
 {
-	bool UploadFile( S3UploadInfo_t const &info );
+public:
+	void SetUploadInfo( const S3UploadInfo_t &info ) { m_info = info; }
+    bool UploadFile();
 
-	class CS3UploaderThread: public sizz::CThread
+private:
+	S3UploadInfo_t m_info;
+};
+
+class CS3UploaderThread: public sizz::CThread
 	{
 	public:
 		CS3UploaderThread():
 			m_finished_callback(nullptr)
 		{
-		}
-
-		void SetUploadUrl( const char *url )
-		{
-			strcpy(m_info.uploadUrl, url);
-		}
-
-		void SetSourcePath( const char *sp )
-		{
-			strcpy(m_info.sourcePath, sp);
-		}
-
-		void SetDestPath( const char *dp )
-		{
-			strcpy(m_info.destPath, dp);
 		}
 
 		virtual ~CS3UploaderThread()
@@ -71,7 +62,9 @@ namespace S3Uploader
 
 		virtual int Run()
 		{
-			bool ret = UploadFile(m_info);
+			m_infoLock.Lock();
+			bool ret = m_uploader.UploadFile();
+			m_infoLock.Unlock();
 			if (m_finished_callback)
 			{
 				m_finished_callback(ret);
@@ -84,11 +77,18 @@ namespace S3Uploader
 			Join();
 		}
 
+		void SetUploadInfo( const S3UploadInfo_t &info ) 
+		{
+			m_infoLock.Lock();
+			m_uploader.SetUploadInfo(info);
+			m_infoLock.Unlock();
+		}
+
 	private:
-		S3UploadInfo_t m_info;
+		CS3Uploader m_uploader;
+		sizz::CThreadMutex m_infoLock;
 		std::function<void(bool)> m_finished_callback;
 	};
-};
 
 #endif // S3_UPLOADER_H
 
