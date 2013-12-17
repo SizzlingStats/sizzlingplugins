@@ -24,7 +24,6 @@ typedef struct S3UploadInfo_s
 {
 	char uploadUrl[256];
 	char sourcePath[256];
-	char destPath[256];
 } S3UploadInfo_t;
 
 class CS3Uploader
