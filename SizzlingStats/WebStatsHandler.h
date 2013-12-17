@@ -19,11 +19,18 @@
 #include "ThreadFunctorQueue.h"
 #include "SSPlayerData.h"
 #include "sizzstring.h"
+#include "PluginDefines.h"
 #include <functional>
 
+#ifdef USE_STAGING_URLS
 #define STATS_UPDATE_URL "http://staging.sizzlingstats.com/api/stats/update"
 #define GAME_START_URL "http://staging.sizzlingstats.com/api/stats/new"
 #define GAMEOVER_URL "http://staging.sizzlingstats.com/api/stats/gameover"
+#else
+#define STATS_UPDATE_URL "http://sizzlingstats.com/api/stats/update"
+#define GAME_START_URL "http://sizzlingstats.com/api/stats/new"
+#define GAMEOVER_URL "http://sizzlingstats.com/api/stats/gameover"
+#endif
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.2"
 
 typedef struct chatInfo_s

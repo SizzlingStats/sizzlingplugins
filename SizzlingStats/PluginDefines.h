@@ -49,6 +49,8 @@
 
 #define PLUGIN_CONFIG_FILE "sizzlingplugins/" PLUGIN_NAME_NO_EX ".cfg"
 
+#define USE_STAGING_URLS
+
 static const char *s_pluginInfo[] = 
 {
 	PLUGIN_PATH,
