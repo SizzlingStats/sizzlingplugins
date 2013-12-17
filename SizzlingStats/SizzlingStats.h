@@ -117,12 +117,17 @@ public:
 
 	void	SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int endindex );
 
+	void	SS_GetSTVUploadUrl( char *str, int maxlen );
+
 private:
 	void	OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid );
 	void	LogSessionId( CSizzPluginContext *pPluginContext, const sizz::CString &str );
 
 	void	OnMatchUrlReceived( CSizzPluginContext *pPluginContext, sizz::CString matchurl );
 	void	CacheSiteOnPlayer( CSizzPluginContext *pPluginContext, const sizz::CString &match_url );
+
+	void	OnSTVUploadUrlReceived( CSizzPluginContext *pPluginContext, sizz::CString stvuploadurl );
+	void	LogSTVUploadUrl( CSizzPluginContext *pPluginContext, const sizz::CString &str );
 
 	//	gets the prop offests
 	void	GetPropOffsets();

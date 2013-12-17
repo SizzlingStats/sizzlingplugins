@@ -102,10 +102,12 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 	// this also doesn't compile on gcc or clang
 	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, pPluginContext, std::bind(sizz::move<sizz::CString>, _1)));
 	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, pPluginContext, std::bind(sizz::move<sizz::CString>, _1)));
+	m_pWebStatsHandler->SetReceiveSTVUploadUrlCallback(std::bind(&SizzlingStats::OnSTVUploadUrlReceived, this, pPluginContext, std::bind(sizz::move<sizz::CString>, _1)));
 #else
 	// the gcc implementation does 2 moves with no extra tricks (apparantly. need to test this)
 	m_pWebStatsHandler->SetReceiveSessionIdCallback(std::bind(&SizzlingStats::OnSessionIdReceived, this, pPluginContext, _1));
 	m_pWebStatsHandler->SetReceiveMatchUrlCallback(std::bind(&SizzlingStats::OnMatchUrlReceived, this, pPluginContext, _1));
+	m_pWebStatsHandler->SetReceiveSTVUploadUrlCallback(std::bind(&SizzlingStats::OnSTVUploadUrlReceived, this, pPluginContext, _1));
 #endif
 }
 
@@ -729,6 +731,14 @@ void SizzlingStats::SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int en
 	h.SingleUserMOTDPanelMessage(entindex, "http://", cfg);
 }
 
+void SizzlingStats::SS_GetSTVUploadUrl( char *str, int maxlen )
+{
+	if (str)
+	{
+		m_pWebStatsHandler->GetSTVUploadUrl(str, maxlen);
+	}
+}
+
 void SizzlingStats::OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid )
 {
 	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, pPluginContext, std::move(sessionid)));
@@ -745,6 +755,19 @@ void SizzlingStats::LogSessionId( CSizzPluginContext *pPluginContext, const sizz
 void SizzlingStats::OnMatchUrlReceived( CSizzPluginContext *pPluginContext, sizz::CString matchurl )
 {
 	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::CacheSiteOnPlayer, pPluginContext, std::move(matchurl)));
+}
+
+void SizzlingStats::OnSTVUploadUrlReceived( CSizzPluginContext *pPluginContext, sizz::CString stvuploadurl )
+{
+	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSTVUploadUrl, pPluginContext, std::move(stvuploadurl)));
+}
+
+void SizzlingStats::LogSTVUploadUrl( CSizzPluginContext *pPluginContext, const sizz::CString &str )
+{
+	const char *s3uploadurl = str.ToCString();
+	char temp[256] = {};
+	V_snprintf(temp, 256, "[SizzlingStats]: S3uploadurl %s\n", s3uploadurl);
+	pPluginContext->LogPrint(temp);
 }
 
 void SizzlingStats::CacheSiteOnPlayer( CSizzPluginContext *pPluginContext, const sizz::CString &match_url )
