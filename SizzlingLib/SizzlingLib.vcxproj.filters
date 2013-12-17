@@ -75,6 +75,9 @@
     <ClCompile Include="..\external\tier0\memoverride.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="S3Uploader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\autoupdate.h">
@@ -159,6 +162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\TFTeamWrapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\S3Uploader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

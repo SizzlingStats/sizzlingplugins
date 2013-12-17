@@ -198,6 +198,20 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 		CWebStatsHandler *pWebStats = static_cast<CWebStatsHandler*>(userdata);
 		pWebStats->SetMatchUrl(matchurl);
 	}
+	else if ( V_strstr( data, "stvuploadurl: " ) )
+	{
+		const char *pStart = V_strstr(data, " ") + 1;
+		int length = V_strlen(pStart) - 2; // -2 bytes for '\n' and '\r'
+
+		// keep the 2 bytes stripped when 
+		// passing to V_strncpy
+		char stvuploadurl[256];
+		length = length > sizeof(stvuploadurl)-1 ? sizeof(stvuploadurl)-1 : length;
+		V_strncpy(stvuploadurl, pStart, length+1);
+
+		CWebStatsHandler *pWebStats = static_cast<CWebStatsHandler*>(userdata);
+		pWebStats->SetSTVUploadUrl(stvuploadurl);
+	}
 		
 	return maxSize;
 }

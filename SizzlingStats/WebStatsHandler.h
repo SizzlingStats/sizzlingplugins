@@ -21,9 +21,9 @@
 #include "sizzstring.h"
 #include <functional>
 
-#define STATS_UPDATE_URL "http://sizzlingstats.com/api/stats/update"
-#define GAME_START_URL "http://sizzlingstats.com/api/stats/new"
-#define GAMEOVER_URL "http://sizzlingstats.com/api/stats/gameover"
+#define STATS_UPDATE_URL "http://staging.sizzlingstats.com/api/stats/update"
+#define GAME_START_URL "http://staging.sizzlingstats.com/api/stats/new"
+#define GAMEOVER_URL "http://staging.sizzlingstats.com/api/stats/gameover"
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.2"
 
 typedef struct chatInfo_s
@@ -89,12 +89,18 @@ typedef struct responseInfo_s
 	void SetMatchUrl( const char *url );
 	void GetMatchUrl( char *str, int maxlen );
 	void ResetMatchUrl();
+	bool HasSTVUploadUrl();
+	void SetSTVUploadUrl( const char *url );
+	void GetSTVUploadUrl( char *str, int maxlen );
+	void ResetSTVUploadUrl();
 
 private:
 	sizz::CThreadMutex	matchUrlMutex;
 	sizz::CThreadMutex	sessionIdMutex;
+	sizz::CThreadMutex	stvUploadUrlMutex;
 	char			matchUrl[128];
 	char			sessionId[64];
+	char			stvUploadUrl[256];
 } responseInfo_t;
 
 class CWebStatsHandler
@@ -115,6 +121,9 @@ public:
 	void GetMatchUrl( char *str, int maxlen );
 	bool HasMatchUrl();
 
+	void GetSTVUploadUrl( char *str, int maxlen );
+	bool HasSTVUploadUrl();
+
 	void PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat );
 
 	void SendStatsToWeb();
@@ -125,6 +134,7 @@ public:
 
 	void SetReceiveSessionIdCallback( std::function<void(sizz::CString)> func );
 	void SetReceiveMatchUrlCallback( std::function<void(sizz::CString)> func );
+	void SetReceiveSTVUploadUrlCallback( std::function<void(sizz::CString)> func );
 
 protected:
 	void SendStatsToWebInternal();
@@ -134,6 +144,7 @@ protected:
 private:
 	void SetSessionId( const char *sessionid );
 	void SetMatchUrl( const char *matchurl );
+	void SetSTVUploadUrl( const char *stvuploadurl );
 
 private:
 	// used for sending the data
@@ -162,6 +173,7 @@ private:
 	responseInfo_t					m_responseInfo;
 	std::function<void(sizz::CString)> m_RecvSessionIdCallback;
 	std::function<void(sizz::CString)> m_RecvMatchUrlCallback;
+	std::function<void(sizz::CString)> m_RecvSTVUploadUrlCallback;
 	// this is protected with the hostInfo mutex, 
 	// but isn't in the hostinfo since it's only 
 	// sent once
@@ -185,6 +197,9 @@ public:
 
 	void GetMatchUrl( char *str, int maxlen ) {}
 	bool HasMatchUrl() { return false; }
+
+	void GetSTVUploadUrl( char *str, int maxlen ) {}
+	bool HasSTVUploadUrl() { return false; }
 
 	void PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat ) {}
 
@@ -253,7 +268,8 @@ inline hostInfo_s &hostInfo_s::operator=( const hostInfo_s &other )
 
 inline responseInfo_s::responseInfo_s():
 	matchUrl(),
-	sessionId()
+	sessionId(),
+	stvUploadUrl()
 {
 }
 
@@ -323,6 +339,38 @@ inline void responseInfo_s::ResetMatchUrl()
 	matchUrlMutex.Unlock();
 }
 
+inline bool responseInfo_s::HasSTVUploadUrl()
+{
+	stvUploadUrlMutex.Lock();
+	bool result = stvUploadUrl[0] == '\0' ? false : true;
+	stvUploadUrlMutex.Unlock();
+	return result;
+}
+
+inline void responseInfo_s::SetSTVUploadUrl( const char *url )
+{
+	stvUploadUrlMutex.Lock();
+	V_strncpy(stvUploadUrl, url, sizeof(stvUploadUrl));
+	stvUploadUrlMutex.Unlock();
+}
+
+inline void responseInfo_s::GetSTVUploadUrl( char *str, int maxlen )
+{
+	if (str)
+	{
+		stvUploadUrlMutex.Lock();
+		V_strncpy(str, stvUploadUrl, maxlen);
+		stvUploadUrlMutex.Unlock();
+	}
+}
+
+inline void responseInfo_s::ResetSTVUploadUrl()
+{
+	stvUploadUrlMutex.Lock();
+	stvUploadUrl[0] = '\0';
+	stvUploadUrlMutex.Unlock();
+}
+
 #pragma warning( push )
 #pragma warning( disable : 4351 ) // arrays will be default initialized
 
@@ -377,6 +425,16 @@ inline bool CWebStatsHandler::HasMatchUrl()
 	return m_responseInfo.HasMatchUrl();
 }
 
+inline void CWebStatsHandler::GetSTVUploadUrl( char *str, int maxlen )
+{
+	m_responseInfo.GetSTVUploadUrl(str, maxlen);
+}
+
+inline bool CWebStatsHandler::HasSTVUploadUrl()
+{
+	return m_responseInfo.HasSTVUploadUrl();
+}
+
 inline void CWebStatsHandler::PlayerChatEvent( double timestamp, const char *szSteamId, const char *szText, bool bTeamChat )
 {
 	m_dataListAndChatMutex.Lock();
@@ -417,6 +475,11 @@ inline void CWebStatsHandler::SetReceiveMatchUrlCallback( std::function<void(siz
 	m_RecvMatchUrlCallback = std::move(func);
 }
 
+inline void CWebStatsHandler::SetReceiveSTVUploadUrlCallback( std::function<void(sizz::CString)> func )
+{
+	m_RecvSTVUploadUrlCallback = std::move(func);
+}
+
 inline void CWebStatsHandler::SetSessionId( const char *sessionid )
 {
 	m_responseInfo.SetSessionId(sessionid);
@@ -432,6 +495,15 @@ inline void CWebStatsHandler::SetMatchUrl( const char *matchurl )
 	if (m_RecvMatchUrlCallback)
 	{
 		m_RecvMatchUrlCallback(sizz::CString(matchurl));
+	}
+}
+
+inline void CWebStatsHandler::SetSTVUploadUrl( const char *stvuploadurl )
+{
+	m_responseInfo.SetSTVUploadUrl(stvuploadurl);
+	if (m_RecvSTVUploadUrlCallback)
+	{
+		m_RecvSTVUploadUrlCallback(sizz::CString(stvuploadurl));
 	}
 }
 
