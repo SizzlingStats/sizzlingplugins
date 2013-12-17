@@ -52,7 +52,7 @@ namespace sizzFile
 			m_FileHandle = NULL;
 		}
 
-		~CBaseFile( void )
+		virtual ~CBaseFile( void )
 		{
 			Close();
 		}

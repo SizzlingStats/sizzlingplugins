@@ -99,6 +99,7 @@ inline bool CSTVRecorder::StartRecording( IVEngineServer *pEngine, const char *s
 inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
 {
 	pEngine->ServerCommand( "tv_stoprecord\n" );
+	pEngine->ServerExecute();
 }
 
 inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const
