@@ -78,7 +78,13 @@
     <ClCompile Include="S3Uploader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\hl2sdk-ob-valve\public\zip_utils.cpp">
+    <ClCompile Include="..\external\public\zip_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\public\XUnzip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\external\public\XZip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
