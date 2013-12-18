@@ -114,6 +114,9 @@ move /Y "$(TargetDir)\sizzlingstats.dll" "$(orangebox_dir)\tf\addons\sizzlingplu
     <None Include="proto_messages\SizzEvent.proto" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\external\google\snappy\snappy.vcxproj">
+      <Project>{a2204530-e4d5-497c-b79c-be0a7ed4ff42}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\external\libcurl\libcurl.vcxproj">
       <Project>{c3aaf454-b5c3-4bb3-885f-738e467bbd7f}</Project>
     </ProjectReference>
