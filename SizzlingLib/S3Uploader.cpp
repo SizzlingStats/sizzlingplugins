@@ -18,6 +18,7 @@
 #include "curlconnection.h"
 #include "SizzFileSystem.h"
 #include "S3Uploader.h"
+#include "zip/xzip.h"
 
 static int dbgCurl(CURL *curl, curl_infotype type, char *info, size_t, void *)
 {
@@ -57,10 +58,23 @@ bool CS3Uploader::UploadFile()
 			unsigned char *pMem = new unsigned char[size]();
 			sizzFile::SizzFileSystem::ReadToMem(pMem, size, file);
 			sizzFile::SizzFileSystem::CloseFile(file);
-    
+			
+			//create zip archive in memory
+			unsigned char *pZip = new unsigned char[size]();
+			HZIP hz = CreateZip(pZip, size, ZIP_MEMORY);
+
+			//add demo file to the zip
+			ZipAdd(hz,m_info.sourcePath+3, pMem, size, ZIP_MEMORY);
+			
+			//get start loc of zip in memory and length of compressed zip
+			unsigned long ziplength;
+			void* zipstart;
+			ZipGetMemory(hz, &zipstart, &ziplength);
+
 			//Place the file that is in memory into a CUtlBuffer, which cURL needs
 			CUtlBuffer fileBuff;
-			fileBuff.AssumeMemory(pMem, size, size, CUtlBuffer::READ_ONLY);
+			fileBuff.AssumeMemory(zipstart, ziplength, ziplength, CUtlBuffer::READ_ONLY);
+			CloseZip(hz);
 
 			connection.SetUrl(const_cast<char*>(m_info.uploadUrl));
 			connection.SetBodyReadFunction(&sendData);
