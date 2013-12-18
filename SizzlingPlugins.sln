@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SizzlingStats", "SizzlingStats\SizzlingStats.vcxproj", "{F43527EE-8AAC-423D-99C2-DFAA567904E1}"
 	ProjectSection(ProjectDependencies) = postProject
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42} = {A2204530-E4D5-497C-B79C-BE0A7ED4FF42}
 		{20CD0A53-492F-47F6-9B09-DC747D36DBD7} = {20CD0A53-492F-47F6-9B09-DC747D36DBD7}
 	EndProjectSection
 EndProject
@@ -261,6 +262,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcurl", "external\libcurl
 		{B474073B-D98E-438D-97C3-6D423E9F7F5E} = {B474073B-D98E-438D-97C3-6D423E9F7F5E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "snappy", "external\google\snappy\snappy.vcxproj", "{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -317,6 +320,12 @@ Global
 		{C3AAF454-B5C3-4BB3-885F-738E467BBD7F}.Release|Win32.ActiveCfg = Release|Win32
 		{C3AAF454-B5C3-4BB3-885F-738E467BBD7F}.Release|Win32.Build.0 = Release|Win32
 		{C3AAF454-B5C3-4BB3-885F-738E467BBD7F}.Release|x64.ActiveCfg = Release|Win32
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}.Debug|Win32.Build.0 = Debug|Win32
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}.Debug|x64.ActiveCfg = Debug|Win32
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}.Release|Win32.ActiveCfg = Release|Win32
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}.Release|Win32.Build.0 = Release|Win32
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -325,5 +334,6 @@ Global
 		{7627B7C6-79EC-4EE6-8F96-8FBE54D9C561} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
 		{B474073B-D98E-438D-97C3-6D423E9F7F5E} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
 		{C3AAF454-B5C3-4BB3-885F-738E467BBD7F} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
+		{A2204530-E4D5-497C-B79C-BE0A7ED4FF42} = {06CBF9EC-C927-44AF-8E83-60AC1034DA4C}
 	EndGlobalSection
 EndGlobal
