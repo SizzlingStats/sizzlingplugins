@@ -17,6 +17,7 @@
 #include <time.h>
 
 #include "convar.h"
+#include "S3Uploader.h"
 
 class CSTVRecorder
 {
@@ -31,6 +32,7 @@ public:
 	void StopRecording( IVEngineServer *pEngine );
 
 	void LastRecordedDemo( char *dest, uint32_t maxlen ) const;
+	void UploadLastDemo( const char *url, CS3UploaderThread *s3uploader );
 
 private:
 	static const uint32_t DEMONAME_MAX_LEN = 128;
@@ -105,6 +107,25 @@ inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
 inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const
 {
 	V_strncpy(dest, m_pDemoName, maxlen);
+}
+
+inline void CSTVRecorder::UploadLastDemo( const char *url, CS3UploaderThread *s3uploader )
+{
+	S3UploadInfo_t info = {};
+
+	// set the source path
+	V_strcat(info.sourceDir, "tf/", sizeof(info.sourceDir));
+
+	// get source file
+	LastRecordedDemo(info.sourceFile, sizeof(info.sourceFile));
+	V_strcat(info.sourceFile, ".dem", sizeof(info.sourceFile));
+
+	// Set the upload url
+	V_strncpy(info.uploadUrl, url, sizeof(info.uploadUrl));
+
+	// put upload info into thread object and start it
+	s3uploader->SetUploadInfo(info);
+	s3uploader->StartThread();
 }
 
 #endif // STV_RECORDER_H

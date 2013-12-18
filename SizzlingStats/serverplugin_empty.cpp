@@ -1046,19 +1046,12 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	
 	if (upload_demos.GetInt() != 0)
 	{
-		S3UploadInfo_t info = {};
-
-		// get the source path
-		// SizzFileSystem doesn't use "tf" as the base directory, so we must prepend it
-		V_strcat(info.sourcePath, "tf/", sizeof(info.sourcePath));
-		m_STVRecorder.LastRecordedDemo(info.sourcePath+3, sizeof(info.sourcePath)-3);
-		V_strcat(info.sourcePath, ".dem", sizeof(info.sourcePath));
-
 		// Get the upload url
-		m_SizzlingStats.SS_GetSTVUploadUrl(info.uploadUrl, sizeof(info.uploadUrl));
+		char uploadUrl[256];
+		m_SizzlingStats.SS_GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
 
-		m_pS3UploaderThread->SetUploadInfo(info);
-		m_pS3UploaderThread->StartThread();
+		// Upload the demo to that url
+		m_STVRecorder.UploadLastDemo(uploadUrl, m_pS3UploaderThread);
 	}
 
 #ifdef PROTO_STATS
