@@ -135,7 +135,7 @@ public:
 private:
 	void LoadUpdatedPlugin();
 	void OnAutoUpdateReturn( bool bLoadUpdate );
-	void OnS3UploadReturn();
+	void OnS3UploadReturn( bool bUpdateSuccessful );
 	void GetGameRules();
 	void GetPropOffsets();
 
@@ -231,7 +231,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_pAutoUpdater->StartThread();
 
 	m_pS3UploaderThread = new CS3UploaderThread();
-	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&CEmptyServerPlugin::OnS3UploadReturn, this));
+	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&CEmptyServerPlugin::OnS3UploadReturn, this, _1));
 
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 	if (!g_pFullFileSystem)
@@ -990,10 +990,19 @@ void CEmptyServerPlugin::OnAutoUpdateReturn( bool bLoadUpdate )
 	}
 }
 
-void CEmptyServerPlugin::OnS3UploadReturn()
+void CEmptyServerPlugin::OnS3UploadReturn( bool bUploadSuccessful )
 {
 	char temp[128] = {};
-	V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload completed\n");
+
+	if (bUploadSuccessful)
+	{
+		V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload completed\n");
+	}
+	else
+	{
+		V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload failed. Is STV enabled?\n");
+	}
+
 	m_plugin_context.LogPrint(temp);
 }
 
