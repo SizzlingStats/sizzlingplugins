@@ -1051,7 +1051,7 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 		// get the source path
 		// SizzFileSystem doesn't use "tf" as the base directory, so we must prepend it
 		V_strcat(info.sourcePath, "tf/", sizeof(info.sourcePath));
-		m_STVRecorder.LastRecordedDemo(info.sourcePath+4, sizeof(info.sourcePath)-4);
+		m_STVRecorder.LastRecordedDemo(info.sourcePath+3, sizeof(info.sourcePath)-3);
 		V_strcat(info.sourcePath, ".dem", sizeof(info.sourcePath));
 
 		// Get the upload url
