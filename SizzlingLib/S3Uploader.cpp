@@ -50,28 +50,32 @@ bool CS3Uploader::UploadFile()
 	CCurlConnection connection;
 	if (connection.Initialize())
 	{
-		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(m_info.sourcePath, "rb");
+		char sourcePath[256];
+		V_strncpy(sourcePath, m_info.sourceDir, sizeof(sourcePath));
+		V_strcat(sourcePath, m_info.sourceFile, sizeof(sourcePath));
+
+		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(sourcePath, "rb");
 		if (file)
 		{
-			//Read the file into memory
+			// Read the file into memory
 			size_t size = sizzFile::SizzFileSystem::GetFileSize(file);
 			unsigned char *pMem = new unsigned char[size]();
 			sizzFile::SizzFileSystem::ReadToMem(pMem, size, file);
 			sizzFile::SizzFileSystem::CloseFile(file);
 			
-			//create zip archive in memory
+			// create zip archive in memory
 			unsigned char *pZip = new unsigned char[size]();
 			HZIP hz = CreateZip(pZip, size, ZIP_MEMORY);
 
-			//add demo file to the zip
-			ZipAdd(hz,m_info.sourcePath+3, pMem, size, ZIP_MEMORY);
+			// add demo file to the zip
+			ZipAdd(hz, m_info.sourceFile, pMem, size, ZIP_MEMORY);
 			
-			//get start loc of zip in memory and length of compressed zip
+			// get start loc of zip in memory and length of compressed zip
 			unsigned long ziplength;
 			void* zipstart;
 			ZipGetMemory(hz, &zipstart, &ziplength);
 
-			//Place the file that is in memory into a CUtlBuffer, which cURL needs
+			// Place the zip that is in memory into a CUtlBuffer for cURL to use
 			CUtlBuffer fileBuff;
 			fileBuff.AssumeMemory(zipstart, ziplength, ziplength, CUtlBuffer::READ_ONLY);
 			CloseZip(hz);
@@ -112,7 +116,7 @@ bool CS3Uploader::UploadFile()
 		}
 		else
 		{
-			Msg( "could not open demo file %s\n", m_info.sourcePath);
+			Msg( "could not open demo file %s\n", sourcePath);
 			return false;
 		}
 	}
