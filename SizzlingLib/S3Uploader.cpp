@@ -59,28 +59,27 @@ bool CS3Uploader::UploadFile()
 		{
 			// Read the file into memory
 			size_t size = sizzFile::SizzFileSystem::GetFileSize(file);
-			unsigned char *pMem = new unsigned char[size]();
-			sizzFile::SizzFileSystem::ReadToMem(pMem, size, file);
+			unsigned char *pBuf = new unsigned char[size*2]();
+			unsigned char *pFile = pBuf + size;
+			sizzFile::SizzFileSystem::ReadToMem(pFile, size, file);
 			sizzFile::SizzFileSystem::CloseFile(file);
 			
 			// create zip archive in memory
-			unsigned char *pZip = new unsigned char[size]();
-			HZIP hz = CreateZip(pZip, size, ZIP_MEMORY);
+			HZIP hz = CreateZip(pBuf, size, ZIP_MEMORY);
 
-			// add demo file to the zip
-			ZipAdd(hz, m_info.sourceFile, pMem, size, ZIP_MEMORY);
+			// assumes that the compressed size is always less than the original size
+			ZipAdd(hz, m_info.sourceFile, pFile, size, ZIP_MEMORY);
 			
 			// get start loc of zip in memory and length of compressed zip
 			unsigned long ziplength;
-			void* zipstart;
-			ZipGetMemory(hz, &zipstart, &ziplength);
+			ZipGetMemory(hz, nullptr, &ziplength);
+			CloseZip(hz);
 
 			// Place the zip that is in memory into a CUtlBuffer for cURL to use
 			CUtlBuffer fileBuff;
-			fileBuff.AssumeMemory(zipstart, ziplength, ziplength, CUtlBuffer::READ_ONLY);
-			CloseZip(hz);
+			fileBuff.AssumeMemory(pBuf, size*2, ziplength, CUtlBuffer::READ_ONLY);
 
-			connection.SetUrl(const_cast<char*>(m_info.uploadUrl));
+			connection.SetUrl(m_info.uploadUrl);
 			connection.SetBodyReadFunction(&sendData);
 			connection.SetBodyReadUserdata(&fileBuff);
 
