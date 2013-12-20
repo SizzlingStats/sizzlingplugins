@@ -18,6 +18,8 @@
 
 #include "convar.h"
 
+class CSizzPluginContext;
+
 class CSTVRecorder
 {
 public:
@@ -27,7 +29,7 @@ public:
 	void Load();
 	void Unload( IVEngineServer *pEngine );
 
-	bool StartRecording( IVEngineServer *pEngine, const char *szMapName );
+	bool StartRecording( CSizzPluginContext *context, const char *szMapName );
 	void StopRecording( IVEngineServer *pEngine );
 
 	void LastRecordedDemo( char *dest, uint32_t maxlen ) const;
@@ -38,11 +40,15 @@ private:
 private:
 	ConVarRef m_refTvEnable;
 	char *m_pDemoName;
+	bool m_recording;
+	bool m_demoToUpload;
 };
 
 inline CSTVRecorder::CSTVRecorder():
 	m_refTvEnable((IConVar*)NULL),
-	m_pDemoName(NULL)
+	m_pDemoName(NULL),
+	m_recording(false),
+	m_demoToUpload(false)
 {
 }
 
@@ -62,44 +68,15 @@ inline void CSTVRecorder::Unload( IVEngineServer *pEngine )
 	StopRecording(pEngine);
 }
 
-inline bool CSTVRecorder::StartRecording( IVEngineServer *pEngine, const char *szMapName )
-{
-	// get the time as an int64
-	time_t t = time(NULL);
-
-	// convert it to a struct of time values
-	struct tm ltime = *localtime(&t);
-
-	// normalize the year and month
-	uint32 year = ltime.tm_year + 1900;
-	uint32 month = ltime.tm_mon + 1;
-
-	// construct the demo file name
-	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "%d%d%d_%d%d_%s", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
-	
-	// create the record string
-	char cmd[10 + DEMONAME_MAX_LEN + 1] = {};
-	V_snprintf(cmd, sizeof(cmd), "tv_record %s\n", m_pDemoName);
-
-	// unload the sourcemod match recorder plugin so we can take over
-	pEngine->ServerCommand( "sm plugins unload matchrecorder\n" );
-
-	// turn off stv auto recording by tf2
-	pEngine->ServerCommand( "tv_autorecord 0\n" );
-
-	// stop recording the current demo if someone is
-	pEngine->ServerCommand( "tv_stoprecord\n" );
-
-	// start recording our demo
-	pEngine->ServerCommand( cmd );
-
-	return true;
-}
-
 inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
 {
-	pEngine->ServerCommand( "tv_stoprecord\n" );
-	pEngine->ServerExecute();
+	if (m_recording)
+	{
+		m_recording = false;
+		m_demoToUpload = true;
+		pEngine->ServerCommand( "tv_stoprecord\n" );
+		pEngine->ServerExecute();
+	}
 }
 
 inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const

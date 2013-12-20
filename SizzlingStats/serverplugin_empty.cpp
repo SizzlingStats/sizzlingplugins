@@ -1030,7 +1030,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 
 	m_logstats.TournamentMatchStarted(hostname, mapname, bluname, redname);
 	m_SizzlingStats.SS_TournamentMatchStarted(&m_plugin_context);
-	m_STVRecorder.StartRecording(m_plugin_context.GetEngine(), mapname);
+	m_STVRecorder.StartRecording(&m_plugin_context, mapname);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
 	m_EventStats.OnTournamentMatchStart(&m_plugin_context, tick);

@@ -48,6 +48,9 @@
     <ClCompile Include="EventStats.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="STVRecorder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SizzlingStats.h">
