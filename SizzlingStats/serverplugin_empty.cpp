@@ -135,7 +135,7 @@ public:
 private:
 	void LoadUpdatedPlugin();
 	void OnAutoUpdateReturn( bool bLoadUpdate );
-	void OnS3UploadReturn();
+	void OnS3UploadReturn( bool bUpdateSuccessful );
 	void GetGameRules();
 	void GetPropOffsets();
 
@@ -231,7 +231,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_pAutoUpdater->StartThread();
 
 	m_pS3UploaderThread = new CS3UploaderThread();
-	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&CEmptyServerPlugin::OnS3UploadReturn, this));
+	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&CEmptyServerPlugin::OnS3UploadReturn, this, _1));
 
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 	if (!g_pFullFileSystem)
@@ -990,10 +990,19 @@ void CEmptyServerPlugin::OnAutoUpdateReturn( bool bLoadUpdate )
 	}
 }
 
-void CEmptyServerPlugin::OnS3UploadReturn()
+void CEmptyServerPlugin::OnS3UploadReturn( bool bUploadSuccessful )
 {
 	char temp[128] = {};
-	V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload completed\n");
+
+	if (bUploadSuccessful)
+	{
+		V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload completed\n");
+	}
+	else
+	{
+		V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload failed. Is STV enabled?\n");
+	}
+
 	m_plugin_context.LogPrint(temp);
 }
 
@@ -1046,19 +1055,12 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	
 	if (upload_demos.GetInt() != 0)
 	{
-		S3UploadInfo_t info = {};
-
-		// get the source path
-		// SizzFileSystem doesn't use "tf" as the base directory, so we must prepend it
-		V_strcat(info.sourcePath, "tf/", sizeof(info.sourcePath));
-		m_STVRecorder.LastRecordedDemo(info.sourcePath+3, sizeof(info.sourcePath)-3);
-		V_strcat(info.sourcePath, ".dem", sizeof(info.sourcePath));
-
 		// Get the upload url
-		m_SizzlingStats.SS_GetSTVUploadUrl(info.uploadUrl, sizeof(info.uploadUrl));
+		char uploadUrl[256];
+		m_SizzlingStats.SS_GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
 
-		m_pS3UploaderThread->SetUploadInfo(info);
-		m_pS3UploaderThread->StartThread();
+		// Upload the demo to that url
+		m_STVRecorder.UploadLastDemo(uploadUrl, m_pS3UploaderThread);
 	}
 
 #ifdef PROTO_STATS

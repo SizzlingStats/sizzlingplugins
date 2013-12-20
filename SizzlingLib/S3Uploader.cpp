@@ -18,6 +18,7 @@
 #include "curlconnection.h"
 #include "SizzFileSystem.h"
 #include "S3Uploader.h"
+#include "zip/xzip.h"
 
 static int dbgCurl(CURL *curl, curl_infotype type, char *info, size_t, void *)
 {
@@ -49,20 +50,36 @@ bool CS3Uploader::UploadFile()
 	CCurlConnection connection;
 	if (connection.Initialize())
 	{
-		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(m_info.sourcePath, "rb");
+		char sourcePath[256];
+		V_strncpy(sourcePath, m_info.sourceDir, sizeof(sourcePath));
+		V_strcat(sourcePath, m_info.sourceFile, sizeof(sourcePath));
+
+		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(sourcePath, "rb");
 		if (file)
 		{
-			//Read the file into memory
+			// Read the file into memory
 			size_t size = sizzFile::SizzFileSystem::GetFileSize(file);
-			unsigned char *pMem = new unsigned char[size]();
-			sizzFile::SizzFileSystem::ReadToMem(pMem, size, file);
+			unsigned char *pBuf = new unsigned char[size*2]();
+			unsigned char *pFile = pBuf + size;
+			sizzFile::SizzFileSystem::ReadToMem(pFile, size, file);
 			sizzFile::SizzFileSystem::CloseFile(file);
-    
-			//Place the file that is in memory into a CUtlBuffer, which cURL needs
-			CUtlBuffer fileBuff;
-			fileBuff.AssumeMemory(pMem, size, size, CUtlBuffer::READ_ONLY);
+			
+			// create zip archive in memory
+			HZIP hz = CreateZip(pBuf, size, ZIP_MEMORY);
 
-			connection.SetUrl(const_cast<char*>(m_info.uploadUrl));
+			// assumes that the compressed size is always less than the original size
+			ZipAdd(hz, m_info.sourceFile, pFile, size, ZIP_MEMORY);
+			
+			// get start loc of zip in memory and length of compressed zip
+			unsigned long ziplength;
+			ZipGetMemory(hz, nullptr, &ziplength);
+			CloseZip(hz);
+
+			// Place the zip that is in memory into a CUtlBuffer for cURL to use
+			CUtlBuffer fileBuff;
+			fileBuff.AssumeMemory(pBuf, size*2, ziplength, CUtlBuffer::READ_ONLY);
+
+			connection.SetUrl(m_info.uploadUrl);
 			connection.SetBodyReadFunction(&sendData);
 			connection.SetBodyReadUserdata(&fileBuff);
 
@@ -98,7 +115,7 @@ bool CS3Uploader::UploadFile()
 		}
 		else
 		{
-			Msg( "could not open demo file %s\n", m_info.sourcePath);
+			Msg( "could not open demo file %s\n", sourcePath);
 			return false;
 		}
 	}
