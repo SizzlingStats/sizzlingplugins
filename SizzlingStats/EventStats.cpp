@@ -17,6 +17,7 @@
 #include "igameevents.h"
 #include "SC_helpers.h"
 #include "KeyValues.h"
+#include "TFPlayerWrapper.h"
 
 #define FOR_EACH_SUBKEY( kvRoot, kvSubKey ) \
 for ( KeyValues * kvSubKey = kvRoot->GetFirstSubKey(); kvSubKey != NULL; kvSubKey = kvSubKey->GetNextKey() )
@@ -58,9 +59,10 @@ void CEventStats::OnTournamentMatchStart( CSizzPluginContext *pPluginContext, un
 	}
 
 	int max_clients = pPluginContext->GetMaxClients();
-	for (int i = 1; i < max_clients; ++i)
+	for (int i = 1; i <= max_clients; ++i)
 	{
 		IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(i);
+		CTFPlayerWrapper player(pPluginContext->BaseEntityFromEntIndex(i));
 		if (pInfo && pInfo->IsConnected())
 		{
 			CSizzEvent event(m_event_sender.AllocEvent(), server_tick);
@@ -71,7 +73,7 @@ void CEventStats::OnTournamentMatchStart( CSizzPluginContext *pPluginContext, un
 			event.SetString("steamid", pInfo->GetNetworkIDString());
 			event.SetByte("teamid", pInfo->GetTeamIndex());
 			event.SetString("netaddr", pPluginContext->GetPlayerIPPortString(i));
-			//event.SetByte("classid", blah);
+			event.SetByte("class", player.GetClass());
 			event.SetBool("isstv", pInfo->IsHLTV());
 			event.SetBool("isbot", pInfo->IsFakeClient());
 			event.SetBool("isreplay", pInfo->IsReplay());
