@@ -88,6 +88,9 @@ inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const
 
 inline void CSTVRecorder::UploadLastDemo( const char *url, CS3UploaderThread *s3uploader )
 {
+	if ( !m_demoToUpload )
+		return;
+
 	S3UploadInfo_t info = {};
 
 	// set the source path
