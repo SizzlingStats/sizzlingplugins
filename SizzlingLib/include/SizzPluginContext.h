@@ -231,6 +231,10 @@ public:
 	// of the player with the passed in ent index.
 	const char *GetPlayerIPPortString( int ent_index );
 
+	// returns true if the server is set up and ready 
+	// to record a demo.
+	bool CanRecordDemo();
+
 protected:
 	void LevelShutdown();
 

@@ -303,7 +303,7 @@ void CSizzPluginContext::RemoveListener( IGameEventListener2 *listener )
 
 IPlayerInfo *CSizzPluginContext::GetPlayerInfo( int ent_index )
 {
-	if ((1 <= ent_index) && (ent_index < GetMaxClients()))
+	if ((1 <= ent_index) && (ent_index <= GetMaxClients()))
 	{
 		edict_t *pEdict = EdictFromEntIndex(ent_index);
 		if (pEdict && !pEdict->IsFree())
@@ -648,6 +648,20 @@ const char *CSizzPluginContext::GetPlayerIPPortString( int ent_index )
 		return pNetInfo->GetAddress();
 	}
 	return "";
+}
+
+bool CSizzPluginContext::CanRecordDemo()
+{
+	for (int i = 1; i <= GetMaxClients(); ++i)
+	{
+		edict_t *pEdict = EdictFromEntIndex(i);
+		IPlayerInfo *pInfo = m_pPlayerInfoManager->GetPlayerInfo(pEdict);
+		if (pInfo && pInfo->IsHLTV())
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void CSizzPluginContext::LevelShutdown()
