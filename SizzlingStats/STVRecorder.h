@@ -17,6 +17,7 @@
 #include <time.h>
 
 #include "convar.h"
+#include "S3Uploader.h"
 
 class CSizzPluginContext;
 
@@ -33,6 +34,7 @@ public:
 	void StopRecording( IVEngineServer *pEngine );
 
 	void LastRecordedDemo( char *dest, uint32_t maxlen ) const;
+	void UploadLastDemo( const char *url, CS3UploaderThread *s3uploader );
 
 private:
 	static const uint32_t DEMONAME_MAX_LEN = 128;
@@ -82,6 +84,40 @@ inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
 inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const
 {
 	V_strncpy(dest, m_pDemoName, maxlen);
+}
+
+inline void CSTVRecorder::UploadLastDemo( const char *url, CS3UploaderThread *s3uploader )
+{
+	if (!m_demoToUpload)
+	{
+		if (m_recording)
+		{
+			Msg("[SizzlingStats]: Could not upload STV demo: recording still in progress\n");
+		}
+		else
+		{
+			Msg("[SizzlingStats]: Could not upload STV demo: no demo to upload\n");
+		}
+		return;
+	}
+
+	S3UploadInfo_t info = {};
+
+	// set the source path
+	V_strcat(info.sourceDir, "tf/", sizeof(info.sourceDir));
+
+	// get source file
+	LastRecordedDemo(info.sourceFile, sizeof(info.sourceFile));
+	V_strcat(info.sourceFile, ".dem", sizeof(info.sourceFile));
+
+	// Set the upload url
+	V_strncpy(info.uploadUrl, url, sizeof(info.uploadUrl));
+
+	// put upload info into thread object and start it
+	s3uploader->SetUploadInfo(info);
+	s3uploader->StartThread();
+
+	m_demoToUpload = false;
 }
 
 #endif // STV_RECORDER_H

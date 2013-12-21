@@ -16,8 +16,27 @@ bool CSTVRecorder::StartRecording( CSizzPluginContext *context, const char *szMa
 {
 	// sourcetv doesn't care if tv_enable is 0 or 1 while the bot is connected.
 	// stv will always record if the bot is connected
-	if (m_recording || !m_refTvEnable.GetBool() || !context->CanRecordDemo())
+	bool canRecordDemo = context->CanRecordDemo();
+	if (m_recording || !m_refTvEnable.GetBool() || !canRecordDemo)
 	{
+		char temp[128] = {};
+
+		if (m_recording)
+		{
+			V_snprintf(temp, sizeof(temp), "[SizzlingStats]: Could not record STV demo: recording already in progress\n");
+			context->LogPrint(temp);
+		}
+		if (!m_refTvEnable.GetBool())
+		{
+			V_snprintf(temp, sizeof(temp), "[SizzlingStats]: Could not record STV demo: STV is not enabled\n");
+			context->LogPrint(temp);
+		}
+		if (!canRecordDemo)
+		{
+			V_snprintf(temp, sizeof(temp), "[SizzlingStats]: Could not record STV demo: the engine is not in a state to record\n");
+			context->LogPrint(temp);
+		}
+
 		return false;
 	}
 
