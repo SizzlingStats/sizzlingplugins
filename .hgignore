@@ -18,3 +18,4 @@ vcpm$
 syntax: glob
 Debug/
 Release/
+*.opensdf
