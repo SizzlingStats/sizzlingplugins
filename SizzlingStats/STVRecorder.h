@@ -88,15 +88,16 @@ inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const
 
 inline void CSTVRecorder::UploadLastDemo( const char *url, CS3UploaderThread *s3uploader )
 {
-	if ( !m_demoToUpload )
+	if (!m_demoToUpload)
 	{
-		Msg("[SizzlingStats]: Could not upload STV demo: no demo to upload\n");
-		return;
-	}
-
-	if ( m_recording )
-	{
-		Msg("[SizzlingStats]: Could not upload STV demo: recording still in progress\n");
+		if (m_recording)
+		{
+			Msg("[SizzlingStats]: Could not upload STV demo: recording still in progress\n");
+		}
+		else
+		{
+			Msg("[SizzlingStats]: Could not upload STV demo: no demo to upload\n");
+		}
 		return;
 	}
 
