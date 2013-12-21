@@ -992,18 +992,14 @@ void CEmptyServerPlugin::OnAutoUpdateReturn( bool bLoadUpdate )
 
 void CEmptyServerPlugin::OnS3UploadReturn( bool bUploadSuccessful )
 {
-	char temp[128] = {};
-
 	if (bUploadSuccessful)
 	{
-		V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload completed\n");
+		Msg( "[SizzlingStats]: S3Upload completed\n");
 	}
 	else
 	{
-		V_snprintf(temp, sizeof(temp), "[SizzlingStats]: S3Upload failed. Is STV enabled?\n");
+		Msg("[SizzlingStats]: S3Upload failed\n");
 	}
-
-	m_plugin_context.LogPrint(temp);
 }
 
 void CEmptyServerPlugin::GetGameRules()
