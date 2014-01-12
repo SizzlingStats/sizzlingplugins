@@ -14,6 +14,7 @@
 
 #include "tier1/utlvector.h"
 #include "PlayerClassTracker.h"
+#include "strtools.h"
 
 class CBaseEntity;
 
@@ -44,81 +45,53 @@ enum stats
 	MedPicks,
 	ShotsFired,
 	ShotsHit,
-	//SumTimeCharging,
 	NumOfStats
 };
 
 typedef struct extradata_s
 {
-	extradata_s():healsrecv(0), medpicks(0), ubersdropped(0)//, shots_fired(0), shots_hit(0), currentubertime(0.0), sumofubertimes(0.0)
+	extradata_s():
+		healsrecv(0), medpicks(0), ubersdropped(0)
 	{
 	}
-
-	//extradata_s( int ): healsrecv(0), medpicks(0), ubersdropped(0)//, shots_fired(0), shots_hit(0), currentubertime(0.0), sumofubertimes(0.0)
-	//{
-	//}
 
 	extradata_s &operator = ( const int a )
 	{
 		healsrecv = a;
 		medpicks = a;
 		ubersdropped = a;
-		//shots_fired = a;
-		//shots_hit = a;
 		return *this;
 	}
 
 	int healsrecv;
 	short medpicks;
 	short ubersdropped;
-	//unsigned int shots_fired;
-	// shots_hit will always be <= shots_fired
-	//unsigned int shots_hit;
-	//float currentubertime;
-	//float sumofubertimes;
 } extradata_t;
 
 struct ScoreData
 {
 #pragma warning( disable : 4351 )
-	ScoreData(): data()
-	{
-		/*for ( int i = 20; i < NumOfStats; ++i )
-		{
-			data[i] = 0;
-		}*/
-	}
+	ScoreData(): data() {}
 #pragma warning( default : 4351 )
+
 	int data[NumOfStats];
 
 	int getStat( stats Stat ) const
 	{
 		return data[Stat];
 	}
+
 	ScoreData &operator += ( const ScoreData &a )
 	{
-		//V_memcpy(data, &a, sizeof(a));
 		for ( int i = 0; i < NumOfStats; ++i )
 			data[i] += a.data[i];
 		return *this;
 	}
 
-	//ScoreData &operator = ( ScoreData &a )	// just examples from the ibm site CAUSE I SUCK
-	//{
-	//	return a;
-	//}
-
 	void Reset()
 	{
-		for ( int i = 0; i < NumOfStats; ++i )
-			data[i] = 0;
+		V_memset(data, 0, sizeof(data));
 	}
-
-	//ScoreData &operator = ( int a )
-	//{
-	//	V_memcpy(data, &a, sizeof(a));
-	//	return *this;
-	//}
 };
 
 struct ScoreDataOffsets
@@ -134,19 +107,18 @@ class SS_PlayerData
 public:
 	SS_PlayerData();
 
-	void SetBaseEntity( CBaseEntity *pEnt ) { m_base_entity = pEnt; }
+	void Reset( CBaseEntity *pEnt );
 	CBaseEntity *GetBaseEntity() const { return m_base_entity; }
 
 	void		UpdateRoundStatsData( const unsigned int pPropOffsets[] );
 	void		ResetRoundStatsData();
 	ScoreData	GetRoundStatsData();
 
-	void		UpdateRoundExtraData(  extradata_t &dat );
+	void		UpdateRoundExtraData( const extradata_t &dat );
 
 	int			GetStat( int StatID );
 
 	CPlayerClassTracker	*GetClassTracker();
-	int			GetClass(unsigned int playerClassOffset);
 
 	void TriggerCapFix()
 	{

@@ -11,7 +11,9 @@
 
 #include "PlayerClassTracker.h"
 
-void CPlayerClassTracker::StartRecording( EPlayerClass player_class, uint64 curtime )
+void CPlayerClassTracker::Reset( 
+	EPlayerClass player_class /*= k_ePlayerClassUnknown*/,
+	uint64 curtime /*= 0*/ )
 {
 	// reset all the data
 	m_timeplayed[0] = 0;
@@ -27,6 +29,11 @@ void CPlayerClassTracker::StartRecording( EPlayerClass player_class, uint64 curt
 	m_currentClass = player_class;
 	m_mostPlayedClass = player_class;
 	ResetFlags(player_class);
+}
+
+void CPlayerClassTracker::StartRecording( EPlayerClass player_class, uint64 curtime )
+{
+	Reset(player_class, curtime);
 }
 
 void CPlayerClassTracker::PlayerChangedClass( EPlayerClass player_class, uint64 curtime )
