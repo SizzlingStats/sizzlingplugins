@@ -38,57 +38,57 @@ private:
 };
 
 class CS3UploaderThread: public sizz::CThread
+{
+public:
+	CS3UploaderThread():
+		m_finished_callback(nullptr)
 	{
-	public:
-		CS3UploaderThread():
-			m_finished_callback(nullptr)
-		{
-		}
+	}
 
-		virtual ~CS3UploaderThread()
-		{
-		}
+	virtual ~CS3UploaderThread()
+	{
+	}
 
-		void StartThread()
-		{
-			Join();
-			Start();
-		}
+	void StartThread()
+	{
+		Join();
+		Start();
+	}
 
-		void SetOnFinishedS3UploadCallback( std::function<void(bool)> callback )
-		{
-			m_finished_callback = std::move(callback);
-		}
+	void SetOnFinishedS3UploadCallback( std::function<void(bool)> callback )
+	{
+		m_finished_callback = std::move(callback);
+	}
 
-		virtual int Run()
+	virtual int Run()
+	{
+		m_infoLock.Lock();
+		bool ret = m_uploader.UploadFile();
+		m_infoLock.Unlock();
+		if (m_finished_callback)
 		{
-			m_infoLock.Lock();
-			bool ret = m_uploader.UploadFile();
-			m_infoLock.Unlock();
-			if (m_finished_callback)
-			{
-				m_finished_callback(ret);
-			}
-			return 0;
+			m_finished_callback(ret);
 		}
+		return 0;
+	}
 
-		void ShutDown()
-		{
-			Join();
-		}
+	void ShutDown()
+	{
+		Join();
+	}
 
-		void SetUploadInfo( const S3UploadInfo_t &info ) 
-		{
-			m_infoLock.Lock();
-			m_uploader.SetUploadInfo(info);
-			m_infoLock.Unlock();
-		}
+	void SetUploadInfo( const S3UploadInfo_t &info ) 
+	{
+		m_infoLock.Lock();
+		m_uploader.SetUploadInfo(info);
+		m_infoLock.Unlock();
+	}
 
-	private:
-		CS3Uploader m_uploader;
-		sizz::CThreadMutex m_infoLock;
-		std::function<void(bool)> m_finished_callback;
-	};
+private:
+	CS3Uploader m_uploader;
+	sizz::CThreadMutex m_infoLock;
+	std::function<void(bool)> m_finished_callback;
+};
 
 #endif // S3_UPLOADER_H
 
