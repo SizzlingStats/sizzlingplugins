@@ -103,7 +103,6 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 	m_pS3UploaderThread = new CS3UploaderThread();
 
 	using namespace std::placeholders;
-	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&SizzlingStats::OnS3UploadReturn, this, _1));
 #ifdef _WIN32
 	// this hack makes it so that VC++11 outputs 2 moves instead of a copy and a move when calling the std::functions
 	// this also doesn't compile on gcc or clang
@@ -423,17 +422,6 @@ void SizzlingStats::SS_TournamentMatchEnded( CSizzPluginContext *pPluginContext 
 	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
 	m_pWebStatsHandler->SendGameOverEvent(m_flMatchDuration);
 	m_STVRecorder.StopRecording(pPluginContext->GetEngine());
-
-	if (upload_demos.GetInt() != 0)
-	{
-		// Get the upload url
-		char uploadUrl[256];
-		m_pWebStatsHandler->GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
-
-		// Upload the demo to that url
-		m_STVRecorder.UploadLastDemo(uploadUrl, m_pS3UploaderThread);
-	}
-
 	//SetTeamScores(0, 0);
 }
 
@@ -734,6 +722,8 @@ void SizzlingStats::SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int en
 
 void SizzlingStats::OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid )
 {
+	using namespace std::placeholders;
+	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&SizzlingStats::OnS3UploadReturn, this, sessionid, _1));
 	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, pPluginContext, std::move(sessionid)));
 }
 
@@ -752,6 +742,11 @@ void SizzlingStats::OnMatchUrlReceived( CSizzPluginContext *pPluginContext, sizz
 
 void SizzlingStats::OnSTVUploadUrlReceived( CSizzPluginContext *pPluginContext, sizz::CString stvuploadurl )
 {
+	if (upload_demos.GetInt() != 0)
+	{
+		m_STVRecorder.UploadLastDemo(stvuploadurl.ToCString(), m_pS3UploaderThread);
+	}
+
 	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSTVUploadUrl, pPluginContext, std::move(stvuploadurl)));
 }
 
@@ -806,8 +801,10 @@ void SizzlingStats::GetEntities( CSizzPluginContext *pPluginContext )
 	SCHelpers::GetTeamEnts(pPluginContext, &m_pBluTeam, &m_pRedTeam);
 }
 
-void SizzlingStats::OnS3UploadReturn( bool bUploadSuccessful )
+void SizzlingStats::OnS3UploadReturn( sizz::CString sessionid, bool bUploadSuccessful )
 {
+	m_pWebStatsHandler->SendS3UploadFinishedEvent(sessionid);
+
 	if (bUploadSuccessful)
 	{
 		Msg( "[SizzlingStats]: S3Upload completed\n");

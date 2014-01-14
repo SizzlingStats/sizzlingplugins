@@ -26,10 +26,12 @@
 #define STATS_UPDATE_URL "http://staging.sizzlingstats.com/api/stats/update"
 #define GAME_START_URL "http://staging.sizzlingstats.com/api/stats/new"
 #define GAMEOVER_URL "http://staging.sizzlingstats.com/api/stats/gameover"
+#define S3UPLOADFINISHED_URL "http://staging.sizzlingstats.com/api/stats/stvuploadfinished"
 #else
 #define STATS_UPDATE_URL "http://sizzlingstats.com/api/stats/update"
 #define GAME_START_URL "http://sizzlingstats.com/api/stats/new"
 #define GAMEOVER_URL "http://sizzlingstats.com/api/stats/gameover"
+#define S3UPLOADFINISHED_URL "http://sizzlingstats.com/api/stats/stvuploadfinished"
 #endif
 #define HEADER_SIZZSTATS_VERSION "sizzlingstats: v0.2"
 
@@ -136,6 +138,7 @@ public:
 	void SendStatsToWeb();
 	void SendGameStartEvent();
 	void SendGameOverEvent(double flMatchDuration);
+	void SendS3UploadFinishedEvent(const sizz::CString &sessionid);
 
 	void SetApiKey( const char *apikey );
 
@@ -147,6 +150,7 @@ protected:
 	void SendStatsToWebInternal();
 	void SendGameStartEventInternal();
 	void SendGameOverEventInternal(double flMatchDuration);
+	void SendS3UploadFinishedEventInternal(const sizz::CString sessionid);
 
 private:
 	void SetSessionId( const char *sessionid );
@@ -463,6 +467,11 @@ inline void CWebStatsHandler::SendGameStartEvent()
 inline void CWebStatsHandler::SendGameOverEvent(double flMatchDuration)
 {
 	m_queue.EnqueueFunctor(CreateFunctor(this, &CWebStatsHandler::SendGameOverEventInternal, flMatchDuration));
+}
+
+inline void CWebStatsHandler::SendS3UploadFinishedEvent(const sizz::CString &sessionid)
+{
+	m_queue.EnqueueFunctor(CreateFunctor(this, &CWebStatsHandler::SendS3UploadFinishedEventInternal, sessionid));
 }
 
 inline void CWebStatsHandler::SetApiKey( const char *apikey )

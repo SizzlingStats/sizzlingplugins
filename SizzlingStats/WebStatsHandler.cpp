@@ -139,11 +139,38 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 			m_dataListAndChatMutex.Unlock();
 
 			connection.SetBodyReadUserdata(&postString);
+			connection.SetHeaderReadFunction(header_read_callback);
+			connection.SetHeaderReadUserdata(this);
 
 			connection.Perform();
 			connection.Close();
 		}
 		m_responseInfo.ResetSessionId();
+	}
+}
+
+void CWebStatsHandler::SendS3UploadFinishedEventInternal(const sizz::CString sessionid)
+{
+	CCurlConnection connection;
+	if (connection.Initialize())
+	{
+		connection.SetHttpSendType(CCurlConnection::POST);
+		connection.AddHeader("Transfer-Encoding: chunked");
+		connection.AddHeader("Content-type: application/json");
+		connection.AddHeader("Expect:");
+		connection.AddHeader(HEADER_SIZZSTATS_VERSION);
+
+		{
+			char temp[128] = {};
+			V_snprintf( temp, 128, "sessionid: %s", sessionid.ToCString());
+
+			connection.AddHeader(temp);
+		}
+
+		connection.SetUrl(S3UPLOADFINISHED_URL);
+
+		connection.Perform();
+		connection.Close();
 	}
 }
 
