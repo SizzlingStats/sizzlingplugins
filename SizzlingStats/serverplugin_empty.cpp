@@ -26,7 +26,6 @@
 #include "server_class.h"
 
 #include "SizzlingStats.h"
-#include "STVRecorder.h"
 #include "SizzFileSystem.h"
 #include "ThreadCallQueue.h"
 
@@ -34,7 +33,6 @@
 
 #include "PluginDefines.h"
 #include "autoupdate.h"
-#include "S3Uploader.h"
 #include "UserIdTracker.h"
 #include "ServerPluginHandler.h"
 #include "LogStats.h"
@@ -67,7 +65,6 @@ IFileSystem			*g_pFullFileSystem = NULL;
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue );
 static ConVar version("sizz_stats_version", PLUGIN_VERSION_STRING, FCVAR_NOTIFY, "The version of SizzlingStats running.", &VersionChangeCallback);
-static ConVar upload_demos("sizz_stats_auto_upload_demos", "1", FCVAR_NOTIFY, "If nonzero, automatically uploads STV demos to sizzlingstats.com");
 
 void VersionChangeCallback( IConVar *var, const char *pOldValue, float flOldValue )
 {
@@ -135,7 +132,6 @@ public:
 private:
 	void LoadUpdatedPlugin();
 	void OnAutoUpdateReturn( bool bLoadUpdate );
-	void OnS3UploadReturn( bool bUpdateSuccessful );
 	void GetGameRules();
 	void GetPropOffsets();
 
@@ -153,7 +149,6 @@ private:
 	CNullLogStats m_logstats;
 #endif
 	SizzlingStats m_SizzlingStats;
-	CSTVRecorder m_STVRecorder;
 	CConCommandHook m_SayHook;
 	CConCommandHook m_SayTeamHook;
 	CConCommandHook m_SwitchTeamsHook;
@@ -161,7 +156,6 @@ private:
 	CConCommandHook m_UnpauseHook;
 	ConVarRef m_refTournamentMode;
 	CAutoUpdateThread	*m_pAutoUpdater;
-	CS3UploaderThread	*m_pS3UploaderThread;
 	CTeamplayRoundBasedRules *m_pTeamplayRoundBasedRules;
 	int	*m_iRoundState;
 	bool *m_bInWaitingForPlayers;
@@ -189,7 +183,6 @@ EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CEmptyServerPlugin, IServerPluginCallbacks, IN
 CEmptyServerPlugin::CEmptyServerPlugin():
 	m_logstats(),
 	m_SizzlingStats(),
-	m_STVRecorder(),
 	m_SayHook(),
 	m_SayTeamHook(),
 	m_SwitchTeamsHook(),
@@ -197,7 +190,6 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_UnpauseHook(),
 	m_refTournamentMode((IConVar*)NULL),
 	m_pAutoUpdater(NULL),
-	m_pS3UploaderThread(NULL),
 	m_pTeamplayRoundBasedRules(NULL),
 	m_iRoundState(NULL),
 	m_bInWaitingForPlayers(NULL),
@@ -229,9 +221,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	using namespace std::placeholders;
 	m_pAutoUpdater->SetOnFinishedUpdateCallback(std::bind(&CEmptyServerPlugin::OnAutoUpdateReturn, this, _1));
 	m_pAutoUpdater->StartThread();
-
-	m_pS3UploaderThread = new CS3UploaderThread();
-	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&CEmptyServerPlugin::OnS3UploadReturn, this, _1));
 
 	g_pFullFileSystem = (IFileSystem *)interfaceFactory(FILESYSTEM_INTERFACE_VERSION, NULL);
 	if (!g_pFullFileSystem)
@@ -331,7 +320,6 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_plugin_context.AddListenerAll(this, true);
 #endif
 	m_SizzlingStats.Load(&m_plugin_context);
-	m_STVRecorder.Load();
 
 	LoadCurrentPlayers();
 	//Name: 	player_changename
@@ -386,8 +374,7 @@ void CEmptyServerPlugin::Unload( void )
 	}
 
 	m_SizzlingStats.SS_DeleteAllPlayerData();
-	m_STVRecorder.Unload(m_plugin_context.GetEngine());
-	m_SizzlingStats.Unload();
+	m_SizzlingStats.Unload(&m_plugin_context);
 	
 #ifdef PROTO_STATS
 	m_EventStats.Shutdown();
@@ -404,10 +391,6 @@ void CEmptyServerPlugin::Unload( void )
 	m_pAutoUpdater->ShutDown();
 	delete m_pAutoUpdater;
 	m_pAutoUpdater = NULL;
-
-	m_pS3UploaderThread->ShutDown();
-	delete m_pS3UploaderThread;
-	m_pS3UploaderThread = NULL;
 
 	curl_global_cleanup();
 	//DisconnectTier2Libraries( );
@@ -989,18 +972,6 @@ void CEmptyServerPlugin::OnAutoUpdateReturn( bool bLoadUpdate )
 	}
 }
 
-void CEmptyServerPlugin::OnS3UploadReturn( bool bUploadSuccessful )
-{
-	if (bUploadSuccessful)
-	{
-		Msg( "[SizzlingStats]: S3Upload completed\n");
-	}
-	else
-	{
-		Msg("[SizzlingStats]: S3Upload failed\n");
-	}
-}
-
 void CEmptyServerPlugin::GetGameRules()
 {
 	m_pTeamplayRoundBasedRules = SCHelpers::GetTeamplayRoundBasedGameRulesPointer();
@@ -1034,7 +1005,6 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 
 	m_logstats.TournamentMatchStarted(hostname, mapname, bluname, redname);
 	m_SizzlingStats.SS_TournamentMatchStarted(&m_plugin_context);
-	m_STVRecorder.StartRecording(&m_plugin_context, mapname);
 #ifdef PROTO_STATS
 	int tick = m_plugin_context.GetCurrentTick();
 	m_EventStats.OnTournamentMatchStart(&m_plugin_context, tick);
@@ -1045,18 +1015,7 @@ void CEmptyServerPlugin::TournamentMatchStarted()
 void CEmptyServerPlugin::TournamentMatchEnded()
 {
 	m_logstats.TournamentMatchEnded();
-	m_SizzlingStats.SS_TournamentMatchEnded();
-	m_STVRecorder.StopRecording(m_plugin_context.GetEngine());
-	
-	if (upload_demos.GetInt() != 0)
-	{
-		// Get the upload url
-		char uploadUrl[256];
-		m_SizzlingStats.SS_GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
-
-		// Upload the demo to that url
-		m_STVRecorder.UploadLastDemo(uploadUrl, m_pS3UploaderThread);
-	}
+	m_SizzlingStats.SS_TournamentMatchEnded(&m_plugin_context);
 
 #ifdef PROTO_STATS
 	m_EventStats.SendNamedEvent("ss_tournament_match_end", m_plugin_context.GetCurrentTick());

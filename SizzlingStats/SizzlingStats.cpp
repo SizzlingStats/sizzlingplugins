@@ -55,6 +55,7 @@ static ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONT
 
 static ConVar apikey("sizz_stats_web_api_key", "", HIDDEN_CVAR_FLAGS, "");
 static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
+static ConVar upload_demos("sizz_stats_auto_upload_demos", "1", FCVAR_NOTIFY, "If nonzero, automatically uploads STV demos to sizzlingstats.com");
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
@@ -73,7 +74,9 @@ SizzlingStats::SizzlingStats():
 	m_flRoundDuration(0),
 	m_flMatchDuration(0),
 	m_bTournamentMatchRunning(false),
-	m_bFirstCapOfRound(false)
+	m_bFirstCapOfRound(false),
+	m_STVRecorder(),
+	m_pS3UploaderThread(NULL)
 {
 	m_pHostInfo = new hostInfo_t();
 	m_pWebStatsHandler = new CWebStatsHandler();
@@ -95,8 +98,11 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 	m_refHostPort.Init("hostport", false);
 	LoadConfig(pPluginContext);
 	m_pWebStatsHandler->Initialize();
+	m_STVRecorder.Load();
+	m_pS3UploaderThread = new CS3UploaderThread();
 
 	using namespace std::placeholders;
+	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&SizzlingStats::OnS3UploadReturn, this, _1));
 #ifdef _WIN32
 	// this hack makes it so that VC++11 outputs 2 moves instead of a copy and a move when calling the std::functions
 	// this also doesn't compile on gcc or clang
@@ -111,9 +117,13 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 #endif
 }
 
-void SizzlingStats::Unload()
+void SizzlingStats::Unload( CSizzPluginContext *pPluginContext )
 {
 	m_pWebStatsHandler->Shutdown();
+	m_STVRecorder.Unload(pPluginContext->GetEngine());
+	m_pS3UploaderThread->ShutDown();
+	delete m_pS3UploaderThread;
+	m_pS3UploaderThread = NULL;
 }
 
 void SizzlingStats::LevelInit( CSizzPluginContext *pPluginContext, const char *pMapName )
@@ -390,6 +400,7 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_pHostInfo->m_hostport = m_refHostPort.GetInt();
 	m_pHostInfo->m_roundduration = m_flRoundDuration;
 	m_pWebStatsHandler->SetHostData(*m_pHostInfo);
+	m_STVRecorder.StartRecording(pPluginContext, m_pHostInfo->m_mapname);
 
 	int max_clients = pPluginContext->GetMaxClients();
 	CTFPlayerWrapper player;
@@ -417,12 +428,24 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_pWebStatsHandler->SendGameStartEvent();
 }
 
-void SizzlingStats::SS_TournamentMatchEnded()
+void SizzlingStats::SS_TournamentMatchEnded( CSizzPluginContext *pPluginContext )
 {
 	Msg( "tournament match ended\n" );
 	m_bTournamentMatchRunning = false;
 	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
 	m_pWebStatsHandler->SendGameOverEvent(m_flMatchDuration);
+	m_STVRecorder.StopRecording(pPluginContext->GetEngine());
+
+	if (upload_demos.GetInt() != 0)
+	{
+		// Get the upload url
+		char uploadUrl[256];
+		m_pWebStatsHandler->GetSTVUploadUrl(uploadUrl, sizeof(uploadUrl));
+
+		// Upload the demo to that url
+		m_STVRecorder.UploadLastDemo(uploadUrl, m_pS3UploaderThread);
+	}
+
 	//SetTeamScores(0, 0);
 }
 
@@ -723,14 +746,6 @@ void SizzlingStats::SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int en
 	h.SingleUserMOTDPanelMessage(entindex, "http://", cfg);
 }
 
-void SizzlingStats::SS_GetSTVUploadUrl( char *str, int maxlen )
-{
-	if (str)
-	{
-		m_pWebStatsHandler->GetSTVUploadUrl(str, maxlen);
-	}
-}
-
 void SizzlingStats::OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid )
 {
 	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, pPluginContext, std::move(sessionid)));
@@ -803,4 +818,16 @@ void SizzlingStats::GetPropOffsets()
 void SizzlingStats::GetEntities( CSizzPluginContext *pPluginContext )
 {
 	SCHelpers::GetTeamEnts(pPluginContext, &m_pBluTeam, &m_pRedTeam);
+}
+
+void SizzlingStats::OnS3UploadReturn( bool bUploadSuccessful )
+{
+	if (bUploadSuccessful)
+	{
+		Msg( "[SizzlingStats]: S3Upload completed\n");
+	}
+	else
+	{
+		Msg("[SizzlingStats]: S3Upload failed\n");
+	}
 }
