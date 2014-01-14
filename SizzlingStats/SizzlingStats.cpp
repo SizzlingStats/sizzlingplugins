@@ -24,6 +24,7 @@
 #include "SSPlayerData.h"
 #include "TFPlayerWrapper.h"
 #include "TFTeamWrapper.h"
+#include "shareddefs.h"
 
 #include <functional>
 
@@ -169,23 +170,11 @@ void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class 
 
 void SizzlingStats::ChatEvent( CSizzPluginContext *pPluginContext, int entindex, const char *pText, bool bTeamChat )
 {
-	// this needs to be checked carefully for 
-	// the error that happened below before any 
-	// null check optimizations can be made
-	SS_PlayerData *player_data = m_PlayerDataManager.GetPlayerData(entindex).m_pPlayerData;
-	if (player_data)
-	{
-		IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(entindex);
-		const char *pSteamId = pInfo->GetNetworkIDString();
-		// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
-		// so subtracting gets the time since the match started
-		m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
-	}
-	else
-	{
-		// TODO: error
-		// this happened once somehow
-	}
+	IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(entindex);
+	const char *pSteamId = pInfo->GetNetworkIDString();
+	// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
+	// so subtracting gets the time since the match started
+	m_pWebStatsHandler->PlayerChatEvent(Plat_FloatTime() - m_flMatchDuration, pSteamId, pText, bTeamChat);
 }
 
 void SizzlingStats::TeamCapped( int team_index )
@@ -395,8 +384,7 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	CTFPlayerWrapper player;
 	for (int i = 1; i <= max_clients; ++i)
 	{
-		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
-		if (data.m_pPlayerData)
+		if (m_PlayerDataManager.IsValidPlayer(i))
 		{
 			player.SetPlayer(pPluginContext->BaseEntityFromEntIndex(i));
 			IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(i);
@@ -550,12 +538,11 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 
 void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 {
-	int max_clients = pPluginContext->GetMaxClients();
-	for (int i = 1; i <= max_clients; ++i)
+	for (int i = 1; i <= MAX_PLAYERS; ++i)
 	{
-		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
-		if (data.m_pPlayerData)
+		if (m_PlayerDataManager.IsValidPlayer(i))
 		{
+			playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 			data.m_pPlayerData->UpdateRoundStatsData(m_aPropOffsets);
 			data.m_pPlayerData->UpdateRoundExtraData(*data.m_pExtraData);
 
@@ -592,12 +579,11 @@ void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 
 void SizzlingStats::SS_ResetData( CSizzPluginContext *pPluginContext )
 {
-	int max_clients = pPluginContext->GetMaxClients();
-	for (int i = 1; i <= max_clients; ++i)
+	for (int i = 1; i <= MAX_PLAYERS; ++i)
 	{
-		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
-		if (data.m_pPlayerData)
+		if (m_PlayerDataManager.IsValidPlayer(i))
 		{
+			playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 			data.m_pExtraData->operator=(0);
 		}
 	}

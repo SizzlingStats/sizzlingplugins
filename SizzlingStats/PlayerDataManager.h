@@ -34,11 +34,13 @@ public:
 	CPlayerDataManager();
 	~CPlayerDataManager();
 	
+	// don't even try to pass in an invalid index.
 	void InsertPlayer( int ent_index, CBaseEntity *pEnt );
 	void RemovePlayer( int ent_index );
 	void RemoveAllPlayers();
 	
 	playerAndExtra_t GetPlayerData( int ent_index );
+	bool IsValidPlayer( int ent_index );
 	
 	void ResetAndStartClassTracking( uint64 curtime );
 	void StopClassTracking( uint64 curtime );

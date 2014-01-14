@@ -66,6 +66,14 @@ playerAndExtra_t CPlayerDataManager::GetPlayerData( int ent_index )
 	return temp;
 }
 
+bool CPlayerDataManager::IsValidPlayer( int ent_index )
+{
+	// normalize with -1 for array indexing
+	--ent_index;
+
+	return m_pPlayerData[ent_index].GetBaseEntity() != nullptr;
+}
+
 void CPlayerDataManager::SetCapFix( int ent_index )
 {
 	// normalize with a -1 for array indexing
