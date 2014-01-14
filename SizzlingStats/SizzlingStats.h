@@ -20,6 +20,8 @@
 #include "PluginDefines.h"
 #include "PlayerDataManager.h"
 #include "sizzstring.h"
+#include "STVRecorder.h"
+#include "S3Uploader.h"
 
 #include "tier1/utlvector.h"
 
@@ -37,7 +39,7 @@ public:
 	void	Load( CSizzPluginContext *pPluginContext );
 
 	// called when the plugin is unloaded
-	void	Unload();
+	void	Unload( CSizzPluginContext *pPluginContext );
 
 	// called on level start
 	void	LevelInit( CSizzPluginContext *pPluginContext, const char *pMapName );
@@ -88,7 +90,7 @@ public:
 
 	void	SS_TournamentMatchStarted( CSizzPluginContext *pPluginContext );
 
-	void	SS_TournamentMatchEnded();
+	void	SS_TournamentMatchEnded( CSizzPluginContext *pPluginContext );
 
 	void	SS_PreRoundFreeze( CSizzPluginContext *pPluginContext );
 
@@ -118,8 +120,6 @@ public:
 
 	void	SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int endindex );
 
-	void	SS_GetSTVUploadUrl( char *str, int maxlen );
-
 private:
 	void	OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid );
 	void	LogSessionId( CSizzPluginContext *pPluginContext, const sizz::CString &str );
@@ -135,6 +135,8 @@ private:
 
 	void	GetEntities( CSizzPluginContext *pPluginContext );
 
+	void	OnS3UploadReturn( bool bUpdateSuccessful );
+
 private:
 	unsigned int	m_aPropOffsets[20];
 
@@ -145,8 +147,10 @@ private:
 
 	CUtlVector<char> m_vecMedics; //ent index of medics
 private:
+	CS3UploaderThread	*m_pS3UploaderThread;
 	CPlayerDataManager m_PlayerDataManager;
 	CWebStatsHandler *m_pWebStatsHandler;
+	CSTVRecorder m_STVRecorder;
 	ConVarRef m_refHostIP;
 	ConVarRef m_refIP;
 	ConVarRef m_refHostPort;
