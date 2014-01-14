@@ -316,13 +316,11 @@ bool SizzlingStats::SS_InsertPlayer( CSizzPluginContext *pPluginContext, edict_t
 		if (pPlayerInfo && pPlayerInfo->IsConnected())
 		{
 			CBaseEntity *pEnt = SCHelpers::EdictToBaseEntity(pEdict);
-			bool ret = m_PlayerDataManager.InsertPlayer(ent_index, pEnt);
-			if (ret)
-			{
-				int acc_id = pPluginContext->SteamIDFromEntIndex(ent_index);
-				SS_Msg("Stats for player #%i: '%s' will be tracked\n", acc_id, pPlayerInfo->GetName());
-			}
-			return ret;
+			m_PlayerDataManager.InsertPlayer(ent_index, pEnt);
+
+			int acc_id = pPluginContext->SteamIDFromEntIndex(ent_index);
+			SS_Msg("Stats for player #%i: '%s' will be tracked\n", acc_id, pPlayerInfo->GetName());
+			return true;
 		}
 	}
 	return false;
@@ -335,12 +333,7 @@ void SizzlingStats::SS_DeletePlayer( CSizzPluginContext *pPluginContext, edict_t
 	if (ent_index != -1)
 	{
 		m_vecMedics.FindAndRemove(ent_index);
-		IPlayerInfo *pPlayerInfo = pPluginContext->GetPlayerInfo(ent_index);
-		if (pPlayerInfo && pPlayerInfo->IsConnected())
-		{
-			unsigned int acc_id = pPluginContext->SteamIDFromEntIndex(ent_index);
-			m_PlayerDataManager.RemovePlayer(ent_index, pPlayerInfo, acc_id);
-		}
+		m_PlayerDataManager.RemovePlayer(ent_index);
 	}
 }
 
@@ -463,7 +456,6 @@ void SizzlingStats::SS_RoundEnded( CSizzPluginContext *pPluginContext )
 	m_PlayerDataManager.StopClassTracking(SCHelpers::RoundDBL(curtime));
 	SS_AllUserChatMessage( pPluginContext, "Stats Recording Stopped\n" );
 	SS_EndOfRound(pPluginContext);
-	m_PlayerDataManager.RemoveArchivedPlayers();
 }
 
 void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent_index )

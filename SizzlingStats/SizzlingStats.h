@@ -25,6 +25,7 @@
 
 class CFuncQueueThread;
 class CSizzPluginContext;
+struct edict_t;
 
 class SizzlingStats
 {

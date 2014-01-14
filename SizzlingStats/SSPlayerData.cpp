@@ -22,6 +22,14 @@ SS_PlayerData::SS_PlayerData():
 {
 }
 
+void SS_PlayerData::Reset( CBaseEntity *pEnt )
+{
+	m_base_entity = pEnt;
+	ResetRoundStatsData();
+	m_classTracker.Reset();
+	m_bCapFix = false;
+}
+
 void SS_PlayerData::UpdateRoundStatsData( const unsigned int pPropOffsets[] )
 {
 	for (int i = 0; i < HealsReceived; ++i)
@@ -47,7 +55,7 @@ ScoreData SS_PlayerData::GetRoundStatsData()
 	return m_RoundScoreData;
 }
 
-void SS_PlayerData::UpdateRoundExtraData( extradata_t &dat )
+void SS_PlayerData::UpdateRoundExtraData( const extradata_t &dat )
 {
 	m_RoundScoreData.data[HealsReceived] = dat.healsrecv;
 	m_RoundScoreData.data[MedPicks] = dat.medpicks;
@@ -62,11 +70,6 @@ int SS_PlayerData::GetStat( int StatID )
 CPlayerClassTracker *SS_PlayerData::GetClassTracker()
 {
 	return &m_classTracker;
-}
-
-int	SS_PlayerData::GetClass(unsigned int playerClassOffset)
-{
-	return *SCHelpers::ByteOffsetFromPointer<int*>(m_base_entity, playerClassOffset);
 }
 
 int	SS_PlayerData::GetDataFromOffset( int PropName, const unsigned int pPropOffsets[] )

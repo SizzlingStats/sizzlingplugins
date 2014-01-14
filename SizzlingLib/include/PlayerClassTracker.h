@@ -45,6 +45,8 @@ public:
 	CPlayerClassTracker();
 	~CPlayerClassTracker();
 
+	void Reset( EPlayerClass player_class = k_ePlayerClassUnknown, uint64 curtime = 0 );
+
 	void StartRecording( EPlayerClass player_class, uint64 curtime );
 	void StopRecording( uint64 curtime );
 

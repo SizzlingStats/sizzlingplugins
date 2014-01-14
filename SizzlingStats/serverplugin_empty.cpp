@@ -853,7 +853,6 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		int patient = event->GetInt( "patient" );
 		if ( patient != event->GetInt( "healer" ) )
 		{
-			
 			int patientIndex = m_plugin_context.EntIndexFromUserID(patient);
 			if (patientIndex > 0)
 			{
