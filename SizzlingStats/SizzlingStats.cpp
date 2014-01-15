@@ -88,6 +88,7 @@ SizzlingStats::~SizzlingStats()
 {
 	delete m_pWebStatsHandler;
 	delete m_pHostInfo;
+	delete m_pS3UploaderThread;
 }
 
 void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
@@ -119,11 +120,9 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 
 void SizzlingStats::Unload( CSizzPluginContext *pPluginContext )
 {
+	m_pS3UploaderThread->ShutDown();
 	m_pWebStatsHandler->Shutdown();
 	m_STVRecorder.Unload(pPluginContext->GetEngine());
-	m_pS3UploaderThread->ShutDown();
-	delete m_pS3UploaderThread;
-	m_pS3UploaderThread = NULL;
 }
 
 void SizzlingStats::LevelInit( CSizzPluginContext *pPluginContext, const char *pMapName )
