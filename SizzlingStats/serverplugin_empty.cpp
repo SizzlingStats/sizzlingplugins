@@ -585,6 +585,7 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 		// isn't called twice for the same player.
 		if (!m_bAlreadyLevelShutdown)
 		{
+			m_SizzlingStats.SS_PlayerDisconnected(&m_plugin_context, pEdict);
 			m_SizzlingStats.SS_DeletePlayer(&m_plugin_context, pEdict);
 			m_logstats.ClientDisconnect(SCHelpers::EntIndexFromEdict(pEdict));
 			m_plugin_context.ClientDisconnect(pEdict);

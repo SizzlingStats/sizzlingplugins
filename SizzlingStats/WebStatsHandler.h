@@ -84,6 +84,11 @@ typedef struct playerWebStats_s
 {
 	playerInfo_t	m_playerInfo;
 	ScoreData		m_scoreData;
+
+	bool operator==( const playerWebStats_s& a ) const
+	{
+		return ( V_strcmp( m_playerInfo.m_steamid, a.m_playerInfo.m_steamid ) == 0 );
+	}
 } playerWebStats_t;
 
 typedef struct responseInfo_s
@@ -415,7 +420,15 @@ inline void CWebStatsHandler::ClearPlayerStats()
 inline void CWebStatsHandler::EnqueuePlayerStats(playerWebStats_t const &item)
 {
 	m_dataListAndChatMutex.Lock();
-	m_webStats.AddToTail(item);
+	int idx = m_webStats.Find(item);
+	if (idx > -1)
+	{
+		m_webStats.Element(idx).m_scoreData += item.m_scoreData;
+	}
+	else
+	{
+		m_webStats.AddToTail(item);
+	}	
 	m_dataListAndChatMutex.Unlock();
 }
 

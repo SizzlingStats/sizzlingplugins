@@ -73,6 +73,9 @@ public:
 	// insert and player and add them to the map
 	bool	SS_InsertPlayer( CSizzPluginContext *pPluginContext, edict_t *pEdict );
 
+	// handle when a player disconnects
+	void	SS_PlayerDisconnected( CSizzPluginContext *pPluginContext, edict_t *pEdict );
+
 	// delete a player and remove them from the map
 	void	SS_DeletePlayer( CSizzPluginContext *pPluginContext, edict_t *pEdict );
 

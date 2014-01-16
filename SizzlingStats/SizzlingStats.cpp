@@ -323,6 +323,34 @@ bool SizzlingStats::SS_InsertPlayer( CSizzPluginContext *pPluginContext, edict_t
 	return false;
 }
 
+void SizzlingStats::SS_PlayerDisconnected( CSizzPluginContext *pPluginContext, edict_t *pEdict )
+{
+	int ent_index = SCHelpers::EntIndexFromEdict(pEdict);
+
+	if (m_PlayerDataManager.IsValidPlayer(ent_index))
+	{
+		playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(ent_index);
+		data.m_pPlayerData->UpdateRoundStatsData(m_aPropOffsets);
+		data.m_pPlayerData->UpdateRoundExtraData(*data.m_pExtraData);
+
+		IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(ent_index);
+
+		if (m_bTournamentMatchRunning)
+		{
+			playerWebStats_t stats;
+			stats.m_scoreData = data.m_pPlayerData->GetRoundStatsData();
+			V_strncpy(stats.m_playerInfo.m_name, pInfo->GetName(), sizeof(stats.m_playerInfo.m_name));
+			V_strncpy(stats.m_playerInfo.m_steamid, pInfo->GetNetworkIDString(), sizeof(stats.m_playerInfo.m_steamid));
+			V_strncpy(stats.m_playerInfo.m_ip, pPluginContext->GetPlayerIPPortString(ent_index), sizeof(stats.m_playerInfo.m_ip));
+			stats.m_playerInfo.m_teamid = pInfo->GetTeamIndex();
+			CPlayerClassTracker *pTracker = data.m_pPlayerData->GetClassTracker();
+			stats.m_playerInfo.m_mostPlayedClass = pTracker->GetMostPlayedClass();
+			stats.m_playerInfo.m_playedClasses = pTracker->GetPlayedClasses();
+			m_pWebStatsHandler->EnqueuePlayerStats(stats);
+		}
+	}
+}
+
 void SizzlingStats::SS_DeletePlayer( CSizzPluginContext *pPluginContext, edict_t *pEdict )
 {
 	Msg( "SS_DeletePlayer\n" );
