@@ -565,7 +565,7 @@ void CEmptyServerPlugin::ClientActive( edict_t *pEdict )
 	if (pEdict && !pEdict->IsFree())
 	{
 		int ent_index = m_plugin_context.ClientActive(pEdict);
-		m_SizzlingStats.SS_InsertPlayer(&m_plugin_context, pEdict);
+		m_SizzlingStats.SS_PlayerConnect(&m_plugin_context, pEdict);
 		m_logstats.ClientActive(ent_index);
 	}
 }
@@ -585,8 +585,7 @@ void CEmptyServerPlugin::ClientDisconnect( edict_t *pEdict )
 		// isn't called twice for the same player.
 		if (!m_bAlreadyLevelShutdown)
 		{
-			m_SizzlingStats.SS_PlayerDisconnected(&m_plugin_context, pEdict);
-			m_SizzlingStats.SS_DeletePlayer(&m_plugin_context, pEdict);
+			m_SizzlingStats.SS_PlayerDisconnect(&m_plugin_context, pEdict);
 			m_logstats.ClientDisconnect(SCHelpers::EntIndexFromEdict(pEdict));
 			m_plugin_context.ClientDisconnect(pEdict);
 		}
@@ -759,7 +758,7 @@ void CEmptyServerPlugin::LoadCurrentPlayers()
 			if (SCHelpers::EdictToBaseEntity(pEdict))
 			{
 				int ent_index = m_plugin_context.ClientActive(pEdict);
-				m_SizzlingStats.SS_InsertPlayer(&m_plugin_context, pEdict);
+				m_SizzlingStats.SS_PlayerConnect(&m_plugin_context, pEdict);
 				m_logstats.ClientActive(ent_index);
 			}
 		}
