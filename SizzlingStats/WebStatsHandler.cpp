@@ -169,6 +169,13 @@ void CWebStatsHandler::SendS3UploadFinishedEventInternal(const sizz::CString ses
 
 		connection.SetUrl(S3UPLOADFINISHED_URL);
 
+		// a put has to have a body.
+		// curl just loops on a read if it doesn't have one.
+		// can't even specify it with 'Content-Length: 0'
+		CUtlBuffer postString;
+		connection.SetBodyReadUserdata(&postString);
+		connection.SetBodyReadFunction(read_callback);
+
 		connection.Perform();
 		connection.Close();
 	}
