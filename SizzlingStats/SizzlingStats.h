@@ -135,7 +135,7 @@ private:
 
 	void	GetEntities( CSizzPluginContext *pPluginContext );
 
-	void	OnS3UploadReturn( sizz::CString sessionid, bool bUpdateSuccessful );
+	void	OnS3UploadReturn( const sizz::CString &sessionid, bool bUpdateSuccessful );
 
 private:
 	unsigned int	m_aPropOffsets[20];

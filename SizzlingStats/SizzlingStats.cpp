@@ -67,28 +67,26 @@ SizzlingStats::SizzlingStats():
 	m_iOldRedScore(0),
 	m_iOldBluScore(0),
 	m_PlayerDataManager(),
-	m_pWebStatsHandler(NULL),
 	m_refHostIP((IConVar*)NULL),
 	m_refIP((IConVar*)NULL),
 	m_refHostPort((IConVar*)NULL),
-	m_pHostInfo(nullptr),
 	m_flRoundDuration(0),
 	m_flMatchDuration(0),
 	m_bTournamentMatchRunning(false),
 	m_bFirstCapOfRound(false),
-	m_STVRecorder(),
-	m_pS3UploaderThread(NULL)
+	m_STVRecorder()
 {
 	m_pHostInfo = new hostInfo_t();
 	m_pWebStatsHandler = new CWebStatsHandler();
+	m_pS3UploaderThread = new CS3UploaderThread();
 }
 #pragma warning( pop )
 
 SizzlingStats::~SizzlingStats()
 {
+	delete m_pS3UploaderThread;
 	delete m_pWebStatsHandler;
 	delete m_pHostInfo;
-	delete m_pS3UploaderThread;
 }
 
 void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
@@ -101,7 +99,6 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 	LoadConfig(pPluginContext);
 	m_pWebStatsHandler->Initialize();
 	m_STVRecorder.Load();
-	m_pS3UploaderThread = new CS3UploaderThread();
 
 	using namespace std::placeholders;
 #ifdef _WIN32
@@ -120,9 +117,9 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 
 void SizzlingStats::Unload( CSizzPluginContext *pPluginContext )
 {
+	m_STVRecorder.Unload(pPluginContext->GetEngine());
 	m_pS3UploaderThread->ShutDown();
 	m_pWebStatsHandler->Shutdown();
-	m_STVRecorder.Unload(pPluginContext->GetEngine());
 }
 
 void SizzlingStats::LevelInit( CSizzPluginContext *pPluginContext, const char *pMapName )
@@ -412,9 +409,8 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_pWebStatsHandler->SetHostData(*m_pHostInfo);
 	m_STVRecorder.StartRecording(pPluginContext, m_pHostInfo->m_mapname);
 
-	int max_clients = pPluginContext->GetMaxClients();
 	CTFPlayerWrapper player;
-	for (int i = 1; i <= max_clients; ++i)
+	for (int i = 1; i <= MAX_PLAYERS; ++i)
 	{
 		if (m_PlayerDataManager.IsValidPlayer(i))
 		{
@@ -745,8 +741,8 @@ void SizzlingStats::SS_HideHtmlStats( CSizzPluginContext *pPluginContext, int en
 void SizzlingStats::OnSessionIdReceived( CSizzPluginContext *pPluginContext, sizz::CString sessionid )
 {
 	using namespace std::placeholders;
-	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&SizzlingStats::OnS3UploadReturn, this, sessionid, _1));
-	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, pPluginContext, std::move(sessionid)));
+	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSessionId, pPluginContext, sessionid));
+	m_pS3UploaderThread->SetOnFinishedS3UploadCallback(std::bind(&SizzlingStats::OnS3UploadReturn, this, std::move(sessionid), _1));
 }
 
 void SizzlingStats::LogSessionId( CSizzPluginContext *pPluginContext, const sizz::CString &str )
@@ -823,7 +819,7 @@ void SizzlingStats::GetEntities( CSizzPluginContext *pPluginContext )
 	SCHelpers::GetTeamEnts(pPluginContext, &m_pBluTeam, &m_pRedTeam);
 }
 
-void SizzlingStats::OnS3UploadReturn( sizz::CString sessionid, bool bUploadSuccessful )
+void SizzlingStats::OnS3UploadReturn( const sizz::CString &sessionid, bool bUploadSuccessful )
 {
 	m_pWebStatsHandler->SendS3UploadFinishedEvent(sessionid);
 

@@ -155,7 +155,7 @@ protected:
 	void SendStatsToWebInternal();
 	void SendGameStartEventInternal();
 	void SendGameOverEventInternal(double flMatchDuration);
-	void SendS3UploadFinishedEventInternal(const sizz::CString sessionid);
+	void SendS3UploadFinishedEventInternal(const sizz::CString &sessionid);
 
 private:
 	void SetSessionId( const char *sessionid );

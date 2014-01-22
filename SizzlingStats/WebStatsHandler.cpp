@@ -149,7 +149,7 @@ void CWebStatsHandler::SendGameOverEventInternal(double flMatchDuration)
 	}
 }
 
-void CWebStatsHandler::SendS3UploadFinishedEventInternal(const sizz::CString sessionid)
+void CWebStatsHandler::SendS3UploadFinishedEventInternal(const sizz::CString &sessionid)
 {
 	CCurlConnection connection;
 	if (connection.Initialize())
