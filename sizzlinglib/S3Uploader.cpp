@@ -18,7 +18,7 @@
 #include "curlconnection.h"
 #include "SizzFileSystem.h"
 #include "S3Uploader.h"
-#include "zip/xzip.h"
+#include "zip/XZip.h"
 
 static int dbgCurl(CURL *curl, curl_infotype type, char *info, size_t, void *)
 {

@@ -30,7 +30,7 @@ public:
 	void SendNamedEvent( const char *event_name, unsigned int server_tick );
 
 private:
-	bool CEventStats::ConvertEvent( IGameEvent *pEvent, CSizzEvent *event );
+	bool ConvertEvent( IGameEvent *pEvent, CSizzEvent *event );
 
 private:
 	CEventSender m_event_sender;
