@@ -65,7 +65,7 @@ solution "SizzlingPlugins"
             "_LINUX"
         }
         toolset "clang"
-    configuration "C++"
+    configuration { "clang", "C++" }
         buildoptions "-std=c++11"
     
     -- compiler specific configurations
