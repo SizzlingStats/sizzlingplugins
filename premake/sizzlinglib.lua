@@ -15,7 +15,8 @@ project "SizzlingLib"
     includedirs
     {
         base_dir .. "include/",
-        external_dir .. "libcurl/include"
+        external_dir .. "libcurl/include",
+        external_dir .. "public/"
     }
     files
     {

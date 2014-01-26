@@ -11,7 +11,7 @@
 
 #include "eiface.h"
 //#include "igameevents.h"
-#include "tier0\icommandline.h"
+#include "tier0/icommandline.h"
 //#include "tier2/tier2.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

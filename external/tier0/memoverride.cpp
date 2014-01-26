@@ -6,6 +6,9 @@
 // $NoKeywords: $
 //=============================================================================//
 
+#ifndef _WIN32
+#define NO_MALLOC_OVERRIDE
+#endif
 
 #if !defined(STEAM) && !defined(NO_MALLOC_OVERRIDE)
 

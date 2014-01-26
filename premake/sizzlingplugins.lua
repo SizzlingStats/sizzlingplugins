@@ -60,7 +60,13 @@ solution "SizzlingPlugins"
             "_CRT_NONSTDC_NO_WARNINGS"
         }
     configuration "linux"
+        defines
+        {
+            "_LINUX"
+        }
         toolset "clang"
+    configuration "C++"
+        buildoptions "-std=c++11"
     
     -- compiler specific configurations
     configuration "vs*"

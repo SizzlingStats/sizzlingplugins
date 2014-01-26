@@ -6,12 +6,12 @@ local hl2sdk_dir = sizzplugins_dir .. "../hl2sdk-ob-valve/"
 
 includedirs
 {
-    hl2sdk_dir .. "common",
-    hl2sdk_dir .. "public",
-    hl2sdk_dir .. "public/tier0",
-    hl2sdk_dir .. "/public/tier1",
-    hl2sdk_dir .. "game/server",
-    hl2sdk_dir .. "game/shared",
+    hl2sdk_dir .. "common/",
+    hl2sdk_dir .. "public/",
+    hl2sdk_dir .. "public/tier0/",
+    hl2sdk_dir .. "public/tier1/",
+    hl2sdk_dir .. "game/server/",
+    hl2sdk_dir .. "game/shared/",
     
     -- not part of the sdk, but related to the game... kind of
     sizzplugins_dir .. "common"
@@ -20,7 +20,7 @@ includedirs
 configuration "windows"
     libdirs
     {
-        hl2sdk_dir .. "lib/public"
+        hl2sdk_dir .. "lib/public/"
     }
     links
     {
@@ -31,16 +31,30 @@ configuration "windows"
         "vstdlib"
     }
 configuration "linux"
+    defines
+    {
+        "stricmp=strcasecmp",
+        "_stricmp=strcasecmp",
+        "_strnicmp=strncasecmp",
+        "strnicmp=strncasecmp",
+        "_snprintf=snprintf",
+        "_vsnprintf=vsnprintf",
+        "_alloca=alloca",
+        "strcmpi=strcasecmp"
+    }
     libdirs
     {
-        hl2sdk_dir .. "lib/linux"
+        sizzplugins_dir .. "lib/linux"
     }
     links
     {
-        "mathlib_i486",
-        "tier1_i486",
         "tier0_srv",
         "vstdlib_srv"
+    }
+    linkoptions
+    {
+        "-L" .. hl2sdk_dir .. "mathlib_i486.a",
+        "-L" .. hl2sdk_dir .. "tier1_i486.a"
     }
 configuration { "windows" }
     linkoptions
