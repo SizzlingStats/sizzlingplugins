@@ -26,10 +26,6 @@
 
 #ifdef USE_POLARSSL
 
-#if POLARSSL_VERSION_NUMBER>0x01020000
-#include <polarssl/compat-1.2.h>
-#endif /* POLARSSL_VERSION_NUMBER>0x01020000 */
-
 #if defined(USE_THREADS_POSIX)
 #  define POLARSSL_MUTEX_T       pthread_mutex_t
 #elif defined(USE_THREADS_WIN32)

@@ -58,7 +58,7 @@ typedef UINT64 uint64_t;
 #define POLARSSL_ERR_MPI_NOT_ACCEPTABLE                    -0x000E  /**< The input arguments are not acceptable. */
 #define POLARSSL_ERR_MPI_MALLOC_FAILED                     -0x0010  /**< Memory allocation failed. */
 
-#define MPI_CHK(f) if( ( ret = f ) != 0 ) goto cleanup
+#define MPI_CHK(f) do { if( ( ret = f ) != 0 ) goto cleanup; } while( 0 )
 
 /*
  * Maximum size MPIs are allowed to grow to in number of limbs.
@@ -127,12 +127,18 @@ typedef uint16_t t_uint;
 typedef uint32_t t_udbl;
 #define POLARSSL_HAVE_UDBL
 #else
-  #if ( defined(_MSC_VER) && defined(_M_AMD64) )
+  /*
+   * 32-bit integers can be forced on 64-bit arches (eg. for testing purposes)
+   * by defining POLARSSL_HAVE_INT32 and undefining POARSSL_HAVE_ASM
+   */
+  #if ( ! defined(POLARSSL_HAVE_INT32) && \
+          defined(_MSC_VER) && defined(_M_AMD64) )
     #define POLARSSL_HAVE_INT64
     typedef  int64_t t_sint;
     typedef uint64_t t_uint;
   #else
-    #if ( defined(__GNUC__) && (                          \
+    #if ( ! defined(POLARSSL_HAVE_INT32) &&               \
+          defined(__GNUC__) && (                          \
           defined(__amd64__) || defined(__x86_64__)    || \
           defined(__ppc64__) || defined(__powerpc64__) || \
           defined(__ia64__)  || defined(__alpha__)     || \
@@ -202,6 +208,17 @@ void mpi_free( mpi *X );
 int mpi_grow( mpi *X, size_t nblimbs );
 
 /**
+ * \brief          Resize down, keeping at least the specified number of limbs
+ *
+ * \param X        MPI to shrink
+ * \param nblimbs  The minimum number of limbs to keep
+ *
+ * \return         0 if successful,
+ *                 POLARSSL_ERR_MPI_MALLOC_FAILED if memory allocation failed
+ */
+int mpi_shrink( mpi *X, size_t nblimbs );
+
+/**
  * \brief          Copy the contents of Y into X
  *
  * \param X        Destination MPI
@@ -219,6 +236,44 @@ int mpi_copy( mpi *X, const mpi *Y );
  * \param Y        Second MPI value
  */
 void mpi_swap( mpi *X, mpi *Y );
+
+/**
+ * \brief          Safe conditional assignement X = Y if assign is 1
+ *
+ * \param X        MPI to conditionally assign to
+ * \param Y        Value to be assigned
+ * \param assign   1: perform the assignment, 0: keep X's original value
+ *
+ * \return         0 if successful,
+ *                 POLARSSL_ERR_MPI_MALLOC_FAILED if memory allocation failed,
+ *
+ * \note           This function is equivalent to
+ *                      if( assign ) mpi_copy( X, Y );
+ *                 except that it avoids leaking any information about whether
+ *                 the assignment was done or not (the above code may leak
+ *                 information through branch prediction and/or memory access
+ *                 patterns analysis).
+ */
+int mpi_safe_cond_assign( mpi *X, const mpi *Y, unsigned char assign );
+
+/**
+ * \brief          Safe conditional swap X <-> Y if swap is 1
+ *
+ * \param X        First mpi value
+ * \param Y        Second mpi value
+ * \param assign   1: perform the swap, 0: keep X and Y's original values
+ *
+ * \return         0 if successful,
+ *                 POLARSSL_ERR_MPI_MALLOC_FAILED if memory allocation failed,
+ *
+ * \note           This function is equivalent to
+ *                      if( assign ) mpi_swap( X, Y );
+ *                 except that it avoids leaking any information about whether
+ *                 the assignment was done or not (the above code may leak
+ *                 information through branch prediction and/or memory access
+ *                 patterns analysis).
+ */
+int mpi_safe_cond_swap( mpi *X, mpi *Y, unsigned char assign );
 
 /**
  * \brief          Set value from integer
@@ -509,8 +564,9 @@ int mpi_mul_mpi( mpi *X, const mpi *A, const mpi *B );
 
 /**
  * \brief          Baseline multiplication: X = A * b
- *                 Note: b is an unsigned integer type, thus
- *                 Negative values of b are ignored.
+ *                 Note: despite the functon signature, b is treated as a
+ *                 t_uint.  Negative values of b are treated as large positive
+ *                 values.
  *
  * \param X        Destination MPI
  * \param A        Left-hand MPI

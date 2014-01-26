@@ -754,7 +754,13 @@ static CURLcode ssh_statemach_act(struct connectdata *conn, bool *block)
                                              curlx_uztoui(strlen(conn->user)));
 
       if(!sshc->authlist) {
-        if((err = libssh2_session_last_errno(sshc->ssh_session)) ==
+        if(libssh2_userauth_authenticated(sshc->ssh_session)) {
+          sshc->authed = TRUE;
+          infof(data, "SSH user accepted with no authentication\n");
+          state(conn, SSH_AUTH_DONE);
+          break;
+        }
+        else if((err = libssh2_session_last_errno(sshc->ssh_session)) ==
            LIBSSH2_ERROR_EAGAIN) {
           rc = LIBSSH2_ERROR_EAGAIN;
           break;
@@ -2718,6 +2724,10 @@ static CURLcode ssh_connect(struct connectdata *conn, bool *done)
   struct ssh_conn *ssh;
   CURLcode result;
   struct SessionHandle *data = conn->data;
+
+  /* initialize per-handle data if not already */
+  if(!data->req.protop)
+    ssh_setup_connection(conn);
 
   /* We default to persistent connections. We set this already in this connect
      function to make the re-use checks properly be able to check this bit. */

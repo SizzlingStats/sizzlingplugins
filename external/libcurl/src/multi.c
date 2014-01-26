@@ -41,6 +41,7 @@
 #include "bundles.h"
 #include "multihandle.h"
 #include "pipeline.h"
+#include "sigpipe.h"
 
 #define _MPRINTF_REPLACE /* use our functions only */
 #include <curl/mprintf.h>
@@ -621,17 +622,28 @@ static int waitconnect_getsock(struct connectdata *conn,
                                curl_socket_t *sock,
                                int numsocks)
 {
+  int i;
+  int s=0;
+  int rc=0;
+
   if(!numsocks)
     return GETSOCK_BLANK;
 
-  sock[0] = conn->sock[FIRSTSOCKET];
+  for(i=0; i<2; i++) {
+    if(conn->tempsock[i] != CURL_SOCKET_BAD) {
+      sock[s] = conn->tempsock[i];
+      rc |= GETSOCK_WRITESOCK(s++);
+    }
+  }
 
   /* when we've sent a CONNECT to a proxy, we should rather wait for the
      socket to become readable to be able to get the response headers */
-  if(conn->tunnel_state[FIRSTSOCKET] == TUNNEL_CONNECT)
-    return GETSOCK_READSOCK(0);
+  if(conn->tunnel_state[FIRSTSOCKET] == TUNNEL_CONNECT) {
+    sock[0] = conn->sock[FIRSTSOCKET];
+    rc = GETSOCK_READSOCK(0);
+  }
 
-  return GETSOCK_WRITESOCK(0);
+  return rc;
 }
 
 static int domore_getsock(struct connectdata *conn,
@@ -778,9 +790,9 @@ CURLMcode curl_multi_wait(CURLM *multi_handle,
 
   /* If the internally desired timeout is actually shorter than requested from
      the outside, then use the shorter time! But only if the internal timer
-     is actually larger than 0! */
+     is actually larger than -1! */
   (void)multi_timeout(multi, &timeout_internal);
-  if((timeout_internal > 0) && (timeout_internal < (long)timeout_ms))
+  if((timeout_internal >= 0) && (timeout_internal < (long)timeout_ms))
     timeout_ms = (int)timeout_internal;
 
   /* Count up how many fds we have from the multi handle */
@@ -865,6 +877,7 @@ CURLMcode curl_multi_wait(CURLM *multi_handle,
 
   if(nfds) {
     /* wait... */
+    infof(data, "Curl_poll(%d ds, %d ms)\n", nfds, timeout_ms);
     i = Curl_poll(ufds, nfds, timeout_ms);
 
     if(i) {
@@ -1774,12 +1787,18 @@ CURLMcode curl_multi_cleanup(CURLM *multi_handle)
   struct SessionHandle *nextdata;
 
   if(GOOD_MULTI_HANDLE(multi)) {
+    bool restore_pipe = FALSE;
+    SIGPIPE_VARIABLE(pipe_st);
+
     multi->type = 0; /* not good anymore */
 
     /* Close all the connections in the connection cache */
     close_all_connections(multi);
 
     if(multi->closure_handle) {
+      sigpipe_ignore(multi->closure_handle, &pipe_st);
+      restore_pipe = TRUE;
+
       multi->closure_handle->dns.hostcache = multi->hostcache;
       Curl_hostcache_clean(multi->closure_handle,
                            multi->closure_handle->dns.hostcache);
@@ -1824,6 +1843,8 @@ CURLMcode curl_multi_cleanup(CURLM *multi_handle)
     Curl_pipeline_set_server_blacklist(NULL, &multi->pipelining_server_bl);
 
     free(multi);
+    if(restore_pipe)
+      sigpipe_restore(&pipe_st);
 
     return CURLM_OK;
   }

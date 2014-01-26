@@ -69,7 +69,7 @@
    require it! */
 #if defined(_AIX) || defined(__NOVELL_LIBC__) || defined(__NetBSD__) || \
     defined(__minix) || defined(__SYMBIAN32__) || defined(__INTEGRITY) || \
-    defined(ANDROID) || defined(__ANDROID__) || \
+    defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
    (defined(__FreeBSD_version) && (__FreeBSD_version < 800000))
 #include <sys/select.h>
 #endif
@@ -827,10 +827,10 @@ typedef enum {
   /* Name of proxy to use. */
   CINIT(PROXY, OBJECTPOINT, 4),
 
-  /* "name:password" to use when fetching. */
+  /* "user:password;options" to use when fetching. */
   CINIT(USERPWD, OBJECTPOINT, 5),
 
-  /* "name:password" to use with proxy. */
+  /* "user:password" to use with proxy. */
   CINIT(PROXYUSERPWD, OBJECTPOINT, 6),
 
   /* Range to get, specified as an ASCII string. */
@@ -1388,8 +1388,7 @@ typedef enum {
   CINIT(ADDRESS_SCOPE, LONG, 171),
 
   /* Collect certificate chain info and allow it to get retrievable with
-     CURLINFO_CERTINFO after the transfer is complete. (Unfortunately) only
-     working with OpenSSL-powered builds. */
+     CURLINFO_CERTINFO after the transfer is complete. */
   CINIT(CERTINFO, LONG, 172),
 
   /* "name" and "pwd" to use when fetching. */
@@ -1569,6 +1568,9 @@ typedef enum {
    * Only supported by the c-ares DNS backend */
   CINIT(DNS_LOCAL_IP6, OBJECTPOINT, 223),
 
+  /* Set authentication options directly */
+  CINIT(LOGIN_OPTIONS, OBJECTPOINT, 224),
+
   CURLOPT_LASTENTRY /* the last unused */
 } CURLoption;
 
@@ -1659,9 +1661,12 @@ enum CURL_NETRC_OPTION {
 
 enum {
   CURL_SSLVERSION_DEFAULT,
-  CURL_SSLVERSION_TLSv1,
+  CURL_SSLVERSION_TLSv1, /* TLS 1.x */
   CURL_SSLVERSION_SSLv2,
   CURL_SSLVERSION_SSLv3,
+  CURL_SSLVERSION_TLSv1_0,
+  CURL_SSLVERSION_TLSv1_1,
+  CURL_SSLVERSION_TLSv1_2,
 
   CURL_SSLVERSION_LAST /* never use, keep last */
 };
@@ -1980,6 +1985,28 @@ struct curl_certinfo {
                                    format "name: value" */
 };
 
+/* enum for the different supported SSL backends */
+typedef enum {
+  CURLSSLBACKEND_NONE = 0,
+  CURLSSLBACKEND_OPENSSL = 1,
+  CURLSSLBACKEND_GNUTLS = 2,
+  CURLSSLBACKEND_NSS = 3,
+  CURLSSLBACKEND_QSOSSL = 4,
+  CURLSSLBACKEND_GSKIT = 5,
+  CURLSSLBACKEND_POLARSSL = 6,
+  CURLSSLBACKEND_CYASSL = 7,
+  CURLSSLBACKEND_SCHANNEL = 8,
+  CURLSSLBACKEND_DARWINSSL = 9
+} curl_sslbackend;
+
+/* Information about the SSL library used and the respective internal SSL
+   handle, which can be used to obtain further information regarding the
+   connection. Asked for with CURLINFO_TLS_SESSION. */
+struct curl_tlssessioninfo {
+  curl_sslbackend backend;
+  void *internals;
+};
+
 #define CURLINFO_STRING   0x100000
 #define CURLINFO_LONG     0x200000
 #define CURLINFO_DOUBLE   0x300000
@@ -2031,9 +2058,10 @@ typedef enum {
   CURLINFO_PRIMARY_PORT     = CURLINFO_LONG   + 40,
   CURLINFO_LOCAL_IP         = CURLINFO_STRING + 41,
   CURLINFO_LOCAL_PORT       = CURLINFO_LONG   + 42,
+  CURLINFO_TLS_SESSION      = CURLINFO_SLIST  + 43,
   /* Fill in new entries below here! */
 
-  CURLINFO_LASTONE          = 42
+  CURLINFO_LASTONE          = 43
 } CURLINFO;
 
 /* CURLINFO_RESPONSE_CODE is the new name for the option previously known as

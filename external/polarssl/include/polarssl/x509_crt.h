@@ -172,6 +172,11 @@ int x509_crt_parse_file( x509_crt *chain, const char *path );
  *                 of failed certificates it encountered. If none complete
  *                 correctly, the first error is returned.
  *
+ * \warning        This function is NOT thread-safe unless
+ *                 POLARSSL_THREADING_PTHREADS is defined. If you're using an
+ *                 alternative threading implementation, you should either use
+ *                 this function only in the main thread, or mutex it.
+ *
  * \param chain    points to the start of the chain
  * \param path     directory / folder to read the certificate files from
  *
@@ -366,7 +371,7 @@ void x509write_crt_set_issuer_key( x509write_cert *ctx, pk_context *key );
  *                  (e.g. POLARSSL_MD_SHA1)
  *
  * \param ctx       CRT context to use
- * \param md_ald    MD algorithm to use
+ * \param md_alg    MD algorithm to use
  */
 void x509write_crt_set_md_alg( x509write_cert *ctx, md_type_t md_alg );
 
@@ -462,7 +467,7 @@ void x509write_crt_free( x509write_cert *ctx );
  *                        return value to determine where you should start
  *                        using the buffer
  *
- * \param crt       certificate to write away
+ * \param ctx       certificate to write away
  * \param buf       buffer to write to
  * \param size      size of the buffer
  * \param f_rng     RNG function (for signature, see note)
@@ -484,7 +489,7 @@ int x509write_crt_der( x509write_cert *ctx, unsigned char *buf, size_t size,
 /**
  * \brief           Write a built up certificate to a X509 PEM string
  *
- * \param crt       certificate to write away
+ * \param ctx       certificate to write away
  * \param buf       buffer to write to
  * \param size      size of the buffer
  * \param f_rng     RNG function (for signature, see note)

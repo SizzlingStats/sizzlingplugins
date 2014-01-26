@@ -66,16 +66,27 @@ CURLcode Curl_sasl_create_login_message(struct SessionHandle *data,
                                         size_t *outlen);
 
 #ifndef CURL_DISABLE_CRYPTO_AUTH
+/* This is used to decode a base64 encoded CRAM-MD5 challange message */
+CURLcode Curl_sasl_decode_cram_md5_message(const char *chlg64, char **outptr,
+                                           size_t *outlen);
+
 /* This is used to generate a base64 encoded CRAM-MD5 response message */
 CURLcode Curl_sasl_create_cram_md5_message(struct SessionHandle *data,
-                                           const char *chlg64,
+                                           const char *chlg,
                                            const char *user,
                                            const char *passwdp,
                                            char **outptr, size_t *outlen);
 
+/* This is used to decode a base64 encoded DIGEST-MD5 challange message */
+CURLcode Curl_sasl_decode_digest_md5_message(const char *chlg64,
+                                             char *nonce, size_t nlen,
+                                             char *realm, size_t rlen,
+                                             char *alg, size_t alen);
+
 /* This is used to generate a base64 encoded DIGEST-MD5 response message */
 CURLcode Curl_sasl_create_digest_md5_message(struct SessionHandle *data,
-                                             const char *chlg64,
+                                             const char *nonce,
+                                             const char *realm,
                                              const char *user,
                                              const char *passwdp,
                                              const char *service,
@@ -90,10 +101,13 @@ CURLcode Curl_sasl_create_ntlm_type1_message(const char *userp,
                                              char **outptr,
                                              size_t *outlen);
 
-/* This is used to decode an incoming NTLM type-2 message and generate a
-   base64 encoded type-3 response */
+/* This is used to decode a base64 encoded NTLM type-2 message */
+CURLcode Curl_sasl_decode_ntlm_type2_message(struct SessionHandle *data,
+                                             const char *type2msg,
+                                             struct ntlmdata *ntlm);
+
+/* This is used to generate a base64 encoded NTLM type-3 message */
 CURLcode Curl_sasl_create_ntlm_type3_message(struct SessionHandle *data,
-                                             const char *header,
                                              const char *userp,
                                              const char *passwdp,
                                              struct ntlmdata *ntlm,

@@ -299,13 +299,11 @@ static CURLcode setstropt(char **charp, char *s)
   return CURLE_OK;
 }
 
-static CURLcode setstropt_userpwd(char *option, char **userp, char **passwdp,
-                                  char **optionsp)
+static CURLcode setstropt_userpwd(char *option, char **userp, char **passwdp)
 {
   CURLcode result = CURLE_OK;
   char *user = NULL;
   char *passwd = NULL;
-  char *options = NULL;
 
   /* Parse the login details if specified. It not then we treat NULL as a hint
      to clear the existing data */
@@ -313,7 +311,7 @@ static CURLcode setstropt_userpwd(char *option, char **userp, char **passwdp,
     result = parse_login_details(option, strlen(option),
                                  (userp ? &user : NULL),
                                  (passwdp ? &passwd : NULL),
-                                 (optionsp ? &options : NULL));
+                                 NULL);
   }
 
   if(!result) {
@@ -334,12 +332,6 @@ static CURLcode setstropt_userpwd(char *option, char **userp, char **passwdp,
     if(passwdp) {
       Curl_safefree(*passwdp);
       *passwdp = passwd;
-    }
-
-    /* Store the options part of option if required */
-    if(optionsp) {
-      Curl_safefree(*optionsp);
-      *optionsp = options;
     }
   }
 
@@ -1553,13 +1545,13 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
 
   case CURLOPT_USERPWD:
     /*
-     * user:password;options to use in the operation
+     * user:password to use in the operation
      */
     result = setstropt_userpwd(va_arg(param, char *),
                                &data->set.str[STRING_USERNAME],
-                               &data->set.str[STRING_PASSWORD],
-                               &data->set.str[STRING_OPTIONS]);
+                               &data->set.str[STRING_PASSWORD]);
     break;
+
   case CURLOPT_USERNAME:
     /*
      * authentication user name to use in the operation
@@ -1567,6 +1559,7 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
     result = setstropt(&data->set.str[STRING_USERNAME],
                        va_arg(param, char *));
     break;
+
   case CURLOPT_PASSWORD:
     /*
      * authentication password to use in the operation
@@ -1574,6 +1567,15 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
     result = setstropt(&data->set.str[STRING_PASSWORD],
                        va_arg(param, char *));
     break;
+
+  case CURLOPT_LOGIN_OPTIONS:
+    /*
+     * authentication options to use in the operation
+     */
+    result = setstropt(&data->set.str[STRING_OPTIONS],
+                       va_arg(param, char *));
+    break;
+
   case CURLOPT_XOAUTH2_BEARER:
     /*
      * XOAUTH2 bearer token to use in the operation
@@ -1581,6 +1583,7 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
     result = setstropt(&data->set.str[STRING_BEARER],
                        va_arg(param, char *));
     break;
+
   case CURLOPT_POSTQUOTE:
     /*
      * List of RAW FTP commands to use after a transfer
@@ -1650,7 +1653,7 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
      */
     result = setstropt_userpwd(va_arg(param, char *),
                                &data->set.str[STRING_PROXYUSERNAME],
-                               &data->set.str[STRING_PROXYPASSWORD], NULL);
+                               &data->set.str[STRING_PROXYPASSWORD]);
     break;
   case CURLOPT_PROXYUSERNAME:
     /*
@@ -1926,7 +1929,8 @@ CURLcode Curl_setopt(struct SessionHandle *data, CURLoption option,
     data->set.ssl.fsslctxp = va_arg(param, void *);
     break;
 #endif
-#if defined(USE_SSLEAY) || defined(USE_QSOSSL) || defined(USE_GSKIT)
+#if defined(USE_SSLEAY) || defined(USE_QSOSSL) || defined(USE_GSKIT) || \
+    defined(USE_NSS)
   case CURLOPT_CERTINFO:
     data->set.ssl.certinfo = (0 != va_arg(param, long))?TRUE:FALSE;
     break;
@@ -2502,6 +2506,10 @@ static void conn_free(struct connectdata *conn)
     Curl_closesocket(conn, conn->sock[SECONDARYSOCKET]);
   if(CURL_SOCKET_BAD != conn->sock[FIRSTSOCKET])
     Curl_closesocket(conn, conn->sock[FIRSTSOCKET]);
+  if(CURL_SOCKET_BAD != conn->tempsock[0])
+    Curl_closesocket(conn, conn->tempsock[0]);
+  if(CURL_SOCKET_BAD != conn->tempsock[1])
+    Curl_closesocket(conn, conn->tempsock[1]);
 
 #if defined(USE_NTLM) && defined(NTLM_WB_ENABLED)
   Curl_ntlm_wb_cleanup(conn);
@@ -3219,9 +3227,12 @@ static CURLcode ConnectionStore(struct SessionHandle *data,
    Note: this function's sub-functions call failf()
 
 */
-CURLcode Curl_connected_proxy(struct connectdata *conn)
+CURLcode Curl_connected_proxy(struct connectdata *conn,
+                              int sockindex)
 {
-  if(!conn->bits.proxy)
+  if(!conn->bits.proxy || sockindex)
+    /* this magic only works for the primary socket as the secondary is used
+       for FTP only and it has FTP specific magic in ftp.c */
     return CURLE_OK;
 
   switch(conn->proxytype) {
@@ -3250,49 +3261,6 @@ CURLcode Curl_connected_proxy(struct connectdata *conn)
   } /* switch proxytype */
 
   return CURLE_OK;
-}
-
-static CURLcode ConnectPlease(struct SessionHandle *data,
-                              struct connectdata *conn,
-                              bool *connected)
-{
-  CURLcode result;
-  Curl_addrinfo *addr;
-#ifndef CURL_DISABLE_VERBOSE_STRINGS
-  char *hostname = conn->bits.proxy?conn->proxy.name:conn->host.name;
-
-  infof(data, "About to connect() to %s%s port %ld (#%ld)\n",
-        conn->bits.proxy?"proxy ":"",
-        hostname, conn->port, conn->connection_id);
-#else
-  (void)data;
-#endif
-
-  /*************************************************************
-   * Connect to server/proxy
-   *************************************************************/
-  result= Curl_connecthost(conn,
-                           conn->dns_entry,
-                           &conn->sock[FIRSTSOCKET],
-                           &addr,
-                           connected);
-  if(CURLE_OK == result) {
-    /* All is cool, we store the current information */
-    conn->ip_addr = addr;
-
-    if(*connected) {
-      result = Curl_connected_proxy(conn);
-      if(!result) {
-        conn->bits.tcpconnect[FIRSTSOCKET] = TRUE;
-        Curl_pgrsTime(data, TIMER_CONNECT); /* connect done */
-      }
-    }
-  }
-
-  if(result)
-    *connected = FALSE; /* mark it as not connected */
-
-  return result;
 }
 
 /*
@@ -3561,6 +3529,8 @@ static struct connectdata *allocate_conn(struct SessionHandle *data)
 
   conn->sock[FIRSTSOCKET] = CURL_SOCKET_BAD;     /* no file descriptor */
   conn->sock[SECONDARYSOCKET] = CURL_SOCKET_BAD; /* no file descriptor */
+  conn->tempsock[0] = CURL_SOCKET_BAD; /* no file descriptor */
+  conn->tempsock[1] = CURL_SOCKET_BAD; /* no file descriptor */
   conn->connection_id = -1;    /* no ID */
   conn->port = -1; /* unknown at this point */
 
@@ -4857,7 +4827,7 @@ static CURLcode override_login(struct SessionHandle *data,
 }
 
 /*
- * Set password so it's available in the connection.
+ * Set the login details so they're available in the connection
  */
 static CURLcode set_login(struct connectdata *conn,
                           const char *user, const char *passwd,
@@ -5598,53 +5568,19 @@ CURLcode Curl_setup_conn(struct connectdata *conn,
      is later set again for the progress meter purpose */
   conn->now = Curl_tvnow();
 
-  for(;;) {
-    /* loop for CURL_SERVER_CLOSED_CONNECTION */
-
-    if(CURL_SOCKET_BAD == conn->sock[FIRSTSOCKET]) {
-      /* Try to connect only if not already connected */
-      bool connected = FALSE;
-
-      result = ConnectPlease(data, conn, &connected);
-
-      if(result && !conn->ip_addr) {
-        /* transport connection failure not related with authentication */
-        conn->bits.tcpconnect[FIRSTSOCKET] = FALSE;
-        return result;
-      }
-
-      if(connected) {
-        result = Curl_protocol_connect(conn, protocol_done);
-        if(CURLE_OK == result)
-          conn->bits.tcpconnect[FIRSTSOCKET] = TRUE;
-      }
-      else
-        conn->bits.tcpconnect[FIRSTSOCKET] = FALSE;
-
-      /* if the connection was closed by the server while exchanging
-         authentication informations, retry with the new set
-         authentication information */
-      if(conn->bits.proxy_connect_closed) {
-        /* reset the error buffer */
-        if(data->set.errorbuffer)
-          data->set.errorbuffer[0] = '\0';
-        data->state.errorbuf = FALSE;
-        continue;
-      }
-
-      if(CURLE_OK != result)
-        return result;
-    }
-    else {
-      Curl_pgrsTime(data, TIMER_CONNECT); /* we're connected already */
-      Curl_pgrsTime(data, TIMER_APPCONNECT); /* we're connected already */
-      conn->bits.tcpconnect[FIRSTSOCKET] = TRUE;
-      *protocol_done = TRUE;
-      Curl_verboseconnect(conn);
-      Curl_updateconninfo(conn, conn->sock[FIRSTSOCKET]);
-    }
-    /* Stop the loop now */
-    break;
+  if(CURL_SOCKET_BAD == conn->sock[FIRSTSOCKET]) {
+    conn->bits.tcpconnect[FIRSTSOCKET] = FALSE;
+    result = Curl_connecthost(conn, conn->dns_entry);
+    if(result)
+      return result;
+  }
+  else {
+    Curl_pgrsTime(data, TIMER_CONNECT);    /* we're connected already */
+    Curl_pgrsTime(data, TIMER_APPCONNECT); /* we're connected already */
+    conn->bits.tcpconnect[FIRSTSOCKET] = TRUE;
+    *protocol_done = TRUE;
+    Curl_updateconninfo(conn, conn->sock[FIRSTSOCKET]);
+    Curl_verboseconnect(conn);
   }
 
   conn->now = Curl_tvnow(); /* time this *after* the connect is done, we

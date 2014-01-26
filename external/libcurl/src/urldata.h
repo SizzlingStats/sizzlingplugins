@@ -117,7 +117,7 @@
 #include <polarssl/entropy.h>
 #include <polarssl/ctr_drbg.h>
 #endif /* POLARSSL_VERSION_NUMBER<0x01010000 */
-#if POLARSSL_VERSION_NUMBER>0x01020000
+#if POLARSSL_VERSION_NUMBER>=0x01020000
 #include <polarssl/compat-1.2.h>
 #endif /* POLARSSL_VERSION_NUMBER>0x01020000 */
 #endif /* USE_POLARSSL */
@@ -841,6 +841,7 @@ struct connectdata {
      within the DNS cache, so this pointer is only valid as long as the DNS
      cache entry remains locked. It gets unlocked in Curl_done() */
   Curl_addrinfo *ip_addr;
+  Curl_addrinfo *tempaddr[2]; /* for happy eyeballs */
 
   /* 'ip_addr_str' is the ip_addr data as a human readable string.
      It remains available as long as the connection does, which is longer than
@@ -892,6 +893,7 @@ struct connectdata {
   struct timeval created; /* creation time */
   curl_socket_t sock[2]; /* two sockets, the second is used for the data
                             transfer when doing FTP */
+  curl_socket_t tempsock[2]; /* temporary sockets for happy eyeballs */
   bool sock_accepted[2]; /* TRUE if the socket on this index was created with
                             accept() */
   Curl_recv *recv[2];
@@ -1638,6 +1640,8 @@ struct SessionHandle {
                                   other dynamic purposes */
   struct WildcardData wildcard; /* wildcard download state info */
   struct PureInfo info;        /* stats, reports and info data */
+  struct curl_tlssessioninfo tsi; /* Information about the TLS session, only
+                                     valid after a client has asked for it */
 #if defined(CURL_DOES_CONVERSIONS) && defined(HAVE_ICONV)
   iconv_t outbound_cd;         /* for translating to the network encoding */
   iconv_t inbound_cd;          /* for translating from the network encoding */

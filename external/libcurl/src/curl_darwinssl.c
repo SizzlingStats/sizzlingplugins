@@ -834,7 +834,7 @@ CF_INLINE CFStringRef CopyCertSubject(SecCertificateRef cert)
   return server_cert_summary;
 }
 
-#if CURL_SUPPORT_MAC_10_7
+#if CURL_SUPPORT_MAC_10_6
 /* The SecKeychainSearch API was deprecated in Lion, and using it will raise
    deprecation warnings, so let's not compile this unless it's necessary: */
 static OSStatus CopyIdentityWithLabelOldSchool(char *label,
@@ -874,7 +874,7 @@ static OSStatus CopyIdentityWithLabelOldSchool(char *label,
     CFRelease(search);
   return status;
 }
-#endif /* CURL_SUPPORT_MAC_10_7 */
+#endif /* CURL_SUPPORT_MAC_10_6 */
 
 static OSStatus CopyIdentityWithLabel(char *label,
                                       SecIdentityRef *out_cert_and_key)
@@ -914,12 +914,12 @@ static OSStatus CopyIdentityWithLabel(char *label,
     CFRelease(query_dict);
   }
   else {
-#if CURL_SUPPORT_MAC_10_7
+#if CURL_SUPPORT_MAC_10_6
     /* On Leopard and Snow Leopard, fall back to SecKeychainSearch. */
     status = CopyIdentityWithLabelOldSchool(label, out_cert_and_key);
 #endif /* CURL_SUPPORT_MAC_10_7 */
   }
-#elif CURL_SUPPORT_MAC_10_7
+#elif CURL_SUPPORT_MAC_10_6
   /* For developers building on older cats, we have no choice but to fall back
      to SecKeychainSearch. */
   status = CopyIdentityWithLabelOldSchool(label, out_cert_and_key);
@@ -938,8 +938,10 @@ static OSStatus CopyIdentityFromPKCS12File(const char *cPath,
     cPassword, kCFStringEncodingUTF8) : NULL;
   CFDataRef pkcs_data = NULL;
 
-  /* We can import P12 files on iOS or OS X 10.6 or later: */
-#if CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS
+  /* We can import P12 files on iOS or OS X 10.7 or later: */
+  /* These constants are documented as having first appeared in 10.6 but they
+     raise linker errors when used on that cat for some reason. */
+#if CURL_BUILD_MAC_10_7 || CURL_BUILD_IOS
   if(CFURLCreateDataAndPropertiesFromResource(NULL, pkcs_url, &pkcs_data,
     NULL, NULL, &status)) {
     const void *cKeys[] = {kSecImportExportPassphrase};
@@ -963,7 +965,7 @@ static OSStatus CopyIdentityFromPKCS12File(const char *cPath,
     CFRelease(options);
     CFRelease(pkcs_data);
   }
-#endif /* CURL_BUILD_MAC_10_6 || CURL_BUILD_IOS */
+#endif /* CURL_BUILD_MAC_10_7 || CURL_BUILD_IOS */
   if(password)
     CFRelease(password);
   CFRelease(pkcs_url);
@@ -1056,6 +1058,18 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
         (void)SSLSetProtocolVersionMin(connssl->ssl_ctx, kTLSProtocol1);
         (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kTLSProtocol12);
         break;
+      case CURL_SSLVERSION_TLSv1_0:
+        (void)SSLSetProtocolVersionMin(connssl->ssl_ctx, kTLSProtocol1);
+        (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kTLSProtocol1);
+        break;
+      case CURL_SSLVERSION_TLSv1_1:
+        (void)SSLSetProtocolVersionMin(connssl->ssl_ctx, kTLSProtocol11);
+        (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kTLSProtocol11);
+        break;
+      case CURL_SSLVERSION_TLSv1_2:
+        (void)SSLSetProtocolVersionMin(connssl->ssl_ctx, kTLSProtocol12);
+        (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kTLSProtocol12);
+        break;
       case CURL_SSLVERSION_SSLv3:
         (void)SSLSetProtocolVersionMin(connssl->ssl_ctx, kSSLProtocol3);
         (void)SSLSetProtocolVersionMax(connssl->ssl_ctx, kSSLProtocol3);
@@ -1100,6 +1114,21 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
                                            kTLSProtocol12,
                                            true);
         break;
+      case CURL_SSLVERSION_TLSv1_0:
+        (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
+                                           kTLSProtocol1,
+                                           true);
+        break;
+      case CURL_SSLVERSION_TLSv1_1:
+        (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
+                                           kTLSProtocol11,
+                                           true);
+        break;
+      case CURL_SSLVERSION_TLSv1_2:
+        (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
+                                           kTLSProtocol12,
+                                           true);
+        break;
       case CURL_SSLVERSION_SSLv3:
         (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
                                            kSSLProtocol3,
@@ -1130,10 +1159,17 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
                                          true);
       break;
     case CURL_SSLVERSION_TLSv1:
+    case CURL_SSLVERSION_TLSv1_0:
       (void)SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
                                          kTLSProtocol1,
                                          true);
       break;
+    case CURL_SSLVERSION_TLSv1_1:
+      failf(data, "Your version of the OS does not support TLSv1.1");
+      return CURLE_SSL_CONNECT_ERROR;
+    case CURL_SSLVERSION_TLSv1_2:
+      failf(data, "Your version of the OS does not support TLSv1.2");
+      return CURLE_SSL_CONNECT_ERROR;
     case CURL_SSLVERSION_SSLv2:
       err = SSLSetProtocolVersionEnabled(connssl->ssl_ctx,
                                          kSSLProtocol2,
@@ -1216,16 +1252,16 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
     }
     else {
       switch(err) {
-        case errSecPkcs12VerifyFailure: case errSecAuthFailed:
+        case errSecAuthFailed: case -25264: /* errSecPkcs12VerifyFailure */
           failf(data, "SSL: Incorrect password for the certificate \"%s\" "
                       "and its private key.", data->set.str[STRING_CERT]);
           break;
-        case errSecDecode: case errSecUnknownFormat:
+        case errSecDecode: case -25257: /* errSecUnknownFormat */
           failf(data, "SSL: Couldn't make sense of the data in the "
                       "certificate \"%s\" and its private key.",
                       data->set.str[STRING_CERT]);
           break;
-        case errSecPassphraseRequired:
+        case -25260: /* errSecPassphraseRequired */
           failf(data, "SSL The certificate \"%s\" requires a password.",
                       data->set.str[STRING_CERT]);
           break;
@@ -1403,7 +1439,8 @@ static CURLcode darwinssl_connect_step1(struct connectdata *conn,
 #if CURL_BUILD_MAC_10_9 || CURL_BUILD_IOS_7
   /* We want to enable 1/n-1 when using a CBC cipher unless the user
      specifically doesn't want us doing that: */
-  SSLSetSessionOption(connssl->ssl_ctx, kSSLSessionOptionSendOneByteRecord,
+  if(SSLSetSessionOption != NULL)
+    SSLSetSessionOption(connssl->ssl_ctx, kSSLSessionOptionSendOneByteRecord,
                       !data->set.ssl_enable_beast);
 #endif /* CURL_BUILD_MAC_10_9 || CURL_BUILD_IOS_7 */
 

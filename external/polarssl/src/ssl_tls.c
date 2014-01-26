@@ -941,6 +941,8 @@ static void ssl_mac( md_context_t *md_ctx, unsigned char *secret,
         padlen = 40;
     else if( md_type == POLARSSL_MD_SHA256 )
         padlen = 32;
+    else if( md_type == POLARSSL_MD_SHA384 )
+        padlen = 16;
 
     memcpy( header, ctr, 8 );
     header[ 8] = (unsigned char)  type;
@@ -1312,8 +1314,12 @@ static int ssl_encrypt_buf( ssl_context *ssl )
 
 static int ssl_decrypt_buf( ssl_context *ssl )
 {
-    size_t i, padlen = 0, correct = 1;
-    unsigned char tmp[POLARSSL_SSL_MAX_MAC_SIZE];
+    size_t i;
+#if defined(POLARSSL_ARC4_C) || defined(POLARSSL_CIPHER_NULL_CIPHER) ||     \
+    ( defined(POLARSSL_CIPHER_MODE_CBC) &&                                  \
+      ( defined(POLARSSL_AES_C) || defined(POLARSSL_CAMELLIA_C) ) )
+    size_t padlen = 0, correct = 1;
+#endif
 
     SSL_DEBUG_MSG( 2, ( "=> decrypt buf" ) );
 
@@ -1385,8 +1391,6 @@ static int ssl_decrypt_buf( ssl_context *ssl )
         size_t dec_msglen, olen, totlen;
         unsigned char add_data[13];
         int ret = POLARSSL_ERR_SSL_FEATURE_UNAVAILABLE;
-
-        padlen = 0;
 
         dec_msglen = ssl->in_msglen - ( ssl->transform_in->ivlen -
                                         ssl->transform_in->fixed_ivlen );
@@ -1606,6 +1610,21 @@ static int ssl_decrypt_buf( ssl_context *ssl )
             size_t pad_count = 0, real_count = 1;
             size_t padding_idx = ssl->in_msglen - padlen - 1;
 
+            /*
+             * Padding is guaranteed to be incorrect if:
+             *   1. padlen - 1 > ssl->in_msglen
+             *
+             *   2. ssl->in_msglen + padlen >
+             *        SSL_MAX_CONTENT_LEN + 256 (max padding)
+             *
+             * In both cases we reset padding_idx to a safe value (0) to
+             * prevent out-of-buffer reads.
+             */
+            correct &= ( ssl->in_msglen >= padlen - 1 );
+            correct &= ( ssl->in_msglen + padlen <= SSL_MAX_CONTENT_LEN + 256 );
+
+            padding_idx *= correct;
+
             for( i = 1; i <= 256; i++ )
             {
                 real_count &= ( i <= padlen );
@@ -1649,6 +1668,8 @@ static int ssl_decrypt_buf( ssl_context *ssl )
     if( ssl->transform_in->cipher_ctx_dec.cipher_info->mode !=
                                                         POLARSSL_MODE_GCM )
     {
+        unsigned char tmp[POLARSSL_SSL_MAX_MAC_SIZE];
+
         ssl->in_msglen -= ( ssl->transform_in->maclen + padlen );
 
         ssl->in_hdr[3] = (unsigned char)( ssl->in_msglen >> 8 );
@@ -2314,10 +2335,13 @@ int ssl_send_alert_message( ssl_context *ssl,
 /*
  * Handshake functions
  */
-#if !defined(POLARSSL_KEY_EXCHANGE_RSA_ENABLED)       && \
-    !defined(POLARSSL_KEY_EXCHANGE_DHE_RSA_ENABLED)   && \
-    !defined(POLARSSL_KEY_EXCHANGE_ECDHE_RSA_ENABLED) && \
-    !defined(POLARSSL_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED)
+#if !defined(POLARSSL_KEY_EXCHANGE_RSA_ENABLED)         && \
+    !defined(POLARSSL_KEY_EXCHANGE_RSA_PSK_ENABLED)     && \
+    !defined(POLARSSL_KEY_EXCHANGE_DHE_RSA_ENABLED)     && \
+    !defined(POLARSSL_KEY_EXCHANGE_ECDHE_RSA_ENABLED)   && \
+    !defined(POLARSSL_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED) && \
+    !defined(POLARSSL_KEY_EXCHANGE_ECDH_RSA_ENABLED)    && \
+    !defined(POLARSSL_KEY_EXCHANGE_ECDH_ECDSA_ENABLED)
 int ssl_write_certificate( ssl_context *ssl )
 {
     int ret = POLARSSL_ERR_SSL_FEATURE_UNAVAILABLE;
@@ -2429,7 +2453,7 @@ int ssl_write_certificate( ssl_context *ssl )
     while( crt != NULL )
     {
         n = crt->raw.len;
-        if( i + 3 + n > SSL_MAX_CONTENT_LEN )
+        if( n > SSL_MAX_CONTENT_LEN - 3 - i )
         {
             SSL_DEBUG_MSG( 1, ( "certificate too large, %d > %d",
                            i + 3 + n, SSL_MAX_CONTENT_LEN ) );
@@ -2487,7 +2511,8 @@ int ssl_parse_certificate( ssl_context *ssl )
     }
 
     if( ssl->endpoint == SSL_IS_SERVER &&
-        ssl->authmode == SSL_VERIFY_NONE )
+        ( ssl->authmode == SSL_VERIFY_NONE ||
+          ciphersuite_info->key_exchange == POLARSSL_KEY_EXCHANGE_RSA_PSK ) )
     {
         ssl->session_negotiate->verify_result = BADCERT_SKIP_VERIFY;
         SSL_DEBUG_MSG( 2, ( "<= skip parse certificate" ) );
@@ -2645,9 +2670,13 @@ int ssl_parse_certificate( ssl_context *ssl )
 
     return( ret );
 }
-#endif /* !POLARSSL_KEY_EXCHANGE_RSA_ENABLED &&
-          !POLARSSL_KEY_EXCHANGE_DHE_RSA_ENABLED &&
-          !POLARSSL_KEY_EXCHANGE_ECDHE_RSA_ENABLED */
+#endif /* !POLARSSL_KEY_EXCHANGE_RSA_ENABLED
+          !POLARSSL_KEY_EXCHANGE_RSA_PSK_ENABLED
+          !POLARSSL_KEY_EXCHANGE_DHE_RSA_ENABLED
+          !POLARSSL_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+          !POLARSSL_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
+          !POLARSSL_KEY_EXCHANGE_ECDH_RSA_ENABLED
+          !POLARSSL_KEY_EXCHANGE_ECDH_ECDSA_ENABLED */
 
 int ssl_write_change_cipher_spec( ssl_context *ssl )
 {
@@ -3445,17 +3474,24 @@ static int ssl_ticket_keys_init( ssl_context *ssl )
         return( POLARSSL_ERR_SSL_MALLOC_FAILED );
 
     if( ( ret = ssl->f_rng( ssl->p_rng, tkeys->key_name, 16 ) ) != 0 )
+    {
+        polarssl_free( tkeys );
         return( ret );
+    }
 
     if( ( ret = ssl->f_rng( ssl->p_rng, buf, 16 ) ) != 0 ||
         ( ret = aes_setkey_enc( &tkeys->enc, buf, 128 ) ) != 0 ||
         ( ret = aes_setkey_dec( &tkeys->dec, buf, 128 ) ) != 0 )
     {
-            return( ret );
+        polarssl_free( tkeys );
+        return( ret );
     }
 
     if( ( ret = ssl->f_rng( ssl->p_rng, tkeys->mac_key, 16 ) ) != 0 )
+    {
+        polarssl_free( tkeys );
         return( ret );
+    }
 
     ssl->ticket_keys = tkeys;
 
@@ -3583,7 +3619,8 @@ static ssl_key_cert *ssl_add_key_cert( ssl_context *ssl )
     if( ssl->key_cert == NULL )
     {
         ssl->key_cert = key_cert;
-        ssl->handshake->key_cert = key_cert;
+        if( ssl->handshake != NULL )
+            ssl->handshake->key_cert = key_cert;
     }
     else
     {
@@ -3812,7 +3849,7 @@ void ssl_set_min_version( ssl_context *ssl, int major, int minor )
 #if defined(POLARSSL_SSL_MAX_FRAGMENT_LENGTH)
 int ssl_set_max_frag_len( ssl_context *ssl, unsigned char mfl_code )
 {
-    if( mfl_code >= sizeof( mfl_code_to_length ) ||
+    if( mfl_code >= SSL_MAX_FRAG_LEN_INVALID ||
         mfl_code_to_length[mfl_code] > SSL_MAX_CONTENT_LEN )
     {
         return( POLARSSL_ERR_SSL_BAD_INPUT_DATA );

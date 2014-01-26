@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2013, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -63,6 +63,7 @@
 #include "curl_memory.h"
 #include "rawstr.h"
 #include "warnless.h"
+#include "x509asn1.h"
 
 /* The last #include file should be: */
 #include "memdebug.h"
@@ -76,9 +77,7 @@ PRFileDesc *PR_ImportTCPSocket(PRInt32 osfd);
 
 PRLock * nss_initlock = NULL;
 PRLock * nss_crllock = NULL;
-#ifdef HAVE_NSS_INITCONTEXT
 NSSInitContext * nss_context = NULL;
-#endif
 
 volatile int initialized = 0;
 
@@ -653,6 +652,10 @@ static void display_conn_info(struct connectdata *conn, PRFileDesc *sock)
   SSLChannelInfo channel;
   SSLCipherSuiteInfo suite;
   CERTCertificate *cert;
+  CERTCertificate *cert2;
+  CERTCertificate *cert3;
+  PRTime now;
+  int i;
 
   if(SSL_GetChannelInfo(sock, &channel, sizeof channel) ==
      SECSuccess && channel.length == sizeof channel &&
@@ -663,11 +666,45 @@ static void display_conn_info(struct connectdata *conn, PRFileDesc *sock)
     }
   }
 
-  infof(conn->data, "Server certificate:\n");
-
   cert = SSL_PeerCertificate(sock);
-  display_cert_info(conn->data, cert);
-  CERT_DestroyCertificate(cert);
+
+  if(cert) {
+    infof(conn->data, "Server certificate:\n");
+
+    if(!conn->data->set.ssl.certinfo) {
+      display_cert_info(conn->data, cert);
+      CERT_DestroyCertificate(cert);
+    }
+    else {
+      /* Count certificates in chain. */
+      now = PR_Now();
+      i = 1;
+      if(!cert->isRoot) {
+        cert2 = CERT_FindCertIssuer(cert, now, certUsageSSLCA);
+        while(cert2) {
+          i++;
+          if(cert2->isRoot) {
+            CERT_DestroyCertificate(cert2);
+            break;
+          }
+          cert3 = CERT_FindCertIssuer(cert2, now, certUsageSSLCA);
+          CERT_DestroyCertificate(cert2);
+          cert2 = cert3;
+        }
+      }
+      Curl_ssl_init_certinfo(conn->data, i);
+      for(i = 0; cert; cert = cert2) {
+        Curl_extract_certinfo(conn, i++, (char *)cert->derCert.data,
+                              (char *)cert->derCert.data + cert->derCert.len);
+        if(cert->isRoot) {
+          CERT_DestroyCertificate(cert);
+          break;
+        }
+        cert2 = CERT_FindCertIssuer(cert, now, certUsageSSLCA);
+        CERT_DestroyCertificate(cert);
+      }
+    }
+  }
 
   return;
 }
@@ -854,7 +891,6 @@ isTLSIntoleranceError(PRInt32 err)
 
 static CURLcode nss_init_core(struct SessionHandle *data, const char *cert_dir)
 {
-#ifdef HAVE_NSS_INITCONTEXT
   NSSInitParameters initparams;
 
   if(nss_context != NULL)
@@ -862,12 +898,6 @@ static CURLcode nss_init_core(struct SessionHandle *data, const char *cert_dir)
 
   memset((void *) &initparams, '\0', sizeof(initparams));
   initparams.length = sizeof(initparams);
-#else /* HAVE_NSS_INITCONTEXT */
-  SECStatus rv;
-
-  if(NSS_IsInitialized())
-    return CURLE_OK;
-#endif
 
   if(cert_dir) {
     const bool use_sql = NSS_VersionCheck("3.12.0");
@@ -876,35 +906,22 @@ static CURLcode nss_init_core(struct SessionHandle *data, const char *cert_dir)
       return CURLE_OUT_OF_MEMORY;
 
     infof(data, "Initializing NSS with certpath: %s\n", certpath);
-#ifdef HAVE_NSS_INITCONTEXT
     nss_context = NSS_InitContext(certpath, "", "", "", &initparams,
             NSS_INIT_READONLY | NSS_INIT_PK11RELOAD);
     free(certpath);
 
     if(nss_context != NULL)
       return CURLE_OK;
-#else /* HAVE_NSS_INITCONTEXT */
-    rv = NSS_Initialize(certpath, "", "", "", NSS_INIT_READONLY);
-    free(certpath);
-
-    if(rv == SECSuccess)
-      return CURLE_OK;
-#endif
 
     infof(data, "Unable to initialize NSS database\n");
   }
 
   infof(data, "Initializing NSS with certpath: none\n");
-#ifdef HAVE_NSS_INITCONTEXT
   nss_context = NSS_InitContext("", "", "", "", &initparams, NSS_INIT_READONLY
          | NSS_INIT_NOCERTDB   | NSS_INIT_NOMODDB       | NSS_INIT_FORCEOPEN
          | NSS_INIT_NOROOTINIT | NSS_INIT_OPTIMIZESPACE | NSS_INIT_PK11RELOAD);
   if(nss_context != NULL)
     return CURLE_OK;
-#else /* HAVE_NSS_INITCONTEXT */
-  if(NSS_NoDB_Init(NULL) == SECSuccess)
-    return CURLE_OK;
-#endif
 
   infof(data, "Unable to initialize NSS\n");
   return CURLE_SSL_CACERT_BADFILE;
@@ -1000,12 +1017,8 @@ void Curl_nss_cleanup(void)
       SECMOD_DestroyModule(mod);
       mod = NULL;
     }
-#ifdef HAVE_NSS_INITCONTEXT
     NSS_ShutdownContext(nss_context);
     nss_context = NULL;
-#else /* HAVE_NSS_INITCONTEXT */
-    NSS_Shutdown();
-#endif
   }
   PR_Unlock(nss_initlock);
 
@@ -1172,13 +1185,69 @@ static CURLcode nss_load_ca_certificates(struct connectdata *conn,
   return CURLE_OK;
 }
 
+static CURLcode nss_init_sslver(SSLVersionRange *sslver,
+                                struct SessionHandle *data)
+{
+  switch (data->set.ssl.version) {
+  default:
+  case CURL_SSLVERSION_DEFAULT:
+    if(data->state.ssl_connect_retry) {
+      infof(data, "TLS disabled due to previous handshake failure\n");
+      sslver->max = SSL_LIBRARY_VERSION_3_0;
+    }
+    return CURLE_OK;
+
+  case CURL_SSLVERSION_TLSv1:
+    sslver->min = SSL_LIBRARY_VERSION_TLS_1_0;
+#ifdef SSL_LIBRARY_VERSION_TLS_1_2
+    sslver->max = SSL_LIBRARY_VERSION_TLS_1_2;
+#elif defined SSL_LIBRARY_VERSION_TLS_1_1
+    sslver->max = SSL_LIBRARY_VERSION_TLS_1_1;
+#else
+    sslver->max = SSL_LIBRARY_VERSION_TLS_1_0;
+#endif
+    return CURLE_OK;
+
+  case CURL_SSLVERSION_SSLv2:
+    sslver->min = SSL_LIBRARY_VERSION_2;
+    sslver->max = SSL_LIBRARY_VERSION_2;
+    return CURLE_OK;
+
+  case CURL_SSLVERSION_SSLv3:
+    sslver->min = SSL_LIBRARY_VERSION_3_0;
+    sslver->max = SSL_LIBRARY_VERSION_3_0;
+    return CURLE_OK;
+
+  case CURL_SSLVERSION_TLSv1_0:
+    sslver->min = SSL_LIBRARY_VERSION_TLS_1_0;
+    sslver->max = SSL_LIBRARY_VERSION_TLS_1_0;
+    return CURLE_OK;
+
+  case CURL_SSLVERSION_TLSv1_1:
+#ifdef SSL_LIBRARY_VERSION_TLS_1_1
+    sslver->min = SSL_LIBRARY_VERSION_TLS_1_1;
+    sslver->max = SSL_LIBRARY_VERSION_TLS_1_1;
+    return CURLE_OK;
+#endif
+    break;
+
+  case CURL_SSLVERSION_TLSv1_2:
+#ifdef SSL_LIBRARY_VERSION_TLS_1_2
+    sslver->min = SSL_LIBRARY_VERSION_TLS_1_2;
+    sslver->max = SSL_LIBRARY_VERSION_TLS_1_2;
+    return CURLE_OK;
+#endif
+    break;
+  }
+
+  failf(data, "TLS minor version cannot be set");
+  return CURLE_SSL_CONNECT_ERROR;
+}
+
 CURLcode Curl_nss_connect(struct connectdata *conn, int sockindex)
 {
   PRErrorCode err = 0;
   PRFileDesc *model = NULL;
-  PRBool ssl2 = PR_FALSE;
-  PRBool ssl3 = PR_FALSE;
-  PRBool tlsv1 = PR_FALSE;
   PRBool ssl_no_cache;
   PRBool ssl_cbc_random_iv;
   struct SessionHandle *data = conn->data;
@@ -1189,6 +1258,11 @@ CURLcode Curl_nss_connect(struct connectdata *conn, int sockindex)
   PRSocketOptionData sock_opt;
   long time_left;
   PRUint32 timeout;
+
+  SSLVersionRange sslver = {
+    SSL_LIBRARY_VERSION_3_0,      /* min */
+    SSL_LIBRARY_VERSION_TLS_1_0   /* max */
+  };
 
   if(connssl->state == ssl_connection_complete)
     return CURLE_OK;
@@ -1244,39 +1318,16 @@ CURLcode Curl_nss_connect(struct connectdata *conn, int sockindex)
   if(SSL_OptionSet(model, SSL_HANDSHAKE_AS_CLIENT, PR_TRUE) != SECSuccess)
     goto error;
 
-  /* do not use SSL cache if we are not going to verify peer */
-  ssl_no_cache = (data->set.ssl.verifypeer) ? PR_FALSE : PR_TRUE;
+  /* do not use SSL cache if disabled or we are not going to verify peer */
+  ssl_no_cache = (conn->ssl_config.sessionid && data->set.ssl.verifypeer) ?
+    PR_FALSE : PR_TRUE;
   if(SSL_OptionSet(model, SSL_NO_CACHE, ssl_no_cache) != SECSuccess)
     goto error;
 
-  switch (data->set.ssl.version) {
-  default:
-  case CURL_SSLVERSION_DEFAULT:
-    ssl3 = PR_TRUE;
-    if(data->state.ssl_connect_retry)
-      infof(data, "TLS disabled due to previous handshake failure\n");
-    else
-      tlsv1 = PR_TRUE;
-    break;
-  case CURL_SSLVERSION_TLSv1:
-    tlsv1 = PR_TRUE;
-    break;
-  case CURL_SSLVERSION_SSLv2:
-    ssl2 = PR_TRUE;
-    break;
-  case CURL_SSLVERSION_SSLv3:
-    ssl3 = PR_TRUE;
-    break;
-  }
-
-  if(SSL_OptionSet(model, SSL_ENABLE_SSL2, ssl2) != SECSuccess)
+  /* enable/disable the requested SSL version(s) */
+  if(nss_init_sslver(&sslver, data) != CURLE_OK)
     goto error;
-  if(SSL_OptionSet(model, SSL_ENABLE_SSL3, ssl3) != SECSuccess)
-    goto error;
-  if(SSL_OptionSet(model, SSL_ENABLE_TLS, tlsv1) != SECSuccess)
-    goto error;
-
-  if(SSL_OptionSet(model, SSL_V2_COMPATIBLE_HELLO, ssl2) != SECSuccess)
+  if(SSL_VersionRangeSet(model, &sslver) != SECSuccess)
     goto error;
 
   ssl_cbc_random_iv = !data->set.ssl_enable_beast;
@@ -1462,11 +1513,13 @@ CURLcode Curl_nss_connect(struct connectdata *conn, int sockindex)
   if(model)
     PR_Close(model);
 
-    /* cleanup on connection failure */
-    Curl_llist_destroy(connssl->obj_list, NULL);
-    connssl->obj_list = NULL;
+  /* cleanup on connection failure */
+  Curl_llist_destroy(connssl->obj_list, NULL);
+  connssl->obj_list = NULL;
 
-  if(ssl3 && tlsv1 && isTLSIntoleranceError(err)) {
+  if((sslver.min == SSL_LIBRARY_VERSION_3_0)
+      && (sslver.max == SSL_LIBRARY_VERSION_TLS_1_0)
+      && isTLSIntoleranceError(err)) {
     /* schedule reconnect through Curl_retry_request() */
     data->state.ssl_connect_retry = TRUE;
     infof(data, "Error in TLS handshake, trying SSLv3...\n");

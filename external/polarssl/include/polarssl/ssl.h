@@ -101,7 +101,7 @@
 #define POLARSSL_ERR_SSL_CONN_EOF                          -0x7280  /**< The connection indicated an EOF. */
 #define POLARSSL_ERR_SSL_UNKNOWN_CIPHER                    -0x7300  /**< An unknown cipher was received. */
 #define POLARSSL_ERR_SSL_NO_CIPHER_CHOSEN                  -0x7380  /**< The server has no ciphersuites in common with the client. */
-#define POLARSSL_ERR_SSL_NO_SESSION_FOUND                  -0x7400  /**< No session to recover was found. */
+#define POLARSSL_ERR_SSL_NO_RNG                            -0x7400  /**< No RNG was provided to the SSL module. */
 #define POLARSSL_ERR_SSL_NO_CLIENT_CERTIFICATE             -0x7480  /**< No client certification received from the client, but required by the authentication mode. */
 #define POLARSSL_ERR_SSL_CERTIFICATE_TOO_LARGE             -0x7500  /**< Our own certificate(s) is/are too large to send in an SSL message.*/
 #define POLARSSL_ERR_SSL_CERTIFICATE_REQUIRED              -0x7580  /**< The own certificate is not set, but needed by the server. */
@@ -237,8 +237,8 @@
 #endif /* !POLARSSL_CONFIG_OPTIONS */
 
 /*
- * Allow an extra 512 bytes for the record header
- * and encryption overhead (counter + MAC + padding)
+ * Allow an extra 301 bytes for the record header
+ * and encryption overhead: counter (8) + header (5) + MAC (32) + padding (256)
  * and allow for a maximum of 1024 of compression expansion if
  * enabled.
  */
@@ -248,9 +248,9 @@
 #define SSL_COMPRESSION_ADD             0
 #endif
 
-#define SSL_BUFFER_LEN (SSL_MAX_CONTENT_LEN + SSL_COMPRESSION_ADD + 512)
+#define SSL_BUFFER_LEN (SSL_MAX_CONTENT_LEN + SSL_COMPRESSION_ADD + 301)
 
-#define SSL_EMPTY_RENEGOTIATION_INFO    0xFF   /**< renegotiation info ext */ 
+#define SSL_EMPTY_RENEGOTIATION_INFO    0xFF   /**< renegotiation info ext */
 
 /*
  * Supported Signature and Hash algorithms (For TLS 1.2)
@@ -374,7 +374,7 @@ typedef int (*rsa_decrypt_func)( void *ctx, int mode, size_t *olen,
                         size_t output_max_len ); 
 typedef int (*rsa_sign_func)( void *ctx,
                      int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
-                     int mode, int hash_id, unsigned int hashlen,
+                     int mode, md_type_t md_alg, unsigned int hashlen,
                      const unsigned char *hash, unsigned char *sig );
 typedef size_t (*rsa_key_len_func)( void *ctx );
 
@@ -471,8 +471,8 @@ struct _ssl_transform
 
 #if defined(POLARSSL_SSL_PROTO_SSL3)
     /* Needed only for SSL v3.0 secret */
-    unsigned char mac_enc[32];          /*!<  SSL v3.0 secret (enc)   */
-    unsigned char mac_dec[32];          /*!<  SSL v3.0 secret (dec)   */
+    unsigned char mac_enc[48];          /*!<  SSL v3.0 secret (enc)   */
+    unsigned char mac_dec[48];          /*!<  SSL v3.0 secret (dec)   */
 #endif /* POLARSSL_SSL_PROTO_SSL3 */
 
     md_context_t md_ctx_enc;            /*!<  MAC (encryption)        */

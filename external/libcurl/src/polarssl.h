@@ -25,10 +25,6 @@
 
 #ifdef USE_POLARSSL
 
-#if POLARSSL_VERSION_NUMBER>0x01020000
-#include <polarssl/compat-1.2.h>
-#endif /* POLARSSL_VERSION_NUMBER>0x01020000 */
-
 /* Called on first use PolarSSL, setup threading if supported */
 int  polarssl_init(void);
 void polarssl_cleanup(void);
