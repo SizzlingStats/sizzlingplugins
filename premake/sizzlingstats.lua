@@ -25,7 +25,8 @@ project "SizzlingStats"
         base_dir .. "**.cpp",
         base_dir .. "**.pb.cc",
         base_dir .. "**.pb.h",
-        base_dir .. "**.proto"
+        base_dir .. "**.proto",
+        base_dir .. "../sizzlingplugins.licenseheader"
     }
     libdirs
     {

@@ -18,6 +18,7 @@ project "new_plugin_interface"
     {
         base_dir .. "**.h",
         base_dir .. "**.cpp",
+        base_dir .. "../sizzlingplugins.licenseheader"
     }
     libdirs
     {

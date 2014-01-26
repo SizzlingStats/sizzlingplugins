@@ -78,22 +78,9 @@ solution "SizzlingPlugins"
     dofile "snappy.lua"
     dofile "protobuf_lite.lua"
     
-    -- having files "../sizzlingplugins.licenseheader"
-    -- after the dofile adds it to the project
     dofile "sizzlinglib.lua"
-    files "../sizzlingplugins.licenseheader"
-    
     dofile "sizzlingstats.lua"
-    files "../sizzlingplugins.licenseheader"
-    
     dofile "autotimer.lua"
-    files "../sizzlingplugins.licenseheader"
-    
     dofile "new_plugin.lua"
-    files "../sizzlingplugins.licenseheader"
-    
     dofile "sizzlingmatches.lua"
-    files "../sizzlingplugins.licenseheader"
-    
     dofile "sizzlingrecord.lua"
-    files "../sizzlingplugins.licenseheader"
