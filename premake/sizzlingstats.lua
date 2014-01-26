@@ -35,7 +35,9 @@ project "SizzlingStats"
     {
         "SizzlingLib",
         "libcurl",
+        "polarssl",
         "protobuf_lite"
     }
     
     dofile "hl2sdk-ob-valve.lua"
+project "*"

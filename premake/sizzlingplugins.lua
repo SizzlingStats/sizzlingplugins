@@ -64,8 +64,9 @@ solution "SizzlingPlugins"
         {
             "_LINUX"
         }
-        toolset "clang"
-    configuration { "clang", "C++" }
+        toolset "gcc"
+        targetprefix ""
+    configuration { "linux", "C++" }
         buildoptions "-std=c++11"
     
     -- compiler specific configurations
@@ -77,7 +78,7 @@ solution "SizzlingPlugins"
             "/EHsc"
         }
     configuration {}
-    
+
     -- the projects
     dofile "libcurl.lua"
     dofile "polarssl.lua"

@@ -23,4 +23,5 @@ group "external"
         links
         {
         }
+    project "*"
 group ""

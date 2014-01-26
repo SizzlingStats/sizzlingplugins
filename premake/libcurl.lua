@@ -33,4 +33,5 @@ group "external"
                 "HAVE_CONFIG_H"
             }
         configuration {}
+    project "*"
 group ""

@@ -29,3 +29,4 @@ project "new_plugin_interface"
     }
     
     dofile "hl2sdk-ob-valve.lua"
+project "*"

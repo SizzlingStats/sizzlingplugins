@@ -3,6 +3,8 @@
 
 local sizzplugins_dir = (solution().basedir .. "/")
 local hl2sdk_dir = sizzplugins_dir .. "../hl2sdk-ob-valve/"
+local sdklib_dir = hl2sdk_dir .. "lib/linux/"
+local sizzlib_dir = sizzplugins_dir .. "lib/linux/"
 
 includedirs
 {
@@ -31,6 +33,11 @@ configuration "windows"
         "vstdlib"
     }
 configuration "linux"
+    prelinkcommands
+    {
+        "ln -sf " .. (sdklib_dir .. "mathlib_i486.a") .. " " .. (sizzlib_dir .. "libmathlib_i486.a"),
+        "ln -sf " .. (sdklib_dir .. "tier1_i486.a") .. " " .. (sizzlib_dir .. "libtier1_i486.a")
+    }
     defines
     {
         "stricmp=strcasecmp",
@@ -44,17 +51,18 @@ configuration "linux"
     }
     libdirs
     {
-        sizzplugins_dir .. "lib/linux"
+        sizzlib_dir
     }
     links
     {
         "tier0_srv",
-        "vstdlib_srv"
+        "vstdlib_srv",
+        "mathlib_i486",
+        "tier1_i486"
     }
     linkoptions
     {
-        "-L" .. hl2sdk_dir .. "mathlib_i486.a",
-        "-L" .. hl2sdk_dir .. "tier1_i486.a"
+        --"-Wl,--verbose"
     }
 configuration { "windows" }
     linkoptions
@@ -75,3 +83,5 @@ configuration { "windows", "Release" }
         "/NODEFAULTLIB:libcmtd.lib"
     }
 configuration {}
+--        sdklib_dir .. "mathlib_i486.a",
+--        sdklib_dir .. "tier1_i486.a",

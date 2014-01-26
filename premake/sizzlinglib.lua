@@ -39,3 +39,4 @@ project "SizzlingLib"
     configuration {}
     
     dofile "hl2sdk-ob-valve.lua"
+project "*"

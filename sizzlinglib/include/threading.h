@@ -47,7 +47,7 @@ namespace sizz
 
 	inline bool CThreadMutex::TryLock()
 	{
-		m_mutex.try_lock();
+		return m_mutex.try_lock();
 	}
 
 	class CAutoLock
