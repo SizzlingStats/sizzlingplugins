@@ -30,7 +30,7 @@
 #include "config.h"
 
 // Comment out to disable prototype change warnings
-#define SHOW_PROTOTYPE_CHANGE_WARNINGS
+//#define SHOW_PROTOTYPE_CHANGE_WARNINGS
 
 #if defined(_MSC_VER) && !defined(inline)
 #define inline _inline
