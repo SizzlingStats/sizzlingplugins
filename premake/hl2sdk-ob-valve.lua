@@ -83,5 +83,3 @@ configuration { "windows", "Release" }
         "/NODEFAULTLIB:libcmtd.lib"
     }
 configuration {}
---        sdklib_dir .. "mathlib_i486.a",
---        sdklib_dir .. "tier1_i486.a",

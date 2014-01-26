@@ -20,7 +20,7 @@ solution "SizzlingPlugins"
     {
         "StaticRuntime",
         "NoExceptions",
-        "Symbols"
+        "NoRTTI"
     }
     defines
     {
@@ -34,6 +34,10 @@ solution "SizzlingPlugins"
         {
             "_DEBUG"
         }
+        flags
+        {
+            "Symbols"
+        }
     configuration "Release"
         targetdir (_ACTION .. "/build/Release")
         optimize "Full"
@@ -43,6 +47,9 @@ solution "SizzlingPlugins"
         }
         flags
         {
+            "NoBufferSecurityCheck",
+            "NoEditAndContinue",
+            "NoIncrementalLink",
             "LinkTimeOptimization",
             "MultiProcessorCompile"
         }
@@ -64,7 +71,7 @@ solution "SizzlingPlugins"
         {
             "_LINUX"
         }
-        toolset "gcc"
+        toolset "clang"
         targetprefix ""
     configuration { "linux", "C++" }
         buildoptions "-std=c++11"
