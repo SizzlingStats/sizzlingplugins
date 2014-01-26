@@ -7,10 +7,6 @@ group "external"
         kind "StaticLib"
         language "C++"
         location (_ACTION .. "/" .. project().name)
-        buildoptions
-        {
-            "/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305"
-        }
         
         defines
         {
@@ -69,4 +65,10 @@ group "external"
         links
         {
         }
+
+        configuration "vs*"
+            buildoptions
+            {
+                "/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305"
+            }
 group ""

@@ -61,10 +61,6 @@ solution "SizzlingPlugins"
         }
     configuration "linux"
         toolset "clang"
-        buildoptions
-        {
-            "-std=c++11"
-        }
     
     -- compiler specific configurations
     configuration "vs*"

@@ -27,4 +27,10 @@ group "external"
         {
             "polarssl"
         }
+        configuration "linux"
+            defines
+            {
+                "HAVE_CONFIG_H"
+            }
+        configuration {}
 group ""
