@@ -74,7 +74,12 @@ solution "SizzlingPlugins"
         toolset "clang"
         targetprefix ""
     configuration { "linux", "C++" }
-        buildoptions "-std=c++11"
+        buildoptions {
+            "-std=c++11",
+            "-isystem /usr/include/i386-linux-gnu/c++/4.8*",
+            "-isystem /usr/include/i386-linux-gnu/c++/4.7*",
+            "-isystem /usr/include/i386-linux-gnu/c++/4.6*"
+        }
     
     -- compiler specific configurations
     configuration "vs*"
