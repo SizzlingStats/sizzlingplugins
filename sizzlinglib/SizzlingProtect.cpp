@@ -32,7 +32,7 @@ static bool IsValidString( const char **pChar )
 {
 	if ( *pChar )
 	{
-		while ( *pChar != '\0' )
+		while ( **pChar != '\0' )
 		{
 			switch ( **pChar )
 			{
