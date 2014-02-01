@@ -6,6 +6,8 @@ local hl2sdk_dir = sizzplugins_dir .. "../hl2sdk-ob-valve/"
 local sdklib_dir = hl2sdk_dir .. "lib/linux/"
 local sizzlib_dir = sizzplugins_dir .. "lib/linux/"
 
+local cp_cmd = "cp --reflink=auto -p "
+
 includedirs
 {
     hl2sdk_dir .. "common/",
@@ -35,8 +37,8 @@ configuration "windows"
 configuration "linux"
     prelinkcommands
     {
-        "ln -sf " .. (sdklib_dir .. "mathlib_i486.a") .. " " .. (sizzlib_dir .. "libmathlib_i486.a"),
-        "ln -sf " .. (sdklib_dir .. "tier1_i486.a") .. " " .. (sizzlib_dir .. "libtier1_i486.a")
+        cp_cmd .. (sdklib_dir .. "mathlib_i486.a") .. " " .. (sizzlib_dir .. "libmathlib_i486.a"),
+        cp_cmd .. (sdklib_dir .. "tier1_i486.a") .. " " .. (sizzlib_dir .. "libtier1_i486.a")
     }
     defines
     {
