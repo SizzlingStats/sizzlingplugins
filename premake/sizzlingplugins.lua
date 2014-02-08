@@ -2,7 +2,7 @@
 solution "SizzlingPlugins"
     basedir ".."
     location (_ACTION)
-    startproject "SizzlingStats"
+    startproject "sizzlingstats"
     platforms "x32"
     
     vectorextensions "SSE2"
