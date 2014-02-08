@@ -3,7 +3,7 @@ local base_dir = (solution().basedir .. "/sizzlingstats/")
 local external_dir = (solution().basedir .. "/external/")
 local sizzlib_dir = (solution().basedir .. "/sizzlinglib/")
 
-project "SizzlingStats"
+project "sizzlingstats"
     kind "SharedLib"
     language "C++"
     location (_ACTION .. "/" .. project().name)

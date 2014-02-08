@@ -2,7 +2,7 @@
 local base_dir = (solution().basedir .. "/sizzlingrecord/")
 local sizzlib_dir = (solution().basedir .. "/sizzlinglib/")
 
-project "SizzlingRecord"
+project "sizzlingrecord"
     kind "SharedLib"
     language "C++"
     location (_ACTION .. "/" .. project().name)

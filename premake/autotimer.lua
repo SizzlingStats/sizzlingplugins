@@ -2,7 +2,7 @@
 local base_dir = (solution().basedir .. "/auto_timer/")
 local sizzlib_dir = (solution().basedir .. "/sizzlinglib/")
 
-project "AutoTimer"
+project "autotimer"
     kind "SharedLib"
     language "C++"
     location (_ACTION .. "/" .. project().name)
