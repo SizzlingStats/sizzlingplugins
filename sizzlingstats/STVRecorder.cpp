@@ -51,7 +51,7 @@ bool CSTVRecorder::StartRecording( CSizzPluginContext *context, const char *szMa
 	uint32 month = ltime.tm_mon + 1;
 
 	// construct the demo file name
-	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "%d%d%d_%d%d_%s", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
+	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "%d%02d%02d-%02d%02d-%s", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
 	
 	// create the record string
 	char cmd[10 + DEMONAME_MAX_LEN + 1] = {};
