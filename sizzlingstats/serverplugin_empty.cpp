@@ -396,7 +396,9 @@ void CEmptyServerPlugin::Unload( void )
 	//DisconnectTier2Libraries( );
 	//DisconnectTier1Libraries( );
 
-#ifdef _WIN32
+	// MSVC++ 12.0 _MSC_VER == 1800 (Visual Studio 2013)
+	// MSVC++ 11.0 _MSC_VER == 1700 (Visual Studio 2012)
+#if defined(_WIN32) && !defined(_DLL) && (_MSC_VER >= 1700)
 	// MS Fix
 	//
 	// http://connect.microsoft.com/VisualStudio/feedback/details/781665/stl-using-std-threading-objects-adds-extra-load-count-for-hosted-dll
@@ -410,6 +412,10 @@ void CEmptyServerPlugin::Unload( void )
 		// decrement the reference count
 		FreeLibrary(reinterpret_cast<HMODULE>(mbi.AllocationBase));
 
+		// vs2013 requires two FreeLibrary calls
+#if (_MSC_VER == 1800)
+		FreeLibrary(reinterpret_cast<HMODULE>(mbi.AllocationBase));
+#endif
 	//
 	//
 #endif
