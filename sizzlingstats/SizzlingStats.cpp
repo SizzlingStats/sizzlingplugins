@@ -765,15 +765,7 @@ void SizzlingStats::OnSTVUploadUrlReceived( CSizzPluginContext *pPluginContext, 
 		m_STVRecorder.UploadLastDemo(stvuploadurl.ToCString(), m_pS3UploaderThread);
 	}
 
-	pPluginContext->EnqueueGameFrameFunctor(CreateFunctor(this, &SizzlingStats::LogSTVUploadUrl, pPluginContext, std::move(stvuploadurl)));
-}
-
-void SizzlingStats::LogSTVUploadUrl( CSizzPluginContext *pPluginContext, const sizz::CString &str )
-{
-	const char *s3uploadurl = str.ToCString();
-	char temp[256] = {};
-	V_snprintf(temp, 256, "[SizzlingStats]: S3uploadurl %s\n", s3uploadurl);
-	pPluginContext->LogPrint(temp);
+	Msg("[SizzlingStats]: S3uploadurl %s\n", stvuploadurl.ToCString());
 }
 
 void SizzlingStats::CacheSiteOnPlayer( CSizzPluginContext *pPluginContext, const sizz::CString &match_url )
