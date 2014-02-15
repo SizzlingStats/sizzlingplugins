@@ -36,7 +36,7 @@ enum EVENT_DATA_TYPES
 
 bool CEventStats::Initialize()
 {
-	return m_event_sender.BeginConnection( "sizzlingstats.com:8007" );
+	return m_event_sender.BeginConnection( "dy-dx.com:8007" );
 }
 
 void CEventStats::Shutdown()
