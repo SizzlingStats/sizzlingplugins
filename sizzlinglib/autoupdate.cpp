@@ -18,6 +18,7 @@
 #include "SC_helpers.h"
 #include "SizzFileSystem.h"
 #include "utlbuffer.h"
+#include "zip/XUnzip.h"
 
 //#include "lzss.h"
 //#include "zip/XUnzip.h"
@@ -56,17 +57,21 @@ bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 	if ( success )
 	{
 		// we can rename the current plugin, but not remove it
-		SizzFileSystem::RenameFile( currentPluginPath, oldPluginPath );
+		SizzFileSystem::RenameFile(currentPluginPath, oldPluginPath);
 
-		// write the file to disk
-		sizzFile::COutputFile file( m_info.fileName );
-		if ( file.IsOk() )
-		{
-			file.Write( updatedFile.Base(), updatedFile.GetBytesRemaining() );
-			file.Close();
-			m_bWaitingForUnload = true;
-			return true;
-		}
+		// open the zipped update file
+		HZIP zippedUpdate = OpenZip(updatedFile.Base(), updatedFile.GetBytesRemaining(), ZIP_MEMORY);
+
+		// unzip the file to disk
+		ZRESULT res = UnzipItem(zippedUpdate, 0, m_info.fileName, 0, ZIP_FILENAME);
+
+		// close the zip file
+		CloseZip(zippedUpdate);
+
+		// set the flag that we're waiting to update
+		m_bWaitingForUnload = true;
+
+		return (ZR_OK == res);
 	}
 	return false;
 }

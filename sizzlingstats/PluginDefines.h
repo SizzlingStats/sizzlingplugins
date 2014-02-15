@@ -16,6 +16,7 @@
 //#define PROTO_STATS
 //#define FTP_STATS
 //#define LOG_STATS
+//#define USE_STAGING_URLS
 
 #define PLUGIN_VERSION "0.9.3.2"
 #define URL_BASE "https://bitbucket.org/jcristiano/sizzlingplugins/downloads/"
@@ -35,7 +36,7 @@
 #define PLUGIN_DESCRIPTION_PART "SizzlingStats" // look for this string in the description while searching for the plugin index
 #define PLUGIN_NAME_NO_EX "sizzlingstats"
 #define PLUGIN_NAME PLUGIN_NAME_NO_EX PLUGIN_EXTENSION
-#define URL_TO_UPDATED URL_BASE PLUGIN_NAME
+#define URL_TO_UPDATED URL_BASE PLUGIN_NAME ".zip"
 
 #define USING_SIZZ_FILE_SYSTEM
 
@@ -48,8 +49,6 @@
 #define FULL_PLUGIN_PATH PLUGIN_PATH PLUGIN_NAME
 
 #define PLUGIN_CONFIG_FILE "sizzlingplugins/" PLUGIN_NAME_NO_EX ".cfg"
-
-#define USE_STAGING_URLS
 
 static const char *s_pluginInfo[] = 
 {
