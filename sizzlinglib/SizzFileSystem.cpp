@@ -55,7 +55,7 @@ bool SizzFileSystem::IsOk( FileHandle_t file )
 	return !ferror(reinterpret_cast<FILE*>(file));
 }
 
-int SizzFileSystem::GetFileSize( FileHandle_t file )
+off_t SizzFileSystem::GetFileSize( FileHandle_t file )
 {
 	FILE *pFile = reinterpret_cast<FILE*>(file);
 	int fd = fileno(pFile);
@@ -64,7 +64,7 @@ int SizzFileSystem::GetFileSize( FileHandle_t file )
 	return retval == 0 ? buf.st_size : -1;
 }
 
-int	SizzFileSystem::GetFileSize( const char *pszPath )
+off_t SizzFileSystem::GetFileSize(const char *pszPath)
 {
 	struct stat buf;
 	int retval = stat(pszPath, &buf);

@@ -58,7 +58,7 @@ bool CS3Uploader::UploadFile()
 		if (file)
 		{
 			// Read the file into memory
-			size_t size = sizzFile::SizzFileSystem::GetFileSize(file);
+			off_t size = sizzFile::SizzFileSystem::GetFileSize(file);
 			unsigned char *pBuf = new unsigned char[size*2]();
 			unsigned char *pFile = pBuf + size;
 			sizzFile::SizzFileSystem::ReadToMem(pFile, size, file);

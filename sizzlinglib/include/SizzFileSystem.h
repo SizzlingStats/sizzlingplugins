@@ -18,6 +18,7 @@
 #define SIZZ_FILE_SYSTEM_H
 
 #include <stdio.h>
+#include <sys/types.h>
 
 namespace sizzFile
 {
@@ -34,8 +35,8 @@ namespace sizzFile
 
 		bool			IsOk( FileHandle_t file );
 
-		int				GetFileSize( FileHandle_t file );
-		int				GetFileSize( const char *pszPath );
+		off_t			GetFileSize(FileHandle_t file);
+		off_t			GetFileSize(const char *pszPath);
 
 		unsigned int	Read( void *pOutput, unsigned int numBytes, FileHandle_t file );
 		unsigned int	Write( const void *pInput, unsigned int numBytes, FileHandle_t file );
