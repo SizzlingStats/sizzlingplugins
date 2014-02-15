@@ -18,14 +18,7 @@
 #include "SC_helpers.h"
 #include "SizzFileSystem.h"
 #include "utlbuffer.h"
-#include "zip/XUnzip.h"
-
-//#include "lzss.h"
-//#include "zip/XUnzip.h"
-//#include "lzmaDecoder.h"
-
-//#include "LzmaDec.h"
-//#include "LzmaEnc.h"
+#include "miniz.h"
 
 using namespace sizzFile;
 
@@ -56,22 +49,34 @@ bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 	bool success = SizzDownloader::DownloadFileAndVerify( m_info.fileUrl, m_info.fileCRC, updatedFile );
 	if ( success )
 	{
+		// init the zip struct
+		mz_zip_archive zip;
+		V_memset(&zip, 0, sizeof(zip));
+
+		// open the zipped update file
+		mz_bool ret = mz_zip_reader_init_mem(&zip, updatedFile.Base(), updatedFile.GetBytesRemaining(), 0);
+		if (MZ_TRUE != ret)
+		{
+			return false;
+		}
+
 		// we can rename the current plugin, but not remove it
 		SizzFileSystem::RenameFile(currentPluginPath, oldPluginPath);
 
-		// open the zipped update file
-		HZIP zippedUpdate = OpenZip(updatedFile.Base(), updatedFile.GetBytesRemaining(), ZIP_MEMORY);
-
 		// unzip the file to disk
-		ZRESULT res = UnzipItem(zippedUpdate, 0, m_info.fileName, 0, ZIP_FILENAME);
+		ret = mz_zip_reader_extract_file_to_file(&zip, pluginName, currentPluginPath, 0);
+		if (MZ_TRUE != ret)
+		{
+			return false;
+		}
 
 		// close the zip file
-		CloseZip(zippedUpdate);
+		mz_zip_reader_end(&zip);
 
 		// set the flag that we're waiting to update
 		m_bWaitingForUnload = true;
 
-		return (ZR_OK == res);
+		return true;
 	}
 	return false;
 }
@@ -153,91 +158,3 @@ void CAutoUpdater::RemoveFile( const char *pRelativePath )
 		SizzFileSystem::RemoveFile( pRelativePath );
 	}
 }
-
-//static void *SzAlloc(void */*p*/, size_t size)
-//{
-//	return new unsigned char [size];
-//
-//}
-//static void SzFree(void */*p*/, void *address)
-//{
-//	delete []address;
-//}
-//
-//static SRes SzProgress(void */*p*/, UInt64 /*inSize*/, UInt64 /*outSize*/)
-//{
-//	return 0;
-//}
-//
-//bool CAutoUpdater::UnzipFile( const char *pRelativeName, CUtlBuffer &src, CUtlMemory<unsigned char> &dest )
-//{
-//	size_t srcLen = src.GetBytesRemaining();
-//	ELzmaStatus status;
-//
-//	ISzAlloc alloc = { SzAlloc, SzFree };
-//
-//	/* header: 5 bytes of LZMA properties and 8 bytes of uncompressed size */
-//	unsigned char header[LZMA_PROPS_SIZE + 8];
-//
-//	/* Read and parse header */
-//
-//	src.Get( header, sizeof(header) );
-//
-//	size_t destLen = 0;
-//	for ( int i = 0; i < 8; ++i )
-//	{
-//		destLen += (UInt64)header[LZMA_PROPS_SIZE + i] << (i * 8);
-//	}
-//
-//	unsigned char *pDest = new unsigned char [destLen];
-//
-//	LzmaDecode( pDest, &destLen, (const byte*)src.Base(), &srcLen,
-//    (const Byte*)header, LZMA_PROPS_SIZE, LZMA_FINISH_END,
-//    &status, &alloc);
-//
-//	dest.SetExternalBuffer( pDest, destLen );
-//	return true;
-//}
-//
-//unsigned int CAutoUpdater::Compress( CUtlBuffer &src, CUtlMemory<unsigned char> &dest )
-//{
-//	unsigned char *pDest = NULL;
-//	unsigned int destLen = 0;
-//
-//	CLzmaEncProps props;
-//	props.level = 5;
-//	props.reduceSize = 0xffffffff;
-//	props.lc = 3;
-//	props.lp = 0;
-//	props.pb = 2;
-//	props.algo = 1;
-//	props.fb = 32;
-//	props.btMode = 1;
-//	props.numHashBytes = 4;
-//	props.mc = 32;
-//	props.writeEndMark = 0;
-//	props.numThreads = 1;
-//
-//	ISzAlloc alloc = { SzAlloc, SzFree };
-//
-//	unsigned char *pProps = NULL;
-//	unsigned int propsLen = 0;
-//
-//	ICompressProgress progress = { SzProgress };
-//
-//	LzmaEncode( pDest, &destLen, (const Byte *)src.Base(), src.GetBytesRemaining(),
-//    &props, pProps, &propsLen, 0,
-//    &progress, &alloc, &alloc);
-//
-//	return destLen;
-//}
-//
-//bool CDownloader::UnzipFile( const char *pRelativeName, bool bTextMode, CUtlMemory<unsigned char> &buf )
-//{
-//	HZIP hZip = OpenZip( const_cast<void*>(m_fileBuffer.PeekGet()), m_fileBuffer.GetBytesRemaining(), ZIP_MEMORY );
-//	ZIPENTRY zipEntry;
-//	GetZipItem( hZip, 0, &zipEntry );
-//	buf.EnsureCapacity( zipEntry.unc_size );
-//	UnzipItem( hZip, 0, buf.Base(), zipEntry.unc_size, ZIP_MEMORY );
-//	return true;
-//}

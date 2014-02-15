@@ -16,7 +16,7 @@ project "sizzlinglib"
     {
         base_dir .. "include/",
         external_dir .. "libcurl/include",
-        external_dir .. "public/"
+        external_dir .. "miniz_v115_r4/"
     }
     files
     {
