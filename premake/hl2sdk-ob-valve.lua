@@ -5,20 +5,24 @@ local sizzplugins_dir = (solution().basedir .. "/")
 local hl2sdk_dir = sizzplugins_dir .. "../hl2sdk-ob-valve/"
 local sdklib_dir = hl2sdk_dir .. "lib/linux/"
 local sizzlib_dir = sizzplugins_dir .. "lib/linux/"
+local external_dir = (solution().basedir .. "/external/")
 
 local cp_cmd = "cp --reflink=auto -p "
 
 includedirs
 {
+    -- not part of the sdk, but related to the game... kind of.
+    -- These paths should be resolved first in case
+    -- any files from the sdk need to be overridden.
+    sizzplugins_dir .. "common/",
+    external_dir .. "public/",
+    
     hl2sdk_dir .. "common/",
     hl2sdk_dir .. "public/",
     hl2sdk_dir .. "public/tier0/",
     hl2sdk_dir .. "public/tier1/",
     hl2sdk_dir .. "game/server/",
-    hl2sdk_dir .. "game/shared/",
-    
-    -- not part of the sdk, but related to the game... kind of
-    sizzplugins_dir .. "common"
+    hl2sdk_dir .. "game/shared/"
 }
 
 configuration "windows"
