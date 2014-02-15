@@ -96,6 +96,7 @@ solution "SizzlingPlugins"
     dofile "polarssl.lua"
     dofile "snappy.lua"
     dofile "protobuf_lite.lua"
+    dofile "miniz.lua"
     
     dofile "sizzlinglib.lua"
     dofile "sizzlingstats.lua"

@@ -16,20 +16,20 @@ project "sizzlinglib"
     {
         base_dir .. "include/",
         external_dir .. "libcurl/include",
-        external_dir .. "miniz_v115_r4/"
+        external_dir .. "miniz_v115_r4"
     }
     files
     {
         base_dir .. "include/*.h",
         base_dir .. "*.cpp",
         external_dir .. "public/XZip.cpp",
-        external_dir .. "miniz_v115_r4/miniz.c",
         external_dir .. "../external/tier0/memoverride.cpp",
         base_dir .. "../sizzlingplugins.licenseheader"
     }
     links
     {
-        "libcurl"
+        "libcurl",
+        "miniz"
     }
     
     configuration "windows"

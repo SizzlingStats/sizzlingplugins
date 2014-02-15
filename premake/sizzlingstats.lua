@@ -49,7 +49,8 @@ project "sizzlingstats"
         "SizzlingLib",
         "libcurl",
         "polarssl",
-        "protobuf_lite"
+        "protobuf_lite",
+        "miniz"
     }
     
     dofile "hl2sdk-ob-valve.lua"
