@@ -321,7 +321,7 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 					temp3.InsertKV("steamid", pInfo->m_steamid);
 					temp3.InsertKV("isTeam", pInfo->m_bTeamChat);
 					temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
-					const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
+					const char *pMessage = pInfo->m_message.ToCString();
 					temp3.InsertKV("message", pMessage);
 				}
 			}
@@ -348,7 +348,7 @@ void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUt
 				temp3.InsertKV("steamid", pInfo->m_steamid);
 				temp3.InsertKV("isTeam", pInfo->m_bTeamChat);
 				temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
-				const char *pMessage = reinterpret_cast<const char*>(pInfo->m_message.PeekGet());
+				const char *pMessage = pInfo->m_message.ToCString();
 				temp3.InsertKV("message", pMessage);
 			}
 		}

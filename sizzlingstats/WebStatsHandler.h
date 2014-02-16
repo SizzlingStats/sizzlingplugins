@@ -45,7 +45,7 @@ typedef struct chatInfo_s
 	
 	double m_timestamp;
 	char m_steamid[32];
-	CUtlBuffer m_message;
+	sizz::CString m_message;
 	bool m_bTeamChat;
 } chatInfo_t;
 
@@ -230,7 +230,7 @@ public:
 inline chatInfo_s::chatInfo_s():
 	m_timestamp(0),
 	m_steamid(),
-	m_message(0, 0, CUtlBuffer::TEXT_BUFFER|CUtlBuffer::CONTAINS_CRLF),
+	m_message(""),
 	m_bTeamChat(false)
 {
 }
@@ -240,11 +240,10 @@ inline chatInfo_s::chatInfo_s(uint64 timestamp,
 		const char *message,
 		bool bTeamChat):
 	m_timestamp(timestamp),
-	m_message(0, 0, CUtlBuffer::TEXT_BUFFER|CUtlBuffer::CONTAINS_CRLF),
+	m_message(message),
 	m_bTeamChat(bTeamChat)
 {
 	V_strncpy(m_steamid, steamid, 32);
-	m_message.PutString(message);
 }
 
 inline hostInfo_s::hostInfo_s():
