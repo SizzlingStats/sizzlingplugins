@@ -16,10 +16,17 @@
 	}; \
 	static CUtlCharConversion _name( _escapeChar, _delimiter, sizeof( s_pConversionArray ## _name ) / sizeof( CUtlCharConversion::ConversionArray_t ), s_pConversionArray ## _name );
 
-BEGIN_CHAR_CONVERSION( s_conv, "\"", '\\' )
+BEGIN_CHAR_CONVERSION(s_conv, "\"", '\\')
+	{ '\n', "n" },
+	{ '\t', "t" },
+	{ '\v', "v" },
+	{ '\b', "b" },
+	{ '\r', "r" },
+	{ '\f', "f" },
+	{ '\a', "a" },
 	{ '\\', "\\" },
 	{ '\"', "\"" }
-END_STATIC_CHAR_CONVERSION( s_conv, "\"", '\\' );
+END_STATIC_CHAR_CONVERSION(s_conv, "\"", '\\')
 
 // can be a named or unnamed object
 CJsonObject::CJsonObject(CUtlBuffer &buff, const char *name /* = NULL */):
