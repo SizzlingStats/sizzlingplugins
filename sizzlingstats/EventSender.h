@@ -38,6 +38,7 @@ public:
 			curl_easy_setopt(m_pCurl, CURLOPT_CONNECT_ONLY, 1L);
 			curl_easy_setopt(m_pCurl, CURLOPT_CONNECTTIMEOUT, 60L);
 			curl_easy_setopt(m_pCurl, CURLOPT_TIMEOUT, 60L);
+			curl_easy_setopt(m_pCurl, CURLOPT_NOSIGNAL, 1L);
 
 			curl_easy_perform(m_pCurl);
 			curl_easy_getinfo(m_pCurl, CURLINFO_LASTSOCKET, &m_socket);
