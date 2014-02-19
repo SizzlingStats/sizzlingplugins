@@ -160,7 +160,6 @@ public:
 
 	// sends and frees the event
 	void SendEvent( CSizzEvent *pEvent );
-	void SendEvent( IGameEvent *pEvent, unsigned int server_tick );
 
 	void SendNamedEvent( const char *event_name, unsigned int server_tick );
 
