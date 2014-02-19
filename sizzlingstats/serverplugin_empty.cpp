@@ -197,7 +197,7 @@ CEmptyServerPlugin::CEmptyServerPlugin():
 	m_iLastCapTick(0),
 	m_bShouldRecord(false),
 	m_bTournamentMatchStarted(false),
-	m_bAlreadyLevelShutdown(true)
+	m_bAlreadyLevelShutdown(false)
 {
 }
 
