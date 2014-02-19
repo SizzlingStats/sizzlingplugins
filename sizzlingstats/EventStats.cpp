@@ -85,7 +85,7 @@ void CEventStats::OnTournamentMatchStart( CSizzPluginContext *pPluginContext, un
 
 void CEventStats::OnTournamentMatchEnd( CSizzPluginContext *pPluginContext, unsigned int server_tick )
 {
-	
+	SendNamedEvent("ss_tournament_match_end", server_tick);
 }
 
 void CEventStats::OnFireGameEvent( IGameEvent *pEvent, unsigned int server_tick )

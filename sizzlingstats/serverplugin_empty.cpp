@@ -1024,7 +1024,7 @@ void CEmptyServerPlugin::TournamentMatchEnded()
 	m_SizzlingStats.SS_TournamentMatchEnded(&m_plugin_context);
 
 #ifdef PROTO_STATS
-	m_EventStats.SendNamedEvent("ss_tournament_match_end", m_plugin_context.GetCurrentTick());
+	m_EventStats.OnTournamentMatchEnd(&m_plugin_context, m_plugin_context.GetCurrentTick());
 #endif
 	m_bTournamentMatchStarted = false;
 }
