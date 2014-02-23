@@ -55,8 +55,9 @@ static ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONT
 #define HIDDEN_CVAR_FLAGS FCVAR_HIDDEN | FCVAR_PROTECTED | FCVAR_UNLOGGED
 
 static ConVar apikey("sizz_stats_web_api_key", "", HIDDEN_CVAR_FLAGS, "");
-static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If nonzero, shows chat messages by the plugin");
-static ConVar upload_demos("sizz_stats_auto_upload_demos", "1", FCVAR_NOTIFY, "If nonzero, automatically uploads STV demos to sizzlingstats.com");
+static ConVar show_msg("sizz_stats_show_chat_messages", "0", FCVAR_NONE, "If nonzero, shows chat messages by the plugin.");
+static ConVar record_demos("sizz_stats_record_stv_demos", "1", FCVAR_NOTIFY, "If nonzero, automatically records STV demos for tournament matches.");
+static ConVar upload_demos("sizz_stats_auto_upload_demos", "1", FCVAR_NOTIFY, "If nonzero, automatically uploads STV demos recorded by the plugin to sizzlingstats.com.");
 
 #pragma warning( push )
 #pragma warning( disable : 4351 )
@@ -407,7 +408,12 @@ void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContex
 	m_pHostInfo->m_hostport = m_refHostPort.GetInt();
 	m_pHostInfo->m_roundduration = m_flRoundDuration;
 	m_pWebStatsHandler->SetHostData(*m_pHostInfo);
-	m_STVRecorder.StartRecording(pPluginContext, m_pHostInfo->m_mapname);
+
+	// record demos if the cvar is non-zero
+	if (record_demos.GetBool())
+	{
+		m_STVRecorder.StartRecording(pPluginContext, m_pHostInfo->m_mapname);
+	}
 
 	CTFPlayerWrapper player;
 	for (int i = 1; i <= MAX_PLAYERS; ++i)
@@ -439,6 +445,9 @@ void SizzlingStats::SS_TournamentMatchEnded( CSizzPluginContext *pPluginContext 
 	m_bTournamentMatchRunning = false;
 	m_flMatchDuration = Plat_FloatTime() - m_flMatchDuration;
 	m_pWebStatsHandler->SendGameOverEvent(m_flMatchDuration);
+
+	// always stop recording incase someone starts a match, then changes
+	// the value of the recording cvar
 	m_STVRecorder.StopRecording(pPluginContext->GetEngine());
 	//SetTeamScores(0, 0);
 }
