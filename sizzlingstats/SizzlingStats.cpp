@@ -177,6 +177,10 @@ void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class 
 void SizzlingStats::ChatEvent( CSizzPluginContext *pPluginContext, int entindex, const char *pText, bool bTeamChat )
 {
 	IPlayerInfo *pInfo = pPluginContext->GetPlayerInfo(entindex);
+    if (!pInfo)
+    {
+        return;
+    }
 	const char *pSteamId = pInfo->GetNetworkIDString();
 	// during the match, m_flMatchDuration is the Plat_FloatTime() from when the game started
 	// so subtracting gets the time since the match started

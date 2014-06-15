@@ -41,22 +41,28 @@ namespace sizz
 		uint32_t m_length;
 	};
 
-	inline CString::CString( const char *str )
+	inline CString::CString( const char *str ):
+        m_string(nullptr),
+        m_length(0)
 	{
 		CopyString(str);
 	}
 
-	inline CString::CString( const char *str, uint32_t length )
+    inline CString::CString( const char *str, uint32_t length ):
+        m_string(nullptr),
+        m_length(0)
 	{
 		CopyString(str, length);
 	}
 
-	inline CString::CString( const CString &other )
+    inline CString::CString( const CString &other ):
+        m_string(nullptr),
+        m_length(0)
 	{
 		CopyString(other.m_string, other.m_length);
 	}
 
-	inline CString::CString( CString &&other ):
+    inline CString::CString( CString &&other ):
 		m_string(other.m_string),
 		m_length(other.m_length)
 	{
