@@ -18,7 +18,8 @@
 #include "curlconnection.h"
 #include "SizzFileSystem.h"
 #include "S3Uploader.h"
-#include "zip/XZip.h"
+#include "miniz.h"
+#include <memory>
 
 static int dbgCurl(CURL *curl, curl_infotype type, char *info, size_t, void *)
 {
@@ -47,82 +48,80 @@ static size_t sendData(void *ptr, size_t size, size_t nmemb, void *userdata)
 
 bool CS3Uploader::UploadFile()
 {
-	CCurlConnection connection;
-	if (connection.Initialize())
+	char sourcePath[256];
+	V_strncpy(sourcePath, m_info.sourceDir, sizeof(sourcePath));
+	V_strcat(sourcePath, m_info.sourceFile, sizeof(sourcePath));
+
+	FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(sourcePath, "rb");
+	if (!file)
 	{
-		char sourcePath[256];
-		V_strncpy(sourcePath, m_info.sourceDir, sizeof(sourcePath));
-		V_strcat(sourcePath, m_info.sourceFile, sizeof(sourcePath));
-
-		FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(sourcePath, "rb");
-		if (file)
-		{
-			// Read the file into memory
-			off_t size = sizzFile::SizzFileSystem::GetFileSize(file);
-			unsigned char *pBuf = new unsigned char[size*2]();
-			unsigned char *pFile = pBuf + size;
-			sizzFile::SizzFileSystem::ReadToMem(pFile, size, file);
-			sizzFile::SizzFileSystem::CloseFile(file);
-			
-			// create zip archive in memory
-			HZIP hz = CreateZip(pBuf, size, ZIP_MEMORY);
-
-			// assumes that the compressed size is always less than the original size
-			ZipAdd(hz, m_info.sourceFile, pFile, size, ZIP_MEMORY);
-			
-			// get start loc of zip in memory and length of compressed zip
-			unsigned long ziplength;
-			ZipGetMemory(hz, nullptr, &ziplength);
-			CloseZip(hz);
-
-			// Place the zip that is in memory into a CUtlBuffer for cURL to use
-			CUtlBuffer fileBuff;
-			fileBuff.AssumeMemory(pBuf, size*2, ziplength, CUtlBuffer::READ_ONLY);
-
-			connection.SetUrl(m_info.uploadUrl);
-			connection.SetBodyReadFunction(&sendData);
-			connection.SetBodyReadUserdata(&fileBuff);
-
-			// should probably fix having to do this
-			connection.SetOption(CURLOPT_SSL_VERIFYPEER, 0L);
-
-			// enable uploading
-			connection.SetOption(CURLOPT_UPLOAD, 1L);
-
-			// HTTP PUT please 
-			connection.SetOption(CURLOPT_PUT, 1L);
-		
-		#ifndef NDEBUG
-			connection.SetOption(CURLOPT_VERBOSE, 1L);
-		#endif
-	
-			// Set the size of the file to upload (optional). If you give a *_LARGE
-			// option you MUST make sure that the type of the passed-in argument is a
-			// curl_off_t. If you use CURLOPT_INFILESIZE (without _LARGE) you must
-			// make sure that to pass in a type 'long' argument.
-			connection.SetOption(CURLOPT_INFILESIZE_LARGE, (curl_off_t)fileBuff.GetBytesRemaining());
-
-			CURLcode res = connection.Perform();
-			
-			connection.Close();
-
-			if (res != CURLE_OK)
-			{
-				Msg( "curl told us %d\n", res );
-				return false;
-			}
-			return true;
-		}
-		else
-		{
-			Msg( "could not open demo file %s\n", sourcePath);
-			return false;
-		}
+		Msg("could not open demo file %s\n", sourcePath);
+		return false;
 	}
-	else
+
+	off_t fileSize = sizzFile::SizzFileSystem::GetFileSize(file);
+	std::unique_ptr<unsigned char[]> fileMem(new unsigned char[fileSize]());
+	sizzFile::SizzFileSystem::ReadToMem(fileMem.get(), fileSize, file);
+	sizzFile::SizzFileSystem::CloseFile(file);
+
+	mz_zip_archive zip{};
+	if (mz_zip_writer_init_heap(&zip, 0, fileSize) != MZ_TRUE)
 	{
 		return false;
 	}
+
+	if (mz_zip_writer_add_mem(&zip, m_info.sourceFile, fileMem.get(), fileSize, MZ_DEFAULT_COMPRESSION) != MZ_TRUE)
+	{
+		return false;
+	}
+
+	void* compressedFile = nullptr;
+	size_t compressedSize = 0;
+	mz_zip_writer_finalize_heap_archive(&zip, &compressedFile, &compressedSize);
+
+	bool result = SendMemory(compressedFile, compressedSize);
+	mz_zip_writer_end(&zip);
+	return result;
+}
+
+bool CS3Uploader::SendMemory(void* mem, size_t size)
+{
+	CCurlConnection connection;
+	if (!connection.Initialize())
+	{
+		return false;
+	}
+
+	// Place the zip that is in memory into a CUtlBuffer for cURL to use
+	CUtlBuffer fileBuff;
+	fileBuff.SetExternalBuffer(mem, size, size);
+
+	connection.SetUrl(m_info.uploadUrl);
+	connection.SetBodyReadFunction(&sendData);
+	connection.SetBodyReadUserdata(&fileBuff);
+
+	// peer verification, enable uploading, http put
+	connection.SetOption(CURLOPT_SSL_VERIFYPEER, 0L);
+	connection.SetOption(CURLOPT_UPLOAD, 1L);
+	connection.SetOption(CURLOPT_PUT, 1L);
+
+#ifndef NDEBUG
+	connection.SetOption(CURLOPT_VERBOSE, 1L);
+#endif
+
+	// Set the size of the file to upload (optional). If you give a *_LARGE
+	// option you MUST make sure that the type of the passed-in argument is a
+	// curl_off_t. If you use CURLOPT_INFILESIZE (without _LARGE) you must
+	// make sure that to pass in a type 'long' argument.
+	connection.SetOption(CURLOPT_INFILESIZE_LARGE, (curl_off_t)fileBuff.GetBytesRemaining());
+
+	CURLcode res = connection.Perform();
+	if (res != CURLE_OK)
+	{
+		Msg("curl told us %d\n", res);
+		return false;
+	}
+	return true;
 }
 
 /*bool CS3Uploader::AttemptUpload( const char *url, unsigned int crc, CUtlBuffer &buff )

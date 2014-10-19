@@ -34,6 +34,9 @@ public:
 	bool UploadFile();
 
 private:
+	bool SendMemory(void* mem, size_t size);
+
+private:
 	S3UploadInfo_t m_info;
 };
 
