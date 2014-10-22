@@ -1,6 +1,7 @@
-
-#ignore thumbnails created by windows
+# useless os files
 Thumbs.db
+Desktop.ini
+.DS_Store
 #Ignore files build by Visual Studio
 *.obj
 *.exe
@@ -32,3 +33,6 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 premake/*/
+lib/linux/libmathlib_i486.a
+lib/linux/libtier1_i486.a
+.vagrant/
