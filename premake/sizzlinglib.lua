@@ -22,7 +22,6 @@ project "sizzlinglib"
     {
         base_dir .. "include/*.h",
         base_dir .. "*.cpp",
-        external_dir .. "public/XZip.cpp",
         external_dir .. "../external/tier0/memoverride.cpp",
         base_dir .. "../sizzlingplugins.licenseheader"
     }
