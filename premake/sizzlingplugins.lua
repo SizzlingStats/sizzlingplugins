@@ -19,8 +19,7 @@ solution "SizzlingPlugins"
     flags
     {
         "StaticRuntime",
-        "NoExceptions",
-        "NoRTTI"
+        "NoExceptions"
     }
     defines
     {
@@ -51,7 +50,8 @@ solution "SizzlingPlugins"
             "NoEditAndContinue",
             "NoIncrementalLink",
             "LinkTimeOptimization",
-            "MultiProcessorCompile"
+            "MultiProcessorCompile",
+            "NoRTTI"
         }
     
     -- os specific configurations
