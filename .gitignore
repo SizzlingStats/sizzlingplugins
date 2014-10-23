@@ -36,3 +36,4 @@ premake/*/
 lib/linux/libmathlib_i486.a
 lib/linux/libtier1_i486.a
 .vagrant/
+.steamcmd/
