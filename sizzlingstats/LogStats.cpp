@@ -193,7 +193,9 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 	{
 		int damageamount = event->GetInt( "damageamount" );
 		if ( damageamount == 0 )
+		{
 			return;
+		}
 		int attackerid = event->GetInt( "attacker" );
 		if ( ( event->GetInt( "userid" ) != attackerid ) && attackerid != 0 )
 		{

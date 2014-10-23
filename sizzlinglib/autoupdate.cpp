@@ -25,7 +25,9 @@ using namespace sizzFile;
 bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 {
 	if (m_bWaitingForUnload)
+	{
 		return false;
+	}
 
 	const char *pluginPath = pUpdateInfo[k_eLocalPluginPath];
 	const char *pluginNameNoExtension = pUpdateInfo[k_ePluginNameNoExtension];
@@ -37,7 +39,9 @@ bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 
 	bool isUpdate = CheckForUpdate();
 	if ( !isUpdate )
+	{
 		return false;
+	}
 
 	const char *pluginName = pUpdateInfo[k_ePluginName];
 	char currentPluginPath[512] = {};
@@ -87,7 +91,9 @@ bool CAutoUpdater::CheckForUpdate()
 	// gets the version and crc like this: "x.x.x.x\nffffffff"
 	bool downloadOk = SizzDownloader::DownloadFile( m_info.metaUrl, metaBuffer );
 	if ( !downloadOk )
+	{
 		return false;
+	}
 	
 	char version[8];
 	metaBuffer.Get( version, 7 );
