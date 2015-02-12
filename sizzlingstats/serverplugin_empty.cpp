@@ -960,7 +960,7 @@ void CEmptyServerPlugin::LoadUpdatedPlugin()
 	{
 		char temp[576];
 		// unload the old plugin, load the new plugin
-		V_snprintf(temp, 576, "plugin_unload %i; plugin_load %s\n", plugin_index, FULL_PLUGIN_PATH);
+		V_snprintf(temp, sizeof(temp), "plugin_unload %i; plugin_load %s\n", plugin_index, FULL_PLUGIN_PATH);
 		
 		m_plugin_context.ServerCommand(temp);
 		// the plugin will be unloaded when tf2 executes the command,
