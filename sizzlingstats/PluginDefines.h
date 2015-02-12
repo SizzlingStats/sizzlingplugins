@@ -14,7 +14,6 @@
 
 //#define DEV_COMMANDS_ON
 //#define PROTO_STATS
-//#define FTP_STATS
 //#define LOG_STATS
 //#define USE_STAGING_URLS
 

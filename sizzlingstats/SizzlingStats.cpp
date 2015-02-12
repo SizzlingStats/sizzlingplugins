@@ -28,27 +28,10 @@
 
 #include <functional>
 
-#ifdef FTP_STATS
-#include "vstdlib/jobthread.h"
-#include "HtmlGenerator.h"
-#include "FtpUploader.h"
-#include "utlbuffer.h"
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
 extern IEngineTrace		*enginetrace;
-
-#ifdef FTP_STATS
-
-static ConVar ftp_user("sizz_stats_ftp_username", "username", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP username to connect with when using web stats.");
-static ConVar ftp_pass("sizz_stats_ftp_password", "password", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP password to connect with when using web stats.");
-static ConVar ftp_server("sizz_stats_ftp_hostname", "ftp.myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP hostname to connect to when using web stats.");
-static ConVar ftp_port("sizz_stats_ftp_port", "21", FCVAR_DONTRECORD | FCVAR_PROTECTED, "FTP port to use when using web stats.");
-static ConVar web_hostname("sizz_stats_web_hostname", "myserver.com", FCVAR_DONTRECORD | FCVAR_PROTECTED, "Hostname of the external public directory of the FTP server.");
-
-#endif
 
 // hidden convar apikey
 // set by a config on the server
@@ -649,68 +632,6 @@ void SizzlingStats::SetTeamScores( int redscore, int bluscore )
 	m_pHostInfo->m_redscore = redscore - m_iOldRedScore;
 	m_pHostInfo->m_bluscore = bluscore - m_iOldBluScore;
 }
-
-#ifdef FTP_STATS
-
-static void messagethis()
-{
-	CPlayerMessage::AllUserChatMessage("thread completed execution\n");
-}
-
-static void messagemain()
-{
-	CPlayerMessage::AllUserChatMessage("message from main\n");
-}
-
-static void messagethread()
-{
-	CPlayerMessage::AllUserChatMessage("message from thread\n");
-}
-
-static void threadstuff()
-{
-	CUtlBuffer html;
-	CHtmlGenerator htmlGen(html);
-	htmlGen.StartFile();
-	htmlGen.StartHead();
-	htmlGen.EndHead();
-	htmlGen.StartBody();
-	htmlGen.WriteToBuffer("this is a test2\n");
-	htmlGen.EndBody();
-	htmlGen.EndFile();
-	char temp[256];
-	V_snprintf(temp, sizeof(temp), "ftp://%s:%s@%s/public/sizzlingstats/asdf.html.uploading", ftp_user.GetString(), ftp_pass.GetString(), ftp_server.GetString());
-	CFtpUploader::UploadFile(temp, html);
-	Msg("size of html buff: %i\n", html.GetBytesRemaining());
-	CFunctor *pFunctor = CreateFunctor(messagethis);
-	// do i need to delete functors?
-	// it looks like they are reference counted... so no, but not sure.....
-	g_pTSCallQueue->EnqueueFunctor( pFunctor );
-}
-
-static void loopmessage()
-{
-	for (int i = 0; i < 100; ++i)
-	{
-		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(messagethread));
-	}
-}
-
-void SizzlingStats::SS_TestThreading()
-{
-	g_pThreadPool->AddCall(loopmessage);
-	for (int i = 0; i < 100; ++i)
-	{
-		g_pTSCallQueue->EnqueueFunctor(CreateFunctor(messagemain));
-	}
-}
-
-void SizzlingStats::SS_UploadStats()
-{
-	g_pThreadPool->AddCall(threadstuff);
-}
-
-#endif
 
 void SizzlingStats::SS_ShowHtmlStats( CSizzPluginContext *pPluginContext, int entindex, bool reload_page )
 {
