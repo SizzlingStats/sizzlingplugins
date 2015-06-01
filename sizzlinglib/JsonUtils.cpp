@@ -10,95 +10,87 @@
 */
 
 #include "JsonUtils.h"
-#include "utlbuffer.h"
+#include <rapidjson/writer.h>
 
-#define END_STATIC_CHAR_CONVERSION( _name, _delimiter, _escapeChar ) \
-	}; \
-	static CUtlCharConversion _name( _escapeChar, _delimiter, sizeof( s_pConversionArray ## _name ) / sizeof( CUtlCharConversion::ConversionArray_t ), s_pConversionArray ## _name );
-
-BEGIN_CHAR_CONVERSION(s_conv, "\"", '\\')
-	{ '\n', "n" },
-	{ '\t', "t" },
-	{ '\v', "v" },
-	{ '\b', "b" },
-	{ '\r', "r" },
-	{ '\f', "f" },
-	{ '\a', "a" },
-	{ '\\', "\\" },
-	{ '\"', "\"" }
-END_STATIC_CHAR_CONVERSION(s_conv, "\"", '\\')
-
-// can be a named or unnamed object
-CJsonObject::CJsonObject(CUtlBuffer &buff, const char *name /* = NULL */):
-	m_buff(buff),
-	m_bNeedsComma(false)
+namespace json
 {
-	if (!m_buff.IsText())
-		m_buff.SetBufferType(true,true);
-
-	if (name)
+	struct JsonContext
 	{
-		m_buff.PutDelimitedString(&s_conv, name);
-		m_buff.PutString(":");
-	}
-		
-	m_buff.PutString("{");
-}
+		rapidjson::StringBuffer stringBuf;
+		rapidjson::Writer<rapidjson::StringBuffer> jsonWriter;
+	};
 
-CJsonObject::~CJsonObject()
-{
-	m_buff.PutString("}");
-}
-
-void CJsonObject::InsertKV( const char *key, const char *value )
-{
-	InsertKey(key);
-	m_buff.PutDelimitedString(&s_conv, value);
-}
-
-void CJsonObject::InsertKV( const char *key, int value )
-{
-	InsertKey(key);
-	m_buff.PutInt(value);
-}
-
-void CJsonObject::InsertKV( const char *key, unsigned int value )
-{
-	InsertKey(key);
-	m_buff.PutUnsignedInt(value);
-}
-
-void CJsonObject::InsertKV( const char *key, uint64 value )
-{
-	InsertKey(key);
-	m_buff.Printf( "%llu", value );//.Put(&value, sizeof(uint64));
-}
-
-void CJsonObject::InsertKey( const char *key )
-{
-	if (m_bNeedsComma)
+	JsonWriter::JsonWriter():
+		m_context(new JsonContext)
 	{
-		m_buff.PutString(",");
+		m_context->jsonWriter.Reset(m_context->stringBuf);
 	}
-	else
+
+	JsonWriter::~JsonWriter()
 	{
-		m_bNeedsComma = true;
+		delete m_context;
 	}
-	m_buff.PutDelimitedString(&s_conv, key);
-	m_buff.PutString(":");
-}
 
-CJsonArray::CJsonArray(CUtlBuffer &buff, const char *name):
-	m_buff(buff)
-{
-	if (!m_buff.IsText())
-		m_buff.SetBufferType(true,true);
+	void JsonWriter::StartObject(const char* name /*= nullptr*/)
+	{
+		auto& writer = m_context->jsonWriter;
+		if (name)
+		{
+			writer.String(name);
+		}
+		writer.StartObject();
+	}
 
-	m_buff.PutDelimitedString(&s_conv, name);
-	m_buff.PutString(":[");
-}
+	void JsonWriter::EndObject()
+	{
+		m_context->jsonWriter.EndObject();
+	}
 
-CJsonArray::~CJsonArray()
-{
-	m_buff.PutString("]");
+	void JsonWriter::StartArray(const char* name /*= nullptr*/)
+	{
+		auto& writer = m_context->jsonWriter;
+		if (name)
+		{
+			writer.String(name);
+		}
+		writer.StartArray();
+	}
+
+	void JsonWriter::EndArray()
+	{
+		m_context->jsonWriter.EndArray();
+	}
+
+	void JsonWriter::InsertKV(const char* key, const char* value)
+	{
+		auto& writer = m_context->jsonWriter;
+		writer.String(key);
+		writer.String(value);
+	}
+
+	void JsonWriter::InsertKV(const char* key, std::int32_t value)
+	{
+		auto& writer = m_context->jsonWriter;
+		writer.String(key);
+		writer.Int(value);
+	}
+
+	void JsonWriter::InsertKV(const char* key, std::uint32_t value)
+	{
+		auto& writer = m_context->jsonWriter;
+		writer.String(key);
+		writer.Uint(value);
+	}
+
+	void JsonWriter::InsertKV(const char* key, std::uint64_t value)
+	{
+		auto& writer = m_context->jsonWriter;
+		writer.String(key);
+		writer.Uint64(value);
+	}
+
+	const char* JsonWriter::GetJsonString() const
+	{
+		return m_context->stringBuf.GetString();
+	}
 }

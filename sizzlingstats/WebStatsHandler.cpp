@@ -252,155 +252,160 @@ size_t CWebStatsHandler::header_read_callback(void *ptr, size_t size, size_t nme
 
 void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVector<playerWebStats_t> &data, const CUtlVector<chatInfo_t> &chatInfo, const char *sessionId, CUtlBuffer &buff)
 {
-	buff.SetBufferType(true, true);
-	
-	// need to rewrite the json stuff recursively
+	json::JsonWriter jsonWriter;
+	jsonWriter.StartObject();
+	jsonWriter.StartObject("stats");
 	{
-		CJsonObject outer(buff);
-		{
-			CJsonObject temp(buff, "stats");
-			temp.InsertKV("teamfirstcap", host.m_iFirstCapTeamIndex);
-			temp.InsertKV("bluscore", host.m_bluscore);
-			temp.InsertKV("redscore", host.m_redscore);
-			temp.InsertKV("roundduration", SCHelpers::RoundDBL(host.m_roundduration));
-			buff.PutString(",");
-			{
-				CJsonArray temp2(buff, "players");
-				for (int i = 0; i < data.Count(); ++i)
-				{
-					if (i > 0)
-					{
-						buff.PutString(",");
-					}
-					CJsonObject temp3(buff);
-					const playerInfo_t *pInfo = &data[i].m_playerInfo;
-					temp3.InsertKV("name", pInfo->m_name);
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("ip", pInfo->m_ip);
-					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
-					temp3.InsertKV("playedclasses", pInfo->m_playedClasses);
-					temp3.InsertKV("team", pInfo->m_teamid);
+		jsonWriter.InsertKV("teamfirstcap", host.m_iFirstCapTeamIndex);
+		jsonWriter.InsertKV("bluscore", host.m_bluscore);
+		jsonWriter.InsertKV("redscore", host.m_redscore);
+		jsonWriter.InsertKV("roundduration", SCHelpers::RoundDBL(host.m_roundduration));
 
-					const ScoreData *pScores = &data[i].m_scoreData;
-					temp3.InsertKV("kills", pScores->getStat(Kills));
-					temp3.InsertKV("killassists", pScores->getStat(KillAssists));
-					temp3.InsertKV("deaths", pScores->getStat(Deaths));
-					temp3.InsertKV("captures", pScores->getStat(Captures));
-					temp3.InsertKV("defenses", pScores->getStat(Defenses));
-					temp3.InsertKV("suicides", pScores->getStat(Suicides));
-					temp3.InsertKV("dominations", pScores->getStat(Dominations));
-					temp3.InsertKV("revenge", pScores->getStat(Revenge));
-					temp3.InsertKV("buildingsbuilt", pScores->getStat(BuildingsBuilt));
-					temp3.InsertKV("buildingsdestroyed", pScores->getStat(BuildingsDestroyed));
-					temp3.InsertKV("headshots", pScores->getStat(Headshots));
-					temp3.InsertKV("backstabs", pScores->getStat(Backstabs));
-					temp3.InsertKV("healpoints", pScores->getStat(HealPoints));
-					temp3.InsertKV("invulns", pScores->getStat(Invulns));
-					temp3.InsertKV("teleports", pScores->getStat(Teleports));
-					temp3.InsertKV("damagedone", pScores->getStat(DamageDone));
-					temp3.InsertKV("crits", pScores->getStat(Crits));
-					temp3.InsertKV("resupplypoints", pScores->getStat(ResupplyPoints));
-					temp3.InsertKV("bonuspoints", pScores->getStat(BonusPoints));
-					temp3.InsertKV("points", pScores->getStat(Points));
-					temp3.InsertKV("healsreceived", pScores->getStat(HealsReceived));
-					temp3.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
-					temp3.InsertKV("medpicks", pScores->getStat(MedPicks));
-				}
-			}
-			buff.PutString(",");
+		jsonWriter.StartArray("players");
+		{
+			const size_t numPlayers = data.Count();
+			for (size_t i = 0; i < numPlayers; ++i)
 			{
-				CJsonArray temp2(buff, "chats");
-				for (int i = 0; i < chatInfo.Count(); ++i)
-				{
-					if (i > 0)
-					{
-						buff.PutString(",");
-					}
-					CJsonObject temp3(buff);
-					const chatInfo_t *pInfo = &chatInfo[i];
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("isTeam", pInfo->m_bTeamChat);
-					temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
-					const char *pMessage = pInfo->m_message.ToCString();
-					temp3.InsertKV("message", pMessage);
-				}
+				jsonWriter.StartObject();
+				const playerInfo_t *pInfo = &data[i].m_playerInfo;
+				jsonWriter.InsertKV("name", pInfo->m_name);
+				jsonWriter.InsertKV("steamid", pInfo->m_steamid);
+				jsonWriter.InsertKV("ip", pInfo->m_ip);
+				jsonWriter.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
+				jsonWriter.InsertKV("playedclasses", pInfo->m_playedClasses);
+				jsonWriter.InsertKV("team", pInfo->m_teamid);
+
+				const ScoreData *pScores = &data[i].m_scoreData;
+				jsonWriter.InsertKV("kills", pScores->getStat(Kills));
+				jsonWriter.InsertKV("killassists", pScores->getStat(KillAssists));
+				jsonWriter.InsertKV("deaths", pScores->getStat(Deaths));
+				jsonWriter.InsertKV("captures", pScores->getStat(Captures));
+				jsonWriter.InsertKV("defenses", pScores->getStat(Defenses));
+				jsonWriter.InsertKV("suicides", pScores->getStat(Suicides));
+				jsonWriter.InsertKV("dominations", pScores->getStat(Dominations));
+				jsonWriter.InsertKV("revenge", pScores->getStat(Revenge));
+				jsonWriter.InsertKV("buildingsbuilt", pScores->getStat(BuildingsBuilt));
+				jsonWriter.InsertKV("buildingsdestroyed", pScores->getStat(BuildingsDestroyed));
+				jsonWriter.InsertKV("headshots", pScores->getStat(Headshots));
+				jsonWriter.InsertKV("backstabs", pScores->getStat(Backstabs));
+				jsonWriter.InsertKV("healpoints", pScores->getStat(HealPoints));
+				jsonWriter.InsertKV("invulns", pScores->getStat(Invulns));
+				jsonWriter.InsertKV("teleports", pScores->getStat(Teleports));
+				jsonWriter.InsertKV("damagedone", pScores->getStat(DamageDone));
+				jsonWriter.InsertKV("crits", pScores->getStat(Crits));
+				jsonWriter.InsertKV("resupplypoints", pScores->getStat(ResupplyPoints));
+				jsonWriter.InsertKV("bonuspoints", pScores->getStat(BonusPoints));
+				jsonWriter.InsertKV("points", pScores->getStat(Points));
+				jsonWriter.InsertKV("healsreceived", pScores->getStat(HealsReceived));
+				jsonWriter.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
+				jsonWriter.InsertKV("medpicks", pScores->getStat(MedPicks));
+				jsonWriter.EndObject();
 			}
 		}
+		jsonWriter.EndArray();
+		jsonWriter.StartArray("chats");
+		{
+			const size_t numChats = chatInfo.Count();
+			for (size_t i = 0; i < numChats; ++i)
+			{
+				jsonWriter.StartObject();
+				const chatInfo_t *pInfo = &chatInfo[i];
+				jsonWriter.InsertKV("steamid", pInfo->m_steamid);
+				jsonWriter.InsertKV("isTeam", pInfo->m_bTeamChat);
+				jsonWriter.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
+				const char *pMessage = pInfo->m_message.ToCString();
+				jsonWriter.InsertKV("message", pMessage);
+				jsonWriter.EndObject();
+			}
+		}
+		jsonWriter.EndArray();
 	}
+	jsonWriter.EndObject();
+	jsonWriter.EndObject();
+
+	buff.SetBufferType(true, true);
+	buff.PutString(jsonWriter.GetJsonString());
 }
 
 void CWebStatsHandler::addChatToBuff(const CUtlVector<chatInfo_t> &chatInfo, CUtlBuffer &buff)
 {
-	buff.SetBufferType(true, true);
-
+	json::JsonWriter jsonWriter;
+	jsonWriter.StartObject();
+	jsonWriter.StartArray("chats");
 	{
-		CJsonObject outer(buff);
+		const size_t numChats = chatInfo.Count();
+		for (size_t i = 0; i < numChats; ++i)
 		{
-			CJsonArray temp2(buff, "chats");
-			for (int i = 0; i < chatInfo.Count(); ++i)
-			{
-				if (i > 0)
-				{
-					buff.PutString(",");
-				}
-				CJsonObject temp3(buff);
-				const chatInfo_t *pInfo = &chatInfo[i];
-				temp3.InsertKV("steamid", pInfo->m_steamid);
-				temp3.InsertKV("isTeam", pInfo->m_bTeamChat);
-				temp3.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
-				const char *pMessage = pInfo->m_message.ToCString();
-				temp3.InsertKV("message", pMessage);
-			}
+			jsonWriter.StartObject();
+			const chatInfo_t *pInfo = &chatInfo[i];
+			jsonWriter.InsertKV("steamid", pInfo->m_steamid);
+			jsonWriter.InsertKV("isTeam", pInfo->m_bTeamChat);
+			jsonWriter.InsertKV("time", SCHelpers::RoundDBL(pInfo->m_timestamp));
+			const char *pMessage = pInfo->m_message.ToCString();
+			jsonWriter.InsertKV("message", pMessage);
+			jsonWriter.EndObject();
 		}
 	}
+	jsonWriter.EndArray();
+	jsonWriter.EndObject();
+
+	buff.SetBufferType(true, true);
+	buff.PutString(jsonWriter.GetJsonString());
 }
 
 void CWebStatsHandler::createMatchPlayerInfo(CUtlBuffer &buff)
 {
-	buff.SetBufferType(true, true);
-	
-	// need to rewrite the json stuff recursively
+	json::JsonWriter jsonWriter;
+	jsonWriter.StartObject();
+	jsonWriter.StartObject("stats");
 	{
-		CJsonObject outer(buff);
+		m_hostInfoMutex.Lock();
+		hostInfo_t hostInfo(m_hostInfo);
+		m_hostInfoMutex.Unlock();
+		
+		jsonWriter.InsertKV("hostname", hostInfo.m_hostname);
+		jsonWriter.InsertKV("apikey", m_apikey);
+		jsonWriter.InsertKV("map", hostInfo.m_mapname);
+		jsonWriter.InsertKV("bluname", hostInfo.m_bluname);
+		jsonWriter.InsertKV("redname", hostInfo.m_redname);
 		{
-			CJsonObject temp(buff, "stats");
-
-			m_hostInfoMutex.Lock();
-			temp.InsertKV("hostname", m_hostInfo.m_hostname);
-			temp.InsertKV("apikey", m_apikey);
-			temp.InsertKV("map", m_hostInfo.m_mapname);
-			temp.InsertKV("bluname", m_hostInfo.m_bluname);
-			temp.InsertKV("redname", m_hostInfo.m_redname);
-			{
-				char buff[16];
-				SCHelpers::IntIPToString(m_hostInfo.m_hostip, buff, sizeof(buff));
-				temp.InsertKV("hostip", buff);
-			}
-			temp.InsertKV("ip", m_hostInfo.m_ip);
-			temp.InsertKV("hostport", m_hostInfo.m_hostport);
-			m_hostInfoMutex.Unlock();
-
-			buff.PutString(",");
-			{
-				CJsonArray temp2(buff, "players");
-				
-				m_playerInfoMutex.Lock();
-				for (int i = 0; i < m_playerInfo.Count(); ++i)
-				{
-					if (i > 0)
-					{
-						buff.PutString(",");
-					}
-					CJsonObject temp3(buff);
-					const playerInfo_t *pInfo = &m_playerInfo[i];
-					temp3.InsertKV("name", pInfo->m_name);
-					temp3.InsertKV("steamid", pInfo->m_steamid);
-					temp3.InsertKV("ip", pInfo->m_ip);
-					temp3.InsertKV("mostplayedclass", pInfo->m_mostPlayedClass);
-					temp3.InsertKV("team", pInfo->m_teamid);
-				}
-				m_playerInfoMutex.Unlock();
-			}
+			char buff[16];
+			SCHelpers::IntIPToString(hostInfo.m_hostip, buff, sizeof(buff));
+			jsonWriter.InsertKV("hostip", buff);
 		}
+		jsonWriter.InsertKV("ip", hostInfo.m_ip);
+		jsonWriter.InsertKV("hostport", hostInfo.m_hostport);
+
+		jsonWriter.StartArray("players");
+		{
+			auto& playerInfoMutex = m_playerInfoMutex;
+
+			playerInfoMutex.Lock();
+			const size_t numPlayerInfo = m_playerInfo.Count();
+			playerInfoMutex.Unlock();
+
+			for (size_t i = 0; i < numPlayerInfo; ++i)
+			{
+				jsonWriter.StartObject();
+
+				playerInfoMutex.Lock();
+				const playerInfo_t playerInfo(m_playerInfo[i]);
+				playerInfoMutex.Unlock();
+
+				jsonWriter.InsertKV("name", playerInfo.m_name);
+				jsonWriter.InsertKV("steamid", playerInfo.m_steamid);
+				jsonWriter.InsertKV("ip", playerInfo.m_ip);
+				jsonWriter.InsertKV("mostplayedclass", playerInfo.m_mostPlayedClass);
+				jsonWriter.InsertKV("team", playerInfo.m_teamid);
+				jsonWriter.EndObject();
+			}
+			
+		}
+		jsonWriter.EndArray();
 	}
+	jsonWriter.EndObject();
+	jsonWriter.EndObject();
+
+	buff.SetBufferType(true, true);
+	buff.PutString(jsonWriter.GetJsonString());
 }

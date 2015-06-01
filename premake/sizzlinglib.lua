@@ -16,7 +16,8 @@ project "sizzlinglib"
     {
         base_dir .. "include/",
         external_dir .. "libcurl/include",
-        external_dir .. "miniz_v115_r4"
+        external_dir .. "miniz_v115_r4",
+        external_dir .. "rapidjson-1.0.2/include"
     }
     files
     {

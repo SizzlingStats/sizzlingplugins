@@ -8,41 +8,35 @@
     source code package.
     
 */
-#ifndef JSON_UTILS_H
-#define JSON_UTILS_H
 
-#include "platform.h"
+#pragma once
 
-class CUtlBuffer;
+#include <cstdint>
 
-// can be a named or unnamed object
-class CJsonObject
+namespace json
 {
-public:
-	CJsonObject(CUtlBuffer &buff, const char *name = NULL);
-	~CJsonObject();
+	struct JsonContext;
 
-	void InsertKV( const char *key, const char *value );
-	void InsertKV( const char *key, int value );
-	void InsertKV( const char *key, unsigned int value );
-	void InsertKV( const char *key, uint64 value );
+	class JsonWriter
+	{
+	public:
+		JsonWriter();
+		~JsonWriter();
+		
+		void StartObject(const char* name = nullptr);
+		void EndObject();
 
-private:
-	void InsertKey( const char *key );
+		void StartArray(const char* name = nullptr);
+		void EndArray();
 
-private:
-	CUtlBuffer &m_buff;
-	bool m_bNeedsComma;
-};
+		void InsertKV(const char* key, const char* value);
+		void InsertKV(const char* key, std::int32_t value);
+		void InsertKV(const char* key, std::uint32_t value);
+		void InsertKV(const char* key, std::uint64_t value);
 
-class CJsonArray
-{
-public:
-	CJsonArray(CUtlBuffer &buff, const char *name);
-	~CJsonArray();
+		const char* GetJsonString() const;
 
-private:
-	CUtlBuffer &m_buff;
-};
-
-#endif // JSON_UTILS_H
+	private:
+		JsonContext* m_context;
+	};
+}
