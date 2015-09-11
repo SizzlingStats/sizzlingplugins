@@ -50,8 +50,12 @@ bool CSTVRecorder::StartRecording( CSizzPluginContext *context, const char *szMa
 	uint32 year = ltime.tm_year + 1900;
 	uint32 month = ltime.tm_mon + 1;
 
+	// extract out the map name, ex "workshop/adfsf.ugc234234" -> "adfsf"
+	char mapNameBase[DEMONAME_MAX_LEN];
+	V_FileBase(szMapName, mapNameBase, sizeof(mapNameBase));
+
 	// construct the demo file name
-	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "%d%02d%02d-%02d%02d-%s", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, szMapName );
+	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "%d%02d%02d-%02d%02d-%s", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, mapNameBase);
 	
 	// create the record string
 	char cmd[10 + DEMONAME_MAX_LEN + 1] = {};
