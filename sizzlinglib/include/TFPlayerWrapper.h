@@ -34,6 +34,9 @@ public:
 	// returns the player class
 	unsigned int GetClass() const;
 
+	int GetHealth() const;
+	void SetHealth(int health);
+
 	// returns a handle to the weapon in the slot
 	// slots start at 1 and go up
 	CBaseHandle *GetWeapon( unsigned int slot ) const;
@@ -57,6 +60,7 @@ private:
 	static unsigned int release_offset;
 	static unsigned int origin_offset;
 	static unsigned int charge_offset;
+	static unsigned int health_offset;
 
 private:
 	enum ACCESS_METHOD

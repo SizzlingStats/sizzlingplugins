@@ -41,8 +41,9 @@ enum stats
 	BonusPoints,
 	Points,
 	HealsReceived,
-	UbersDropped,
 	MedPicks,
+	UbersDropped,
+	OverkillDamage,
 	ShotsFired,
 	ShotsHit,
 	NumOfStats
@@ -51,7 +52,7 @@ enum stats
 typedef struct extradata_s
 {
 	extradata_s():
-		healsrecv(0), medpicks(0), ubersdropped(0)
+        healsrecv(0), medpicks(0), ubersdropped(0), overkillDamage(0)
 	{
 	}
 
@@ -60,12 +61,14 @@ typedef struct extradata_s
 		healsrecv = a;
 		medpicks = a;
 		ubersdropped = a;
+		overkillDamage = a;
 		return *this;
 	}
 
 	int healsrecv;
 	short medpicks;
 	short ubersdropped;
+	int overkillDamage;
 } extradata_t;
 
 struct ScoreData

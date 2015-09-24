@@ -24,6 +24,7 @@ unsigned int CTFPlayerWrapper::weapons_offset = 0;
 unsigned int CTFPlayerWrapper::release_offset = 0;
 unsigned int CTFPlayerWrapper::origin_offset = 0;
 unsigned int CTFPlayerWrapper::charge_offset = 0;
+unsigned int CTFPlayerWrapper::health_offset = 0;
 
 CTFPlayerWrapper::CTFPlayerWrapper( CBaseEntity *pPlayer /*= nullptr*/ ):
 	m_pPlayer(pPlayer)
@@ -44,6 +45,8 @@ void CTFPlayerWrapper::InitializeOffsets()
 
 	// should get the 0 offsets before it incase something changes
 	charge_offset = GetPropOffsetFromTable("DT_LocalTFWeaponMedigunData", "m_flChargeLevel");
+
+	health_offset = GetPropOffsetFromTable("DT_BasePlayer", "m_iHealth");
 }
 
 void CTFPlayerWrapper::SetPlayer( CBaseEntity *pPlayer )
@@ -69,6 +72,24 @@ unsigned int CTFPlayerWrapper::GetClass() const
 		playerclass = *ByteOffsetFromPointer<unsigned int*>(m_pPlayer, class_offset);
 	}
 	return playerclass;
+}
+
+int CTFPlayerWrapper::GetHealth() const
+{
+	int health = 0;
+	if (m_pPlayer)
+	{
+		health = *ByteOffsetFromPointer<int*>(m_pPlayer, health_offset);
+	}
+	return health;
+}
+
+void CTFPlayerWrapper::SetHealth(int health)
+{
+	if (m_pPlayer)
+	{
+		*ByteOffsetFromPointer<int*>(m_pPlayer, health_offset) = health;
+	}
 }
 
 CBaseHandle *CTFPlayerWrapper::GetWeapon( unsigned int slot ) const

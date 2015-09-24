@@ -53,6 +53,7 @@ public:
 	void	PlayerHealed( int entindex, int amount );
 	void	MedPick( int entindex );
 	void	UberDropped( int entindex );
+	void	OnPlayerDeath(int inflictorEntIndex, int victimEntIndex);
 	
 	// this needs to be called whenever the player switches classes or goes to spec
 	// set player_class to k_ePlayerClassUndefined if switching to spec

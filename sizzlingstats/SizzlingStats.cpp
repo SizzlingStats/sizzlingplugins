@@ -143,6 +143,29 @@ void SizzlingStats::UberDropped( int entindex )
 	data.m_pExtraData->ubersdropped += 1;
 }
 
+void SizzlingStats::OnPlayerDeath(int inflictorEntIndex, int victimEntIndex)
+{
+	if (inflictorEntIndex <= 0 || victimEntIndex <= 0 ||
+		inflictorEntIndex == victimEntIndex)
+	{
+		return;
+	}
+
+	extradata_t *inflictorData = m_PlayerDataManager.GetPlayerData(inflictorEntIndex).m_pExtraData;
+	SS_PlayerData *victimData = m_PlayerDataManager.GetPlayerData(victimEntIndex).m_pPlayerData;
+	if (!inflictorData || !victimData)
+	{
+		return;
+	}
+
+	CTFPlayerWrapper victim(victimData->GetBaseEntity());
+	const int victimHealth = victim.GetHealth();
+	if (victimHealth < 0)
+	{
+		inflictorData->overkillDamage += (-victimHealth);
+	}
+}
+
 void SizzlingStats::PlayerChangedClass( int entindex, EPlayerClass player_class )
 {
 	if (player_class != k_ePlayerClassMedic)

@@ -306,7 +306,7 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_plugin_context.AddListener( this, "player_changeclass", true );
 	m_plugin_context.AddListener( this, "player_team", true );
 	
-	//m_plugin_context.AddListener( this, "player_death", true );
+	m_plugin_context.AddListener( this, "player_death", true );
 	//m_plugin_context.AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//m_plugin_context.AddListener( this, "player_shoot", true );		// for accuracy stats
 
@@ -851,8 +851,10 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "player_death" ) )
 	{
-		int victim = event->GetInt( "victim_entindex" );
-		m_SizzlingStats.CheckPlayerDropped( &m_plugin_context, victim );
+		const int victim = event->GetInt("victim_entindex");
+		const int inflictor = event->GetInt("inflictor_entindex");
+		m_SizzlingStats.OnPlayerDeath(inflictor, victim);
+		//m_SizzlingStats.CheckPlayerDropped( &m_plugin_context, victim );
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{

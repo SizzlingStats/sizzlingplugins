@@ -297,8 +297,9 @@ void CWebStatsHandler::producePostString(const hostInfo_t &host, const CUtlVecto
 				jsonWriter.InsertKV("bonuspoints", pScores->getStat(BonusPoints));
 				jsonWriter.InsertKV("points", pScores->getStat(Points));
 				jsonWriter.InsertKV("healsreceived", pScores->getStat(HealsReceived));
-				jsonWriter.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
 				jsonWriter.InsertKV("medpicks", pScores->getStat(MedPicks));
+				jsonWriter.InsertKV("ubersdropped", pScores->getStat(UbersDropped));
+				jsonWriter.InsertKV("overkillDamage", pScores->getStat(OverkillDamage));
 				jsonWriter.EndObject();
 			}
 		}

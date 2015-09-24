@@ -60,6 +60,7 @@ void SS_PlayerData::UpdateRoundExtraData( const extradata_t &dat )
 	m_RoundScoreData.data[HealsReceived] = dat.healsrecv;
 	m_RoundScoreData.data[MedPicks] = dat.medpicks;
 	m_RoundScoreData.data[UbersDropped] = dat.ubersdropped;
+	m_RoundScoreData.data[OverkillDamage] = dat.overkillDamage;
 }
 
 int SS_PlayerData::GetStat( int StatID )
