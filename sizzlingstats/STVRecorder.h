@@ -12,12 +12,13 @@
 #ifndef STV_RECORDER_H
 #define STV_RECORDER_H
 
+#include "S3Uploader.h"
+
 #include "eiface.h"
 #include <cstdint>
 #include <time.h>
 
 #include "convar.h"
-#include "S3Uploader.h"
 
 class CSizzPluginContext;
 

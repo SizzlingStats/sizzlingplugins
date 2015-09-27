@@ -53,5 +53,5 @@ project "sizzlingstats"
         "miniz"
     }
     
-    dofile "hl2sdk-ob-valve.lua"
+    dofile "source-sdk-2013.lua"
 project "*"

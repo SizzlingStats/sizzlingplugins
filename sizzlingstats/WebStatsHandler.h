@@ -15,8 +15,8 @@
 #ifndef WEB_STATS_HANDLER_H
 #define WEB_STATS_HANDLER_H
 
-#include "utlbuffer.h"
 #include "ThreadFunctorQueue.h"
+#include "utlbuffer.h"
 #include "SSPlayerData.h"
 #include "sizzstring.h"
 #include "PluginDefines.h"

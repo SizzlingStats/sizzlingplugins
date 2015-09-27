@@ -11,6 +11,8 @@
 
 #include "PlayerDataManager.h"
 
+struct edict_t;
+class CGlobalVars;
 #include "game/server/iplayerinfo.h" // for IPlayerInfo
 #include "SSPlayerData.h"
 #include "strtools.h"

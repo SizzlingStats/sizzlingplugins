@@ -50,7 +50,7 @@ namespace SCHelpers
 		int ent_index = -1;
 		if (pEdict)
 		{
-			ent_index = pEdict->m_iIndex;
+			ent_index = pEdict->m_EdictIndex;
 		}
 		return ent_index;
 	}
@@ -295,6 +295,7 @@ namespace SCHelpers
 		}
 		return NULL;
 	}
+
 
 	int GetDatamapVarOffset( datamap_t *pDatamap, const char *szVarName )
 	{

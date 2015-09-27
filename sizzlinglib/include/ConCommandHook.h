@@ -56,7 +56,7 @@ private:
 	// so we can restore it when we unhook
 	union
 	{
-		FnCommandCallbackV1_t m_fnCommandCallbackV1;
+		FnCommandCallbackVoid_t m_fnCommandCallbackV1;
 		FnCommandCallback_t m_fnCommandCallback;
 		ICommandCallback *m_pCommandCallback; 
 	};

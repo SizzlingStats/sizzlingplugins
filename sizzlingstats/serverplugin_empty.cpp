@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 
+#include "SizzlingStats.h"
 #include "interface.h"
 #include "filesystem.h"
 #include "engine/iserverplugin.h"
@@ -25,7 +26,6 @@
 #include "dt_send.h"
 #include "server_class.h"
 
-#include "SizzlingStats.h"
 #include "SizzFileSystem.h"
 #include "ThreadCallQueue.h"
 

@@ -9,8 +9,8 @@
     
 */
 
-#include "EventStats.h"
 #include "SizzEvent.pb.h"
+#include "EventStats.h"
 
 #include "SizzPluginContext.h"
 #include "game/server/iplayerinfo.h"

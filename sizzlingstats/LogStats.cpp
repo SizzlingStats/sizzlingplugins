@@ -11,6 +11,8 @@
 
 #include "LogStats.h"
 #include "convar.h"
+
+class CGlobalVars;
 #include "game/server/iplayerinfo.h"
 
 #include "SizzPluginContext.h"

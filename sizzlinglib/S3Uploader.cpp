@@ -13,11 +13,11 @@
 // Filename: S3Uploader.cpp
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "S3Uploader.h"
 #include "filesystem.h"
 #include "utlbuffer.h"
 #include "curlconnection.h"
 #include "SizzFileSystem.h"
-#include "S3Uploader.h"
 #include "miniz.h"
 #include <memory>
 

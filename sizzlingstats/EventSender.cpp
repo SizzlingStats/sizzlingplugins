@@ -9,8 +9,8 @@
     
 */
 
-#include "EventSender.h"
 #include "SizzEvent.pb.h"
+#include "EventSender.h"
 
 #include "igameevents.h"
 #include "SC_helpers.h"

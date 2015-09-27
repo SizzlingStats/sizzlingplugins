@@ -2,12 +2,10 @@
 -- this file is expected to be included from a project scope
 
 local sizzplugins_dir = (solution().basedir .. "/")
-local hl2sdk_dir = sizzplugins_dir .. "../hl2sdk-ob-valve/"
-local sdklib_dir = hl2sdk_dir .. "lib/linux/"
-local sizzlib_dir = sizzplugins_dir .. "lib/linux/"
+local hl2sdk_dir = sizzplugins_dir .. "../source-sdk-2013/mp/src/"
+local sdklib_dir = hl2sdk_dir .. "lib/public/"
+local sizzlib_dir = sizzplugins_dir .. "lib/"
 local external_dir = (solution().basedir .. "/external/")
-
-local cp_cmd = "cp --reflink=auto -p "
 
 includedirs
 {
@@ -24,47 +22,41 @@ includedirs
     hl2sdk_dir .. "game/server/",
     hl2sdk_dir .. "game/shared/"
 }
+links
+{
+    "mathlib",
+    "tier0",
+    "tier1",
+    "vstdlib"
+}
+defines
+{
+    "NO_MALLOC_OVERRIDE"
+}
 
 configuration "windows"
     libdirs
     {
-        hl2sdk_dir .. "lib/public/"
-    }
-    links
-    {
-        "mathlib",
-        "tier0",
-        "tier1",
-        "tier2",
-        "vstdlib"
+        sdklib_dir
     }
 configuration "linux"
     prelinkcommands
     {
-        cp_cmd .. (sdklib_dir .. "mathlib_i486.a") .. " " .. (sizzlib_dir .. "libmathlib_i486.a"),
-        cp_cmd .. (sdklib_dir .. "tier1_i486.a") .. " " .. (sizzlib_dir .. "libtier1_i486.a")
+        "ln -sf " .. (sdklib_dir .. "linux32/mathlib.a") .. " " .. (sizzlib_dir .. "libmathlib.a"),
+        "ln -sf " .. (sdklib_dir .. "linux32/tier1.a") .. " " .. (sizzlib_dir .. "libtier1.a")
     }
     defines
     {
-        "stricmp=strcasecmp",
-        "_stricmp=strcasecmp",
-        "_strnicmp=strncasecmp",
-        "strnicmp=strncasecmp",
-        "_snprintf=snprintf",
-        "_vsnprintf=vsnprintf",
-        "_alloca=alloca",
-        "strcmpi=strcasecmp"
+        "GNUC",
+        "POSIX",
+        "_LINUX",
+        "LINUX",
+        "RAD_TELEMETRY_DISABLED"
     }
     libdirs
     {
+        sdklib_dir .. "linux32/",
         sizzlib_dir
-    }
-    links
-    {
-        "tier0_srv",
-        "vstdlib_srv",
-        "mathlib_i486",
-        "tier1_i486"
     }
     linkoptions
     {

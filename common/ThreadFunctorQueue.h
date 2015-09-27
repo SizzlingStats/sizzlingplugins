@@ -12,9 +12,9 @@
 #ifndef THREAD_FUNC_QUEUE
 #define THREAD_FUNC_QUEUE
 
+#include "threading.h"
 #include "functors.h"
 #include "tier0/tslist.h"
-#include "threading.h"
 
 class CSizzFuncQueueThread: public sizz::CThread
 {

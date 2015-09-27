@@ -23,7 +23,6 @@ project "sizzlinglib"
     {
         base_dir .. "include/*.h",
         base_dir .. "*.cpp",
-        external_dir .. "../external/tier0/memoverride.cpp",
         base_dir .. "../sizzlingplugins.licenseheader"
     }
     links
@@ -39,5 +38,5 @@ project "sizzlinglib"
         }
     configuration {}
     
-    dofile "hl2sdk-ob-valve.lua"
+    dofile "source-sdk-2013.lua"
 project "*"

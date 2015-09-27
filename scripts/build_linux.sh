@@ -16,14 +16,14 @@ cd $SCRIPT_DIR
 if [ "$SEMAPHORE" = true ]; then
   : ${REPO_DIR:=$SEMAPHORE_PROJECT_DIR}
   : ${STEAM_DIR:="$SEMAPHORE_CACHE_DIR/.steamcmd"}
-  : ${SDK_DIR:="$SEMAPHORE_CACHE_DIR/hl2sdk-ob-valve"}
+  : ${SDK_DIR:="$SEMAPHORE_CACHE_DIR/source-sdk-2013"}
 else
   : ${REPO_DIR:=$(readlink -f ..)}
   : ${STEAM_DIR:="$REPO_DIR/.steamcmd"}
-  : ${SDK_DIR:=$(readlink -f $REPO_DIR/../hl2sdk-ob-valve)}
+  : ${SDK_DIR:=$(readlink -f $REPO_DIR/../source-sdk-2013)}
 fi
 
-: ${SDK_GIT_URL:='https://github.com/SizzlingStats/hl2sdk-ob-valve.git'}
+: ${SDK_GIT_URL:='https://github.com/SizzlingStats/source-sdk-2013.git'}
 : ${SDK_GIT_BRANCH:='sizzlingplugins'}
 
 
