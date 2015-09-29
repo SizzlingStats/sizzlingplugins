@@ -53,5 +53,5 @@ project "sizzlingstats"
         "miniz"
     }
     
-    dofile "source-sdk-2013.lua"
+    assert(loadfile("source-sdk-2013.lua"))(project().name)
 project "*"
