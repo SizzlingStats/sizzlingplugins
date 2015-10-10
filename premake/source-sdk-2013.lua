@@ -35,7 +35,8 @@ project(projname)
     }
     defines
     {
-        "RAD_TELEMETRY_DISABLED"
+        "RAD_TELEMETRY_DISABLED",
+        "MOVE_CONSTRUCTOR_SUPPORT"
     }
 
     configuration "windows"
@@ -51,7 +52,8 @@ project(projname)
         prelinkcommands
         {
             "ln -sf " .. (sdklib_dir .. "linux32/mathlib.a") .. " " .. (sizzlib_dir .. "libmathlib.a"),
-            "ln -sf " .. (sdklib_dir .. "linux32/tier1.a") .. " " .. (sizzlib_dir .. "libtier1.a")
+            "ln -sf " .. (sdklib_dir .. "linux32/tier1.a") .. " " .. (sizzlib_dir .. "libtier1.a"),
+            "ln -sf " .. (sdklib_dir .. "linux32/tier2.a") .. " " .. (sizzlib_dir .. "libtier2.a")
         }
         defines
         {
