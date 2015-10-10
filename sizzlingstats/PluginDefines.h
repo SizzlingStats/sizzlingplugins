@@ -21,11 +21,11 @@
 #define URL_BASE "https://bitbucket.org/jcristiano/sizzlingplugins/downloads/"
 
 #ifdef _WIN32
-#define META  "metawin32.txt"
+#define META  "metawin32.json"
 #define PLUGIN_EXTENSION ".dll"
 #define PLUGIN_VERSION_STRING PLUGIN_VERSION "_w"
 #else
-#define META "metalinux.txt"
+#define META "metalinux.json"
 #define PLUGIN_EXTENSION ".so"
 #define PLUGIN_VERSION_STRING PLUGIN_VERSION "_l"
 #endif

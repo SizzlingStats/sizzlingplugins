@@ -19,6 +19,7 @@
 #include "SizzFileSystem.h"
 #include "utlbuffer.h"
 #include "miniz.h"
+#include <rapidjson/document.h>
 
 using namespace sizzFile;
 
@@ -88,46 +89,45 @@ bool CAutoUpdater::PerformUpdateIfAvailable( const char *pUpdateInfo[] )
 bool CAutoUpdater::CheckForUpdate()
 {
 	CUtlBuffer metaBuffer;
-	// gets the version and crc like this: "x.x.x.x\nffffffff"
-	bool downloadOk = SizzDownloader::DownloadFile( m_info.metaUrl, metaBuffer );
-	if ( !downloadOk )
+	metaBuffer.SetBufferType(true, true);
+	if (!SizzDownloader::DownloadFile(m_info.metaUrl, metaBuffer))
 	{
 		return false;
 	}
-	
-	char version[8];
-	metaBuffer.Get( version, 7 );
-	version[7] = '\0';
 
-	// if the current version is newer or the same
-	// as the downloaded version string
-	bool isUpdate = CompareVersions( version, m_info.currentVersion );
-	//Msg( "current: %s, new: %s\n", m_info.currentVersion, version );
-	if ( !isUpdate )
+	rapidjson::Document doc;
+	doc.Parse(metaBuffer.String());
+	if (doc.HasParseError())
 	{
-		Msg( "[SS]: No update available.\n" );// no update needed/available
+		Msg("[SS]: Error parsing metadata.\n");
 		return false;
 	}
-	else
+
+	rapidjson::Document::MemberIterator versionIt = doc.FindMember("v");
+	rapidjson::Document::MemberIterator crcIt = doc.FindMember("c");
+	if (versionIt == doc.MemberEnd() || crcIt == doc.MemberEnd())
 	{
-		Msg( "[SS]: Update available. Preparing to download...\n" );
-		// update available
-
-		 // get rid of the CR LF
-		metaBuffer.GetChar();
-		metaBuffer.GetChar();
-
-		char crc[9];
-		metaBuffer.Get( crc, 8 );
-
-		// not sure if we need to null terminate this string since
-		// the function we use it in goes by the count we give it
-		crc[8] = '\0';
-
-		// convert the string representation of the hex value to an int
-		SCHelpers::S_littleendianhextobinary( crc, 8, (unsigned char*)(&m_info.fileCRC), sizeof(m_info.fileCRC) );
-		return true;
+		Msg("[SS]: Invalid metadata format.\n");
+		return false;
 	}
+
+	rapidjson::Value& version = versionIt->value;
+	rapidjson::Value& crc = crcIt->value;
+	if (!version.IsString() || !crc.IsNumber() || (7 != version.GetStringLength()))
+	{
+		Msg("[SS]: Error parsing metadata version info.\n");
+		return false;
+	}
+
+	if (!CompareVersions(version.GetString(), m_info.currentVersion))
+	{
+		Msg("[SS]: No update available.\n");
+		return false;
+	}
+
+	m_info.fileCRC = crc.GetUint();
+	Msg("[SS]: Update available. Preparing to download...\n");
+	return true;
 }
 
 // returns true if v1 is newer than v2
