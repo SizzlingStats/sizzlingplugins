@@ -18,6 +18,7 @@
 #include "SC_helpers.h"
 #include "SizzFileSystem.h"
 #include "utlbuffer.h"
+#include "tier0/valve_minmax_off.h"
 #include "miniz.h"
 #include <rapidjson/document.h>
 
