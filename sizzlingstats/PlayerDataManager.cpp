@@ -115,6 +115,27 @@ void CPlayerDataManager::StopClassTracking( uint64 curtime )
 	}
 }
 
+void CPlayerDataManager::PlayerAliveAndTrack( int ent_index, EPlayerClass player_class, uint64 curtime )
+{
+	ent_index--;
+	if (m_pPlayerData[ent_index].GetBaseEntity())
+	{
+		CPlayerClassTracker *pTracker = m_pPlayerData[ent_index].GetClassTracker();
+		pTracker->PlayerSpawned(player_class, curtime);
+	}
+}
+
+void CPlayerDataManager::PlayerDoNotTrack( int ent_index, uint64 curtime )
+{
+	ent_index--;
+	if (m_pPlayerData[ent_index].GetBaseEntity())
+	{
+		CPlayerClassTracker *pTracker = m_pPlayerData[ent_index].GetClassTracker();
+		pTracker->PlayerNoTrack(curtime);
+	}
+}
+
+
 void CPlayerDataManager::PlayerChangedClass( int ent_index, EPlayerClass player_class, uint64 curtime )
 {
 	// normalize with a -1 for array indexing

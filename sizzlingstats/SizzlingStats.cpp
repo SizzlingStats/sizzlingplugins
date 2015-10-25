@@ -143,8 +143,19 @@ void SizzlingStats::UberDropped( int entindex )
 	data.m_pExtraData->ubersdropped += 1;
 }
 
-void SizzlingStats::OnPlayerDeath(int inflictorEntIndex, int victimEntIndex)
+void SizzlingStats::OnPlayerSpawn( int entindex, EPlayerClass player_class )
 {
+	m_PlayerDataManager.PlayerAliveAndTrack( entindex, player_class, SCHelpers::RoundDBL(Plat_FloatTime()) );
+}
+
+void SizzlingStats::OnPlayerDeath( int inflictorEntIndex, int victimEntIndex )
+{
+
+	if(victimEntIndex <= 0)
+		return;
+
+	m_PlayerDataManager.PlayerDoNotTrack( victimEntIndex,  SCHelpers::RoundDBL(Plat_FloatTime()) );
+
 	if (inflictorEntIndex <= 0 || victimEntIndex <= 0 ||
 		inflictorEntIndex == victimEntIndex)
 	{
@@ -339,6 +350,7 @@ void SizzlingStats::SS_PlayerDisconnect( CSizzPluginContext *pPluginContext, edi
 	{
 		if (m_PlayerDataManager.IsValidPlayer(ent_index))
 		{
+			m_PlayerDataManager.PlayerDoNotTrack(ent_index,SCHelpers::RoundDBL(Plat_FloatTime()));
 			playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(ent_index);
 			data.m_pPlayerData->UpdateRoundStatsData(m_aPropOffsets);
 			data.m_pPlayerData->UpdateRoundExtraData(*data.m_pExtraData);
@@ -544,18 +556,37 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 
 	if ( amounthealed != 0 )
 	{
+		CPlayerClassTracker *pTracker = playerData.GetClassTracker();
+		uint64 play_time = pTracker->GetPlayedTimeAs(k_ePlayerClassMedic);
+
+		/*
+		memset( pText, 0, sizeof(pText) );
+		V_snprintf( pText, 64, "DEBUG medic playtime: %llu\n", play_time);
+		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
+		*/
+
+		if(play_time > 0)
+		{
+			double avg_healing = ((1.00) * amounthealed) / play_time;
+			memset( pText, 0, sizeof(pText) );
+			V_snprintf( pText, 64, "Average Healing: %.2f hp/sec\n", avg_healing);
+			SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
+		}
+
+	}
+
+	if ( amounthealed != 0 )
+	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Amount Healed: %i\n", amounthealed );
 		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
 	}
-
 	if ( medpicks != 0 )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Medic Picks: %i\n", medpicks );
 		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
 	}
-
 	if ( (backstabs != 0) && (headshots != 0) )
 	{
 		memset( pText, 0, sizeof(pText) );
@@ -590,6 +621,7 @@ void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
 	{
 		if (m_PlayerDataManager.IsValidPlayer(i))
 		{
+			m_PlayerDataManager.PlayerDoNotTrack(i,SCHelpers::RoundDBL(Plat_FloatTime()));
 			playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(i);
 			data.m_pPlayerData->UpdateRoundStatsData(m_aPropOffsets);
 			data.m_pPlayerData->UpdateRoundExtraData(*data.m_pExtraData);
