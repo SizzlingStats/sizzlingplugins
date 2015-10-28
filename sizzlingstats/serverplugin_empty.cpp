@@ -657,20 +657,12 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 		{
 			if ( entindex > 0 )
 			{
-				m_SizzlingStats.GiveUber( entindex );
+				m_SizzlingStats.GiveUber( &m_plugin_context, entindex );
 			}
 		}
 		else if ( FStrEq( pcmd, "tryend" ) )
 		{
-			m_SizzlingStats.SS_EndOfRound();
-		}
-		else if ( FStrEq( pcmd, "testupdatestats" ) )
-		{
-			m_SizzlingStats.SS_UploadStats();
-		}
-		else if ( FStrEq( pcmd, "testthreading" ) )
-		{
-			m_SizzlingStats.SS_TestThreading();
+			m_SizzlingStats.SS_EndOfRound(&m_plugin_context);
 		}
 		else if ( FStrEq( pcmd, "menutest" ) )
 		{
