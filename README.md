@@ -1,7 +1,7 @@
 
 # SizzlingPlugins
 - - -
-[![Build Status](https://semaphoreapp.com/api/v1/projects/597f09dd-9e50-445c-84bd-d399d5e7f7cb/272497/shields_badge.svg)](https://semaphoreapp.com/hamfisted/sizzlingplugins)
+[![Build status](https://ci.appveyor.com/api/projects/status/kqsa1q20v8kokgii/branch/master?svg=true)](https://ci.appveyor.com/project/SizzlingCalamari/sizzlingplugins/branch/master)
 
 Various client and server plugins developed in C++ for Team Fortress(R) 2 and the Source(R) Engine.
 
