@@ -3,21 +3,28 @@ local base_dir = (solution().basedir .. "/sizzlingstats/")
 local external_dir = (solution().basedir .. "/external/")
 local sizzlib_dir = (solution().basedir .. "/sizzlinglib/")
 
-local srcds_dir = "D:/Program Files/Valve/srcds/orangebox/"
-local move_target_cmd = "move /Y \"$(TargetDir)/$(TargetName)$(TargetExt)\" "
+local srcds_path = _OPTIONS["srcds-path"]
+local srcds_exe = nil
+local postbuild_move = nil
+if srcds_path ~= nil then
+    
+    local move_target_cmd = "move /Y \"$(TargetDir)/$(TargetName)$(TargetExt)\" "
+    srcds_exe = srcds_path .. "srcds.exe"
+    postbuild_move = move_target_cmd .. "\"" .. srcds_path .. "tf/addons/sizzlingplugins/sizzlingstats/\""
+end
 
 project "sizzlingstats"
     kind "SharedLib"
     language "C++"
     location (_ACTION .. "/" .. project().name)
     
-    debugcommand (srcds_dir .. "srcds.exe")
+    debugcommand (srcds_exe)
     debugargs "-insecure -console -game tf +map cp_badlands"
     
     configuration "vs*"
         postbuildcommands
         {
-            move_target_cmd .. "\"" .. srcds_dir .. "tf/addons/sizzlingplugins/sizzlingstats/\""
+            postbuild_move
         }
     configuration {}
     

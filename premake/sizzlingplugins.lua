@@ -1,4 +1,11 @@
 
+newoption
+{
+    trigger     = "srcds-path",
+    value       = "path",
+    description = "Path to your srcds installation. Used for debugging and binary deployment."
+}
+
 solution "SizzlingPlugins"
     basedir ".."
     location (_ACTION)
