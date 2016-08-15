@@ -19,17 +19,22 @@
 #include "convar.h"
 #include "PluginDefines.h"
 #include "PlayerDataManager.h"
+#include "SSTeamData.h"
 #include "sizzstring.h"
 #include "STVRecorder.h"
 #include "S3Uploader.h"
 
+#include "timedeventmgr.h"
 #include "tier1/utlvector.h"
 
 class CFuncQueueThread;
 class CSizzPluginContext;
 struct edict_t;
 
-class SizzlingStats
+extern CGlobalVars		*gpGlobals;
+
+class SizzlingStats : public IEventRegisterCallback
+
 {
 public:
 	SizzlingStats(void);
@@ -49,6 +54,9 @@ public:
 	void	GameFrame();
 
 	void	LoadConfig( CSizzPluginContext *pPluginContext );
+
+	// IEventRegister Callback
+	virtual void	FireEvent();
 	
 	void	PlayerHealed( int entindex, int amount );
 	void	MedPick( int entindex );
@@ -113,6 +121,8 @@ public:
 
 	void	SetTeamScores( int redscore, int bluscore );
 
+	void	SS_PingMedics( CSizzPluginContext *pPluginContext );
+
 	void	SS_TestThreading();
 
 	void	SS_UploadStats();
@@ -147,9 +157,14 @@ private:
 	uint16			m_iOldBluScore;
 
 	CUtlVector<char> m_vecMedics; //ent index of medics
+
+	CSizzPluginContext *m_plugin_context;
+	CTimedEventMgr	m_TimedEventMgr;
+	CEventRegister	m_EventRegister;
 private:
 	CS3UploaderThread	*m_pS3UploaderThread;
 	CPlayerDataManager m_PlayerDataManager;
+	CTeamDataManager m_TeamDataManager;
 	CWebStatsHandler *m_pWebStatsHandler;
 	CSTVRecorder m_STVRecorder;
 	ConVarRef m_refHostIP;
