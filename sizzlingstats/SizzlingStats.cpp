@@ -131,6 +131,15 @@ void SizzlingStats::PlayerHealed( int entindex, int amount )
 	data.m_pExtraData->healsrecv += amount;
 }
 
+void SizzlingStats::PlayerArrowed( int patientEntIndex, int medicEntIndex, float distance )
+{
+	playerAndExtra_t medic_data = m_PlayerDataManager.GetPlayerData(medicEntIndex);
+	medic_data.m_pExtraData->arrowslanded += 1;
+
+	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(medicEntIndex);
+	data.m_pExtraData->arrowsrecv += 1;
+}
+
 void SizzlingStats::MedPick( int entindex )
 {
 	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(entindex);
@@ -512,6 +521,8 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 	int ubers = playerData.GetStat(Invulns);
 	int drops = playerData.GetStat(UbersDropped);
 	int medpicks = playerData.GetStat(MedPicks);
+	int arrowsLanded = playerData.GetStat(ArrowsLanded);
+	int arrowsReceived = playerData.GetStat(ArrowsReceived);
 	
 	IPlayerInfo *pPlayerInfo = pPluginContext->GetPlayerInfo(ent_index);
 	CTFPlayerWrapper player(pPluginContext->BaseEntityFromEntIndex(ent_index));
@@ -549,10 +560,24 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
 	}
 
+	if ( arrowsReceived != 0 )
+	{
+		memset( pText, 0, sizeof(pText) );
+		V_snprintf( pText, 64, "Arrows Received: %i\n", arrowsReceived );
+		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
+	}
+
 	if ( medpicks != 0 )
 	{
 		memset( pText, 0, sizeof(pText) );
 		V_snprintf( pText, 64, "Medic Picks: %i\n", medpicks );
+		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
+	}
+
+	if ( arrowsLanded != 0 )
+	{
+		memset( pText, 0, sizeof(pText) );
+		V_snprintf( pText, 64, "Arrows Landed: %i\n", arrowsLanded );
 		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
 	}
 

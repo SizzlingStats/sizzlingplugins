@@ -88,6 +88,7 @@ bool CLogStats::Load( CSizzPluginContext &plugin_context )
 	m_context->AddListener( this, "item_pickup", true );
 	m_context->AddListener( this, "player_hurt", true );
 	m_context->AddListener( this, "player_healed", true );
+	m_context->AddListener( this, "arrow_impact", true );
 	m_context->AddListener( this, "player_spawn", true );
 	m_context->AddListener( this, "player_team", true );
 	m_context->AddListener( this, "player_changename", true );
@@ -274,6 +275,53 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			event->GetString( "item" ) );
 		WriteLog( log );
 		//L 03/21/2011 - 02:35:56: "GooB<330><STEAM_0:1:23384772><Blue>" picked up item "tf_ammo_pack"
+	}
+	else if ( FStrEq( name, "arrow_impact" ) )
+	{
+		// Only count crusader's crossbow
+		if ( event->GetInt("projectileType") == 11 )
+		{
+		
+			int healer = event->GetInt( "shooter" );
+			playerInfo &pInfo1 = m_entIndexToPlayerInfo[healer];
+
+			int patient = event->GetInt( "attachedEntity" );
+			playerInfo &pInfo2 = m_entIndexToPlayerInfo[patient];
+
+
+			// Only count arrows for alive players and on the same team
+			if (pInfo1.pPlayerInfo->IsPlayer() && !pInfo1.pPlayerInfo->IsDead() 
+			 && pInfo2.pPlayerInfo->IsPlayer() && !pInfo2.pPlayerInfo->IsDead()
+			 && pInfo1.teamid == pInfo2.teamid)
+			{
+				vec_t distance = pInfo1.pPlayerInfo->GetAbsOrigin().DistTo(pInfo2.pPlayerInfo->GetAbsOrigin());
+
+				if ( pInfo1.steamid[0] == '\0' )
+				{
+					m_context->GetSteamIDString(pInfo1.userid, pInfo1.steamid, sizeof(pInfo1.steamid));
+				}
+
+				if ( pInfo2.steamid[0] == '\0' )
+				{
+					m_context->GetSteamIDString(pInfo2.userid, pInfo2.steamid, sizeof(pInfo2.steamid));
+				}
+
+				char log[196];
+				Q_snprintf( log, 196, "\"%s<%d><%s><%s>\" triggered \"arrow_impact\" against \"%s<%d><%s><%s> (distance \"%.2f\")\"\n", 
+					pInfo1.name,
+					healer,
+					pInfo1.steamid,
+					teamNames[pInfo1.teamid],
+					pInfo2.name,
+					patient,
+					pInfo2.steamid,
+					teamNames[pInfo2.teamid],
+					distance );
+				WriteLog( log );
+				// L 08/15/2016 - 15:47:39: "happs<1><[U:1:20443063]><Blue>" triggered "arrow_impact" against "Chell<2><BOT><Blue> (distance "822.21")"
+			}
+		}
+
 	}
 	else if ( FStrEq( name, "player_spawn" ) )
 	{

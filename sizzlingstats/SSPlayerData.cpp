@@ -61,6 +61,8 @@ void SS_PlayerData::UpdateRoundExtraData( const extradata_t &dat )
 	m_RoundScoreData.data[MedPicks] = dat.medpicks;
 	m_RoundScoreData.data[UbersDropped] = dat.ubersdropped;
 	m_RoundScoreData.data[OverkillDamage] = dat.overkillDamage;
+	m_RoundScoreData.data[ArrowsLanded] = dat.arrowslanded;
+	m_RoundScoreData.data[ArrowsReceived] = dat.arrowsrecv;
 }
 
 int SS_PlayerData::GetStat( int StatID )

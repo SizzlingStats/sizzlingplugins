@@ -51,6 +51,7 @@ public:
 	void	LoadConfig( CSizzPluginContext *pPluginContext );
 	
 	void	PlayerHealed( int entindex, int amount );
+	void	PlayerArrowed( int patientEntIndex, int medicEntIndex, float distance );
 	void	MedPick( int entindex );
 	void	UberDropped( int entindex );
 	void	OnPlayerDeath(int inflictorEntIndex, int victimEntIndex);
