@@ -8,6 +8,8 @@ set -e # Terminate this script as soon as any command fails
 
 sudo dpkg --add-architecture i386 && sudo apt-get update
 sudo apt-get install -y git screen lib32gcc1 lib32stdc++6 libc6-dev-i386 clang-3.4:i386
+sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.4 100
+sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-3.4 100
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $SCRIPT_DIR
