@@ -279,7 +279,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 	else if ( FStrEq( name, "arrow_impact" ) )
 	{
 		// Only count crusader's crossbow
-		if ( event->GetInt("projectileType") == 11 )
+		if ( event->GetInt("projectileType") == sCrusadersCrossbowType )
 		{
 		
 			int healer = event->GetInt( "shooter" );

@@ -274,4 +274,5 @@ private:
 	ConVarRef m_refRedTeamName;
 };
 
+const int sCrusadersCrossbowType = 11;
 #endif // SIZZ_PLUGIN_CONTEXT_H

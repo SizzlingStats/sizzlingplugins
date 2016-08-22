@@ -846,7 +846,7 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "arrow_impact" ) )
 	{
-		if (event->GetInt("projectileType") == 11) // crusader's crossbow
+		if (event->GetInt("projectileType") == sCrusadersCrossbowType)
 		{
 			const int victim = event->GetInt("attachedEntity");
 			const int medic = event->GetInt("shooter");
@@ -854,10 +854,10 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 			{
 				IPlayerInfo *pVictim = m_plugin_context.GetPlayerInfo( victim );
 				IPlayerInfo *pMedic = m_plugin_context.GetPlayerInfo( medic );
-				// same team
+
 				if (pVictim && pMedic && pVictim->GetTeamIndex() == pMedic->GetTeamIndex())
 				{
-					vec_t distance = sqrt(pVictim->GetAbsOrigin().DistToSqr(pMedic->GetAbsOrigin()));
+					vec_t distance = pVictim->GetAbsOrigin().DistTo(pMedic->GetAbsOrigin());
 					m_SizzlingStats.PlayerArrowed(victim, medic, distance);
 				}
 			}
