@@ -288,11 +288,7 @@ void CLogStats::FireGameEvent( IGameEvent *event )
 			int patient = event->GetInt( "attachedEntity" );
 			playerInfo &pInfo2 = m_entIndexToPlayerInfo[patient];
 
-
-			// Only count arrows for alive players and on the same team
-			if (pInfo1.pPlayerInfo->IsPlayer() && !pInfo1.pPlayerInfo->IsDead() 
-			 && pInfo2.pPlayerInfo->IsPlayer() && !pInfo2.pPlayerInfo->IsDead()
-			 && pInfo1.teamid == pInfo2.teamid)
+			if (pInfo1.teamid == pInfo2.teamid)
 			{
 				vec_t distance = pInfo1.pPlayerInfo->GetAbsOrigin().DistTo(pInfo2.pPlayerInfo->GetAbsOrigin());
 
