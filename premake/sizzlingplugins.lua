@@ -56,7 +56,7 @@ solution "SizzlingPlugins"
             "NoBufferSecurityCheck",
             "NoEditAndContinue",
             "NoIncrementalLink",
-            "LinkTimeOptimization",
+            --"LinkTimeOptimization",
             "MultiProcessorCompile",
             "NoRTTI"
         }
