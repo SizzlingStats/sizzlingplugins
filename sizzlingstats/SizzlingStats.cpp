@@ -136,7 +136,7 @@ void SizzlingStats::PlayerArrowed( int patientEntIndex, int medicEntIndex, float
 	playerAndExtra_t medic_data = m_PlayerDataManager.GetPlayerData(medicEntIndex);
 	medic_data.m_pExtraData->arrowslanded += 1;
 
-	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(medicEntIndex);
+	playerAndExtra_t data = m_PlayerDataManager.GetPlayerData(patientEntIndex);
 	data.m_pExtraData->arrowsrecv += 1;
 }
 
