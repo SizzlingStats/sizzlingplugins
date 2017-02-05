@@ -39,6 +39,7 @@ bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 		connection.SetBodyWriteFunction(&rcvData);
 		connection.SetBodyWriteUserdata(&buf);
 
+		connection.SetOption(CURLOPT_FAILONERROR, 1L);
 		connection.SetOption(CURLOPT_FOLLOWLOCATION, 1L);
 		connection.SetOption(CURLOPT_MAXREDIRS, 5L);
 
@@ -49,7 +50,14 @@ bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 		connection.SetOption(CURLOPT_VERBOSE, 1L);
 	#endif
 
-		CURLcode ret = connection.Perform();
+		const CURLcode ret = connection.Perform();
+
+		const long responseCode = connection.GetResponseCode();
+		if (responseCode != 200)
+		{
+			Msg("Curl response (%d), HTTP response (%d)\n", ret, responseCode);
+			return false;
+		}
 
 		if (ret != CURLE_OK)
 		{
@@ -57,13 +65,6 @@ bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 			return false;
 		}
 
-		long responseCode = 0;
-		ret = connection.GetResponseCode(&responseCode);
-		if ((ret != CURLE_OK) || (responseCode != 200))
-		{
-			Msg("Curl response (%d), HTTP response (%d)\n", ret, responseCode);
-			return false;
-		}
 		return true;
 	}
 
