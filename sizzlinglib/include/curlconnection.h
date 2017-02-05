@@ -14,6 +14,11 @@
 
 #include "curl/curl.h"
 
+enum HttpStatus : long
+{
+    HTTP_OK = 200
+};
+
 // a connection wrapper for curl
 class CCurlConnection
 {

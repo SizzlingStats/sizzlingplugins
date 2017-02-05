@@ -53,7 +53,7 @@ bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 		const CURLcode ret = connection.Perform();
 
 		const long responseCode = connection.GetResponseCode();
-		if (responseCode != 200)
+		if (responseCode != HttpStatus::HTTP_OK)
 		{
 			Msg("Curl response (%d), HTTP response (%d)\n", ret, responseCode);
 			return false;
