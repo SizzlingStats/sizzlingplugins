@@ -50,12 +50,18 @@ bool SizzDownloader::DownloadFile( const char *url, CUtlBuffer &buf )
 	#endif
 
 		CURLcode ret = connection.Perform();
-		connection.Close();
 
 		if (ret != CURLE_OK)
 		{
-			/* we failed */ 
-			Msg( "curl told us %d\n", ret );
+			Msg("Curl connection failed (%d)\n", ret);
+			return false;
+		}
+
+		long responseCode = 0;
+		ret = connection.GetResponseCode(&responseCode);
+		if ((ret != CURLE_OK) || (responseCode != 200))
+		{
+			Msg("Curl response (%d), HTTP response (%d)\n", ret, responseCode);
 			return false;
 		}
 		return true;

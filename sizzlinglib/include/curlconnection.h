@@ -62,6 +62,7 @@ public:
 	void ClearHeaderList();
 
 	CURLcode Perform();
+	CURLcode GetResponseCode(long* responseCode);
 
 private:
 	typedef struct curl_slist curl_slist_t;

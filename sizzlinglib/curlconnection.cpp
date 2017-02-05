@@ -133,3 +133,8 @@ CURLcode CCurlConnection::Perform()
 	return curl_easy_perform(m_pCurl);
 }
 
+CURLcode CCurlConnection::GetResponseCode(long* responseCode)
+{
+	return curl_easy_getinfo(m_pCurl, CURLINFO_RESPONSE_CODE, responseCode);
+}
+
