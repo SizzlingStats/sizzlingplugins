@@ -48,8 +48,9 @@ static size_t sendData(void *ptr, size_t size, size_t nmemb, void *userdata)
 
 bool CS3Uploader::UploadFile()
 {
-	char sourcePath[256];
+	char sourcePath[1024];
 	V_strncpy(sourcePath, m_info.sourceDir, sizeof(sourcePath));
+	V_strncat(sourcePath, "/", sizeof(sourcePath));
 	V_strcat(sourcePath, m_info.sourceFile, sizeof(sourcePath));
 
 	FileHandle_t file = sizzFile::SizzFileSystem::OpenFile(sourcePath, "rb");

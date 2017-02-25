@@ -11,6 +11,38 @@
 
 #include "STVRecorder.h"
 #include "SizzPluginContext.h"
+#include "SizzFileSystem.h"
+
+bool CSTVRecorder::IsValidStvFolder(const char* str)
+{
+    const int length = V_strlen(str);
+    if(length > DEMOPATH_MAX_LEN)
+    {
+        Msg("[SizzlingStats]: sizz_stats_stvfolder value must be 128 characters or less!\n");
+        return false;
+    }
+
+    for(int i = 0; i < length; ++i)
+    {
+        if(!V_isalnum(str[i]))
+        {
+            Msg("[SizzlingStats]: sizz_stats_stvfolder value must be alphanumeric!\n");
+            return false;
+        }
+    }
+    return true;
+}
+
+void CSTVRecorder::StvFolderCallback( IConVar *var, const char *pOldValue, float flOldValue )
+{
+    ConVarRef stvFolder(var);
+    if(!IsValidStvFolder(stvFolder.GetString()))
+    {
+        stvFolder.SetValue(IsValidStvFolder(pOldValue) ? pOldValue : "");
+    }
+}
+
+static ConVar sizz_stats_stvfolder("sizz_stats_stvfolder", "", FCVAR_NONE, "", &CSTVRecorder::StvFolderCallback);
 
 bool CSTVRecorder::StartRecording( CSizzPluginContext *context, const char *szMapName )
 {
@@ -54,12 +86,33 @@ bool CSTVRecorder::StartRecording( CSizzPluginContext *context, const char *szMa
 	char mapNameBase[DEMONAME_MAX_LEN];
 	V_FileBase(szMapName, mapNameBase, sizeof(mapNameBase));
 
+	// "tf/" prefix is needed for manual filesystem work only.
+	using namespace sizzFile;
+	char folder[3 + DEMOPATH_MAX_LEN];
+	folder[0] = '\0';
+	const char* stvFolder = sizz_stats_stvfolder.GetString();
+	if(*stvFolder)
+	{
+		V_strncat(folder, "tf/", sizeof(folder));
+		V_strncat(folder, stvFolder, sizeof(folder));
+		if(SizzFileSystem::Exists(folder) || SizzFileSystem::CreateDirectory(folder))
+		{
+			V_strncpy(m_pDemoPath, stvFolder, DEMOPATH_MAX_LEN);
+			V_strncpy(folder, stvFolder, sizeof(folder));
+		}
+		else
+		{
+			folder[0] = '\0';
+		}
+	}
+
 	// construct the demo file name
 	V_snprintf(m_pDemoName, DEMONAME_MAX_LEN, "%d%02d%02d-%02d%02d-%s", year, month, ltime.tm_mday, ltime.tm_hour, ltime.tm_min, mapNameBase);
 	
 	// create the record string
-	char cmd[10 + DEMONAME_MAX_LEN + 1] = {};
-	V_snprintf(cmd, sizeof(cmd), "tv_record %s\n", m_pDemoName);
+	char cmd[10 + DEMOPATH_MAX_LEN + 1 + DEMONAME_MAX_LEN + 1];
+	cmd[0] = '\0';
+	V_snprintf(cmd, sizeof(cmd), "tv_record %s/%s\n", folder, m_pDemoName);
 
 	// unload the sourcemod match recorder plugin so we can take over
 	context->ServerCommand( "sm plugins unload matchrecorder\n" );

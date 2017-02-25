@@ -29,7 +29,8 @@ namespace sizzFile
 		FileHandle_t	OpenFile( const char *pszPath, const char *pszOptions );
 		void			CloseFile( FileHandle_t file );
 
-		bool			FileExists( const char *pszPath );
+		bool			CreateDirectory( const char* pszPath );
+		bool			Exists( const char *pszPath );
 		bool			RemoveFile( const char *pszPath );
 		bool			RenameFile( const char *pszOldPath, const char *pszNewPath );
 

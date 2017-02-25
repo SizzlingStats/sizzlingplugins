@@ -160,7 +160,7 @@ bool CAutoUpdater::CompareVersions( const char *v1, const char *v2 )
 
 void CAutoUpdater::RemoveFile( const char *pRelativePath )
 {
-	if ( SizzFileSystem::FileExists( pRelativePath ) )
+	if ( SizzFileSystem::Exists( pRelativePath ) )
 	{
 		SizzFileSystem::RemoveFile( pRelativePath );
 	}

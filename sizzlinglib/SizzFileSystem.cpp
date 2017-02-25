@@ -19,6 +19,10 @@
 
 #include <cassert>
 
+#ifdef _WIN32
+#include <direct.h>
+#endif
+
 // do i need to error check these for NULL?
 
 using namespace sizzFile;
@@ -34,7 +38,17 @@ void SizzFileSystem::CloseFile( FileHandle_t file )
 	file = nullptr;
 }
 
-bool SizzFileSystem::FileExists( const char *pszPath )
+bool SizzFileSystem::CreateDirectory( const char* pszPath )
+{
+#ifdef _WIN32
+    return(_mkdir(pszPath) != -1);
+#else
+    // -rwxr--r--
+    return(mkdir(pszPath, S_IRWXU | S_IRGRP | S_IROTH) != -1);
+#endif
+}
+
+bool SizzFileSystem::Exists( const char *pszPath )
 {
 	struct stat buf;
 	return (stat(pszPath, &buf) != -1);

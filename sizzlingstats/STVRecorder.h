@@ -34,21 +34,33 @@ public:
 	bool StartRecording( CSizzPluginContext *context, const char *szMapName );
 	void StopRecording( IVEngineServer *pEngine );
 
-	void LastRecordedDemo( char *dest, uint32_t maxlen ) const;
+	void LastRecordedDemo( char *path, uint32_t maxPath, char* demo, uint32_t maxDemo ) const;
 	void UploadLastDemo( const char *url, CS3UploaderThread *s3uploader );
 
+	static void StvFolderCallback( IConVar *var, const char *pOldValue, float flOldValue );
+
 private:
+	static const uint32_t DEMOPATH_MAX_LEN = 128;
 	static const uint32_t DEMONAME_MAX_LEN = 128;
+
+	static bool IsValidStvFolder(const char* str);
 
 private:
 	ConVarRef m_refTvEnable;
+
+	// "tf/demos"
+	char *m_pDemoPath;
+
+	// "adfasfasd.dem"
 	char *m_pDemoName;
+
 	bool m_recording;
 	bool m_demoToUpload;
 };
 
 inline CSTVRecorder::CSTVRecorder():
 	m_refTvEnable((IConVar*)NULL),
+	m_pDemoPath(NULL),
 	m_pDemoName(NULL),
 	m_recording(false),
 	m_demoToUpload(false)
@@ -62,13 +74,23 @@ inline CSTVRecorder::~CSTVRecorder()
 inline void CSTVRecorder::Load()
 {
 	m_refTvEnable.Init("tv_enable", false);
-	m_pDemoName = new char[DEMONAME_MAX_LEN];
+	char* mem = new char[DEMOPATH_MAX_LEN + DEMONAME_MAX_LEN];
+	m_pDemoPath = mem;
+	m_pDemoName = mem + DEMOPATH_MAX_LEN;
+
+	m_pDemoPath[0] = '\0';
+	m_pDemoName[0] = '\0';
 }
 
 inline void CSTVRecorder::Unload( IVEngineServer *pEngine )
 {
-	delete [] m_pDemoName;
+	delete [] m_pDemoPath;
 	StopRecording(pEngine);
+
+	m_pDemoPath = NULL;
+	m_pDemoName = NULL;
+	m_recording = false;
+	m_demoToUpload = false;
 }
 
 inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
@@ -82,9 +104,12 @@ inline void CSTVRecorder::StopRecording( IVEngineServer *pEngine )
 	}
 }
 
-inline void CSTVRecorder::LastRecordedDemo( char *dest, uint32_t maxlen ) const
+inline void CSTVRecorder::LastRecordedDemo( char *path, uint32_t maxPath, char* demo, uint32_t maxDemo ) const
 {
-	V_strncpy(dest, m_pDemoName, maxlen);
+	V_strncpy(path, "tf/", maxPath);
+	V_strcat(path, m_pDemoPath, maxPath);
+	V_strncpy(demo, m_pDemoName, maxDemo);
+	V_strcat(demo, ".dem", maxDemo);
 }
 
 inline void CSTVRecorder::UploadLastDemo( const char *url, CS3UploaderThread *s3uploader )
@@ -104,12 +129,8 @@ inline void CSTVRecorder::UploadLastDemo( const char *url, CS3UploaderThread *s3
 
 	S3UploadInfo_t info = {};
 
-	// set the source path
-	V_strcat(info.sourceDir, "tf/", sizeof(info.sourceDir));
-
-	// get source file
-	LastRecordedDemo(info.sourceFile, sizeof(info.sourceFile));
-	V_strcat(info.sourceFile, ".dem", sizeof(info.sourceFile));
+	// get source path and file
+	LastRecordedDemo(info.sourceDir, sizeof(info.sourceDir), info.sourceFile, sizeof(info.sourceFile));
 
 	// Set the upload url
 	V_strncpy(info.uploadUrl, url, sizeof(info.uploadUrl));
