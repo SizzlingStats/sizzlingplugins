@@ -17,6 +17,7 @@
 
 #include "downloader.h"
 #include "threading.h"
+#include <functional>
 
 typedef struct autoUpdateInfo_s
 {
