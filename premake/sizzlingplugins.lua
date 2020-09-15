@@ -85,7 +85,8 @@ solution "SizzlingPlugins"
             "-std=c++11",
             "-isystem /usr/include/i386-linux-gnu/c++/4.8*",
             "-isystem /usr/include/i386-linux-gnu/c++/4.7*",
-            "-isystem /usr/include/i386-linux-gnu/c++/4.6*"
+            "-isystem /usr/include/i386-linux-gnu/c++/4.6*",
+            "-Wno-inconsistent-missing-override"
         }
     
     -- compiler specific configurations
