@@ -17,6 +17,7 @@
 
 #include "stddef.h"
 #include "threading.h"
+#include <functional>
 
 class CUtlBuffer;
 
