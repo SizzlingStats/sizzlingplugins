@@ -6,7 +6,7 @@ Various client and server plugins developed in C++ for Team Fortress(R) 2 and th
 ## Build Status
 | System | Compiler | Status |
 | ------ | -------- | ------ |
-| Linux | G++-4.8.4 | [![Build Status](https://semaphoreci.com/api/v1/hamfisted/sizzlingplugins/branches/master/badge.svg)](https://semaphoreci.com/hamfisted/sizzlingplugins) |
+| Linux | G++-7.5 | [![Build status](https://ci.appveyor.com/api/projects/status/yamj7q8fmcfk4h5v?svg=true)](https://ci.appveyor.com/project/SizzlingCalamari/sizzlingplugins-linux) |
 | Windows | VS2013 Update 5 | [![Build status](https://ci.appveyor.com/api/projects/status/kqsa1q20v8kokgii/branch/master?svg=true)](https://ci.appveyor.com/project/SizzlingCalamari/sizzlingplugins/branch/master) |
 
 ## Contact
