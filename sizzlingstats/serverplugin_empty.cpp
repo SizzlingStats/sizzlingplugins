@@ -291,6 +291,9 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	
 	// player healed (not incl buffs)
 	m_plugin_context.AddListener( this, "player_healed", true );
+
+	// player arrowed (crusader, same team only)
+	m_plugin_context.AddListener( this, "arrow_impact", true );
 	
 	// happens when mp_winlimit or mp_timelimit is met or something i don't know, i forget
 	m_plugin_context.AddListener( this, "teamplay_game_over", true );
@@ -514,7 +517,7 @@ void CEmptyServerPlugin::GameFrame( bool simulating )
 		{
 			using namespace Teamplay_GameRule_States;
 
-			//Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName(state) ) );
+			//Msg( UTIL_VarArgs( "round state is now %s\n", GetStateName((gamerules_roundstate_t)roundstate) ) );
 			switch (roundstate)
 			{
 			case GR_STATE_PREROUND:
@@ -840,6 +843,26 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 				m_SizzlingStats.PlayerHealed( patientIndex, event->GetInt("amount") );
 			}
 		}
+	}
+	else if ( m_bShouldRecord && FStrEq( name, "arrow_impact" ) )
+	{
+		if (event->GetInt("projectileType") == sCrusadersCrossbowType)
+		{
+			const int victim = event->GetInt("attachedEntity");
+			const int medic = event->GetInt("shooter");
+			if (victim > 0 && medic > 0) 
+			{
+				IPlayerInfo *pVictim = m_plugin_context.GetPlayerInfo( victim );
+				IPlayerInfo *pMedic = m_plugin_context.GetPlayerInfo( medic );
+
+				if (pVictim && pMedic && pVictim->GetTeamIndex() == pMedic->GetTeamIndex())
+				{
+					vec_t distance = pVictim->GetAbsOrigin().DistTo(pMedic->GetAbsOrigin());
+					m_SizzlingStats.PlayerArrowed(victim, medic, distance);
+				}
+			}
+		}
+
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "player_death" ) )
 	{
