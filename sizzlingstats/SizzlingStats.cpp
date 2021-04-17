@@ -50,7 +50,10 @@ SizzlingStats::SizzlingStats():
 	m_pBluTeam(NULL),
 	m_iOldRedScore(0),
 	m_iOldBluScore(0),
+	m_plugin_context(NULL),
+	m_TimedEventMgr(),
 	m_PlayerDataManager(),
+	m_TeamDataManager(),
 	m_refHostIP((IConVar*)NULL),
 	m_refIP((IConVar*)NULL),
 	m_refHostPort((IConVar*)NULL),
@@ -63,6 +66,8 @@ SizzlingStats::SizzlingStats():
 	m_pHostInfo = new hostInfo_t();
 	m_pWebStatsHandler = new CWebStatsHandler();
 	m_pS3UploaderThread = new CS3UploaderThread();
+	m_EventRegister.Init( &m_TimedEventMgr, this );
+
 }
 #pragma warning( pop )
 
@@ -84,6 +89,9 @@ void SizzlingStats::Load( CSizzPluginContext *pPluginContext )
 	m_pWebStatsHandler->Initialize();
 	m_STVRecorder.Load();
 
+	m_plugin_context = pPluginContext;
+
+
 	using namespace std::placeholders;
 #ifdef _WIN32
 	// this hack makes it so that VC++11 outputs 2 moves instead of a copy and a move when calling the std::functions
@@ -104,6 +112,9 @@ void SizzlingStats::Unload( CSizzPluginContext *pPluginContext )
 	m_STVRecorder.Unload(pPluginContext->GetEngine());
 	m_pS3UploaderThread->ShutDown();
 	m_pWebStatsHandler->Shutdown();
+
+	m_EventRegister.StopUpdates();
+	m_plugin_context = nullptr;
 }
 
 void SizzlingStats::LevelInit( CSizzPluginContext *pPluginContext, const char *pMapName )
@@ -118,6 +129,7 @@ void SizzlingStats::ServerActivate( CSizzPluginContext *pPluginContext )
 
 void SizzlingStats::GameFrame()
 {
+	m_TimedEventMgr.FireEvents();
 }
 
 void SizzlingStats::LoadConfig( CSizzPluginContext *pPluginContext )
@@ -248,6 +260,92 @@ void SizzlingStats::GiveUber( CSizzPluginContext *pPluginContext, int entindex )
 	CTFPlayerWrapper player(pData->GetBaseEntity());
 	player.SetChargeLevel(pPluginContext, 1.0f);
 }
+
+void SizzlingStats::SS_PingMedics( CSizzPluginContext *pPluginContext )
+{
+	int max_clients = pPluginContext->GetMaxClients();
+
+	bool found_red_medic = false;
+	bool found_blu_medic = false;
+
+	for (int i = 0; i < m_vecMedics.Count(); ++i)
+	{
+		int medIndex = m_vecMedics[i];
+		SS_PlayerData *pMedData = m_PlayerDataManager.GetPlayerData(medIndex).m_pPlayerData;
+		CTFPlayerWrapper medic(pMedData->GetBaseEntity());
+
+		IPlayerInfo *pMedPlayerInfo = pPluginContext->GetPlayerInfo(medIndex);
+
+		if( pMedPlayerInfo->IsPlayer() && pMedPlayerInfo->IsDead() )
+			continue;
+
+		Vector *medPos = medic.GetPlayerOrigin();
+
+		vec_t total_distance = 0;
+		int nteammates = 0;
+
+		int medic_team_id = pMedPlayerInfo->GetTeamIndex();
+		tfteam medic_team;
+
+		// Only compute distance from the first medic found
+		if(medic_team_id == 2)
+		{
+			if(found_red_medic)
+				continue;
+			found_red_medic = true;
+			medic_team = TFTEAM_RED;
+		} else if(medic_team_id == 3)
+		{
+			if(found_blu_medic)
+				continue;
+			found_blu_medic = true;
+			medic_team = TFTEAM_BLUE;
+		}
+
+		for ( int victimIndex = 1; victimIndex <= max_clients; ++victimIndex )
+		{
+			if(medIndex == victimIndex)
+				continue;
+
+			if(!m_PlayerDataManager.IsValidPlayer(victimIndex))
+				continue;
+
+			SS_PlayerData *pVictimData = m_PlayerDataManager.GetPlayerData(victimIndex).m_pPlayerData;
+			IPlayerInfo *pVictimPlayerInfo = pPluginContext->GetPlayerInfo(victimIndex);
+
+
+			if ( medic_team_id != pVictimPlayerInfo->GetTeamIndex() )
+				continue;
+
+			if( pVictimPlayerInfo->IsPlayer() && pVictimPlayerInfo->IsDead() )
+				continue;
+
+			CTFPlayerWrapper victim(pVictimData->GetBaseEntity());
+
+			Vector *victimPos = victim.GetPlayerOrigin();
+
+			//vec_t distance = victimPos->DistTo( *medPos );
+			//vec_t distance = victimPos->DistToSqr( *medPos );
+			vec_t distance = sqrt(victimPos->DistToSqr( *medPos ));
+			total_distance += distance;
+			++nteammates;
+		}
+
+		if(nteammates > 0)
+		{
+			vec_t average_distance = total_distance/static_cast<float>(nteammates);
+
+			m_TeamDataManager.AddStatSample(medic_team,TeamStat::MedicCohesion,average_distance);
+#ifdef DEV_COMMANDS_ON
+			SS_AllUserChatMessage( pPluginContext, UTIL_VarArgs("avg medic distance: %.2f\n", average_distance) );
+			double moving_average_distance = m_TeamDataManager.GetStat( medic_team, TeamStat::MedicCohesion );
+			SS_AllUserChatMessage( pPluginContext, UTIL_VarArgs("moving-avg medic distance: %.2f\n", moving_average_distance) );
+#endif
+		}
+	}
+
+}
+
 
 void SizzlingStats::CheckPlayerDropped( CSizzPluginContext *pPluginContext, int victimIndex )
 {
@@ -406,6 +504,8 @@ void SizzlingStats::SS_AllUserChatMessage( CSizzPluginContext *pPluginContext, c
 void SizzlingStats::SS_TournamentMatchStarted( CSizzPluginContext *pPluginContext )
 {
 	Msg( "tournament match started\n" );
+
+	m_EventRegister.SetUpdateInterval(3.0f);
 	m_bTournamentMatchRunning = true;
 	m_flMatchDuration = Plat_FloatTime();
 
@@ -460,6 +560,8 @@ void SizzlingStats::SS_TournamentMatchEnded( CSizzPluginContext *pPluginContext 
 	// the value of the recording cvar
 	m_STVRecorder.StopRecording(pPluginContext->GetEngine());
 	//SetTeamScores(0, 0);
+
+	m_EventRegister.StopUpdates();
 }
 
 void SizzlingStats::SS_PreRoundFreeze( CSizzPluginContext *pPluginContext )
@@ -512,9 +614,12 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 	int ubers = playerData.GetStat(Invulns);
 	int drops = playerData.GetStat(UbersDropped);
 	int medpicks = playerData.GetStat(MedPicks);
+
 	
 	IPlayerInfo *pPlayerInfo = pPluginContext->GetPlayerInfo(ent_index);
 	CTFPlayerWrapper player(pPluginContext->BaseEntityFromEntIndex(ent_index));
+
+	int iTeam = pPlayerInfo->GetTeamIndex();
 
 	V_snprintf( pText, 64, "\x04[\x05SizzlingStats\x04]\x06: \x03%s\n", pPlayerInfo->GetName() );
 	SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
@@ -582,6 +687,21 @@ void SizzlingStats::SS_DisplayStats( CSizzPluginContext *pPluginContext, int ent
 	memset( pText, 0, sizeof(pText) );
 	V_snprintf( pText, 64, "Round Score: %i\n", points );
 	SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
+
+	tfteam team = to_tfteam(iTeam);
+      
+	if (team != TFTEAM_RED && team != TFTEAM_BLUE) 
+		return;
+	
+	double team_cohesion = m_TeamDataManager.GetStat( team, TeamStat::MedicCohesion );
+
+	if( team_cohesion > 0.0 )
+	{
+		memset( pText, 0, sizeof(pText) );
+		V_snprintf( pText, 64, "Team Cohesion: %f\n", team_cohesion);
+		SS_SingleUserChatMessage(pPluginContext, ent_index, pText);
+	}
+
 }
 
 void SizzlingStats::SS_EndOfRound( CSizzPluginContext *pPluginContext )
@@ -635,6 +755,7 @@ void SizzlingStats::SS_ResetData( CSizzPluginContext *pPluginContext )
 			data.m_pExtraData->operator=(0);
 		}
 	}
+	m_TeamDataManager.Reset();
 }
 
 void SizzlingStats::SS_Credits( CSizzPluginContext *pPluginContext, int entindex, const char *pszVersion )
@@ -780,4 +901,10 @@ void SizzlingStats::OnS3UploadReturn( const sizz::CString &sessionid, bool bUplo
 	{
 		Msg("[SizzlingStats]: S3Upload failed\n");
 	}
+}
+
+void SizzlingStats::FireEvent()
+{
+	if(m_plugin_context != nullptr)
+		SS_PingMedics(m_plugin_context);
 }

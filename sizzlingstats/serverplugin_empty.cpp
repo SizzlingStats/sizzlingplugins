@@ -60,6 +60,7 @@
 IEngineTrace			*enginetrace = NULL;
 IServerGameDLL			*pServerDLL = NULL;
 IFileSystem			*g_pFullFileSystem = NULL;
+CGlobalVars				*gpGlobals = NULL;
 
 //===========================================================================//
 
@@ -255,12 +256,14 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 		return false;
 	}
 
+
 	plugin_context_init_t init;
 	init.pEngine = (IVEngineServer*)interfaceFactory(INTERFACEVERSION_VENGINESERVER, NULL);
 	init.pPlayerInfoManager = (IPlayerInfoManager *)gameServerFactory(INTERFACEVERSION_PLAYERINFOMANAGER,NULL);
 	init.pHelpers = (IServerPluginHelpers*)interfaceFactory(INTERFACEVERSION_ISERVERPLUGINHELPERS, NULL);
 	init.pGameEventManager = (IGameEventManager2*)interfaceFactory(INTERFACEVERSION_GAMEEVENTSMANAGER2, NULL);
 	init.pServerGameDLL = (IServerGameDLL *)gameServerFactory(INTERFACEVERSION_SERVERGAMEDLL, NULL);
+	gpGlobals = init.pPlayerInfoManager->GetGlobalVars();
 
 	if (!m_plugin_context.Initialize(init))
 	{
@@ -651,6 +654,10 @@ PLUGIN_RESULT CEmptyServerPlugin::ClientCommand( edict_t *pEntity, const CComman
 		else if ( FStrEq(pcmd, "sizz_hide_stats") )
 		{
 			m_SizzlingStats.SS_HideHtmlStats(&m_plugin_context, entindex);
+		}
+		else if ( FStrEq( pcmd, "pingmedic" ) )
+		{
+			m_SizzlingStats.SS_PingMedics(&m_plugin_context);
 		}
 #ifdef DEV_COMMANDS_ON
 		else if ( FStrEq( pcmd, "gibuber" ) )
