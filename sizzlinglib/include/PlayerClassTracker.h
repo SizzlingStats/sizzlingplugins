@@ -39,6 +39,11 @@ enum EPlayerClass
 #define PLAYED_SPY		( 1 << 7 )
 #define PLAYED_ENGINEER	( 1 << 8 )
 
+
+#define PLAYER_DO_NOT_TRACK (1 << 9 )
+
+
+
 class CPlayerClassTracker
 {
 public:
@@ -50,10 +55,15 @@ public:
 	void StartRecording( EPlayerClass player_class, uint64 curtime );
 	void StopRecording( uint64 curtime );
 
+	void PlayerSpawned( EPlayerClass player_class, uint64 curtime );
+	void PlayerNoTrack( uint64 curtime );
 	void PlayerChangedClass( EPlayerClass player_class, uint64 curtime );
 
 	EPlayerClass GetMostPlayedClass();
 	uint16 GetPlayedClasses();
+
+	uint64 GetPlayedTimeAs(uint16 player_class) const;
+
 	/*
 	bool PlayedScout() const	{ return (m_classflags & PLAYED_SCOUT); }
 	bool PlayedSoldier() const	{ return (m_classflags & PLAYED_SOLDIER); }
@@ -113,7 +123,7 @@ inline EPlayerClass CPlayerClassTracker::GetMostPlayedClass()
 
 inline uint16 CPlayerClassTracker::GetPlayedClasses()
 {
-	return m_classflags;
+	return m_classflags & 0x000000FF;
 }
 
 inline void CPlayerClassTracker::ResetFlags( uint16 player_class )

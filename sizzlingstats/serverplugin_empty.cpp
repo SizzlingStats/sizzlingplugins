@@ -307,11 +307,11 @@ bool CEmptyServerPlugin::Load(	CreateInterfaceFn interfaceFactory, CreateInterfa
 	m_plugin_context.AddListener( this, "player_team", true );
 	
 	m_plugin_context.AddListener( this, "player_death", true );
+	m_plugin_context.AddListener( this, "player_spawn", true );	// when a player spawns...
 	//m_plugin_context.AddListener( this, "tournament_stateupdate", true ); // for getting team names
 	//m_plugin_context.AddListener( this, "player_shoot", true );		// for accuracy stats
 
 	//m_plugin_context.AddListener( this, "player_chargedeployed", true );	// when a medic deploys uber/kritz
-	//m_plugin_context.AddListener( this, "player_spawn", true );	// when a player spawns...
 
 	//m_plugin_context.AddListener( this, "teamplay_suddendeath_end", true );
 	//m_plugin_context.AddListener( this, "teamplay_overtime_end", true );
@@ -847,6 +847,14 @@ void CEmptyServerPlugin::FireGameEvent( IGameEvent *event )
 		const int inflictor = event->GetInt("inflictor_entindex");
 		m_SizzlingStats.OnPlayerDeath(inflictor, victim);
 		//m_SizzlingStats.CheckPlayerDropped( &m_plugin_context, victim );
+	}
+	else if ( m_bShouldRecord && FStrEq( name, "player_spawn" ) )
+	{
+		const int victim = m_plugin_context.EntIndexFromUserID(event->GetInt( "userid" ));
+		const int team = event->GetInt("team");
+		EPlayerClass player_class = static_cast<EPlayerClass>(event->GetInt("class"));
+
+		m_SizzlingStats.OnPlayerSpawn(victim,player_class);
 	}
 	else if ( m_bShouldRecord && FStrEq( name, "medic_death" ) )
 	{

@@ -11,6 +11,10 @@
 
 #include "PlayerClassTracker.h"
 
+#define IS_SET(flag, bit)    ((flag) & (bit))
+#define SET_BIT(var, bit)    ((var) |= (bit))
+#define REMOVE_BIT(var, bit)    ((var) &= ~(bit))
+
 void CPlayerClassTracker::Reset( 
 	EPlayerClass player_class /*= k_ePlayerClassUnknown*/,
 	uint64 curtime /*= 0*/ )
@@ -34,7 +38,27 @@ void CPlayerClassTracker::Reset(
 void CPlayerClassTracker::StartRecording( EPlayerClass player_class, uint64 curtime )
 {
 	Reset(player_class, curtime);
+	REMOVE_BIT(m_classflags, PLAYER_DO_NOT_TRACK);
 }
+
+void CPlayerClassTracker::PlayerSpawned( EPlayerClass player_class, uint64 curtime )
+{
+	REMOVE_BIT(m_classflags, PLAYER_DO_NOT_TRACK);
+	m_lastUpdate = curtime;
+}
+
+/*
+ * Called when:
+ * 	1) Player has died
+ * 	2) Round has ended
+ * 	3) Player has disconnected
+ */
+void CPlayerClassTracker::PlayerNoTrack( uint64 curtime )
+{
+	UpdateTimes(curtime);
+	SET_BIT(m_classflags, PLAYER_DO_NOT_TRACK);
+}
+
 
 void CPlayerClassTracker::PlayerChangedClass( EPlayerClass player_class, uint64 curtime )
 {
@@ -50,7 +74,7 @@ void CPlayerClassTracker::PlayerChangedClass( EPlayerClass player_class, uint64 
 
 void CPlayerClassTracker::UpdateTimes( uint64 curtime )
 {
-	if (IsTFClass(m_currentClass))
+	if (IsTFClass(m_currentClass) && !IS_SET(m_classflags,PLAYER_DO_NOT_TRACK))
 	{
 		m_timeplayed[m_currentClass-1] += (curtime - m_lastUpdate);
 		UpdateMostPlayedClass(curtime);
@@ -75,6 +99,15 @@ void CPlayerClassTracker::UpdateMostPlayedClass( uint64 curtime )
 		}
 	}
 }
+
+uint64 CPlayerClassTracker::GetPlayedTimeAs(uint16 player_class) const
+{
+	if(!IsTFClass(player_class))
+		return 0;
+
+	return m_timeplayed[player_class-1];
+}
+
 
 void CPlayerClassTracker::FlagClassAsPlayed( uint16 player_class )
 {

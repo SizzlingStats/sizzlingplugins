@@ -44,6 +44,9 @@ public:
 	
 	void ResetAndStartClassTracking( uint64 curtime );
 	void StopClassTracking( uint64 curtime );
+
+	void PlayerAliveAndTrack( int ent_index, EPlayerClass player_class, uint64 curtime );
+	void PlayerDoNotTrack( int ent_index, uint64 curtime );
 	void PlayerChangedClass( int ent_index, EPlayerClass player_class, uint64 curtime );
 
 	void SetCapFix( int ent_index );
