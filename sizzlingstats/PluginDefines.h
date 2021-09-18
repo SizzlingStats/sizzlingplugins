@@ -17,7 +17,7 @@
 //#define LOG_STATS
 //#define USE_STAGING_URLS
 
-#define PLUGIN_VERSION "0.9.4.3"
+#define PLUGIN_VERSION "0.9.4.4"
 #define URL_BASE "https://bitbucket.org/jcristiano/sizzlingplugins/downloads/"
 
 #ifdef _WIN32
